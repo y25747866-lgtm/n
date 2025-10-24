@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -30,7 +31,7 @@ import { Wand2 } from "lucide-react";
 import { SubscriptionGate } from "@/components/boss-os/subscription-gate";
 import { useSubscription } from "@/contexts/subscription-provider";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { UnifiedProgressModal } from "@/components/boss-os/unified-progress-modal";
+import { UnifiedProgressModal, GenerationParams } from "@/components/boss-os/unified-progress-modal";
 
 const formSchema = z.object({
   topic: z.string().min(5, "Topic must be at least 5 characters."),
@@ -64,15 +65,15 @@ const lengthLabelMap: Record<FormData['length'], string> = {
 };
 
 const numberToLength = (value: number): FormData['length'] => {
-    if (value < 50) return 'Short';
-    if (value < 100) return 'Medium';
+    if (value < 25) return 'Short';
+    if (value < 75) return 'Medium';
     return 'Long';
 }
 
 export default function GeneratePage() {
   const { subscription } = useSubscription();
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generationData, setGenerationData] = useState<FormData | null>(null);
+  const [generationData, setGenerationData] = useState<GenerationParams | null>(null);
 
   const isSubscribed = subscription.status === "active";
 
@@ -178,7 +179,7 @@ export default function GeneratePage() {
                   name="length"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Length: {lengthLabelMap[field.value] ?? lengthLabelMap.Medium}</FormLabel>
+                      <FormLabel>Length: {lengthLabelMap[field.value]}</FormLabel>
                       <FormControl>
                         <Slider
                           value={[lengthValueMap[field.value]]}
