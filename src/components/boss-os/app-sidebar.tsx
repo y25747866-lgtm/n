@@ -8,24 +8,21 @@ import {
   CreditCard,
   Settings,
   Badge,
-  BadgePercent,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import {
-  Sidebar,
-  SidebarHeader,
   SidebarContent,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
-  SidebarGroup,
+  SidebarHeader,
 } from '@/components/ui/sidebar';
 import { Logo } from './logo';
 import { useSubscription } from '@/contexts/subscription-provider';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 
 const menuItems = [
@@ -46,7 +43,7 @@ export default function AppSidebar() {
   const creditUsage = maxCredits > 0 ? (maxCredits - subscription.credits) / maxCredits * 100 : 0;
 
   return (
-    <Sidebar collapsible="none">
+    <>
       <SidebarHeader>
         <Logo />
       </SidebarHeader>
@@ -90,6 +87,6 @@ export default function AppSidebar() {
             </CardContent>
         </Card>
       </SidebarFooter>
-    </Sidebar>
+    </>
   );
 }

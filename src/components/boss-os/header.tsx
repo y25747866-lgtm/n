@@ -19,14 +19,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { SidebarTrigger } from '@/components/ui/sidebar';
 import { ThemeToggle } from './theme-toggle';
-import { useSubscription } from '@/contexts/subscription-provider';
 import Link from 'next/link';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export default function Header() {
-  const { subscription } = useSubscription();
   const avatarImage = PlaceHolderImages.find(p => p.id === 'avatar-1');
 
   const getInitials = (name: string) => {
@@ -35,9 +32,6 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-md sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-      <div className="md:hidden">
-        <SidebarTrigger />
-      </div>
       <div className="ml-auto flex items-center gap-2">
         <ThemeToggle />
         <DropdownMenu>
