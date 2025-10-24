@@ -1,3 +1,52 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero-background",
+      "description": "Abstract gradient background for the hero section.",
+      "imageUrl": "https://images.unsplash.com/photo-1579548122080-c35fd6820ecb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxhYnN0cmFjdCUyMGdyYWRpZW50fGVufDB8fHx8MTc2MTI1NDY3NXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "abstract gradient"
+    },
+    {
+      "id": "feature-ebook",
+      "description": "Icon representing ebook generation feature.",
+      "imageUrl": "https://images.unsplash.com/photo-1761143975038-60d58e429841?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxib29rJTIwaWNvbnxlbnwwfHx8fDE3NjEzMTA3NTB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "book icon"
+    },
+    {
+      "id": "feature-cover",
+      "description": "Icon representing cover generation feature.",
+      "imageUrl": "https://images.unsplash.com/photo-1672332147106-80905f538ab8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxwYWxldHRlJTIwaWNvbnxlbnwwfHx8fDE3NjEyMzk4ODB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "palette icon"
+    },
+    {
+      "id": "feature-trends",
+      "description": "Icon representing trending ideas feature.",
+      "imageUrl": "https://images.unsplash.com/photo-1694133366181-b32a0fd387ed?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxjaGFydCUyMGljb258ZW58MHx8fHwxNzYxMzQxNTAyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "chart icon"
+    },
+    {
+      "id": "avatar-1",
+      "description": "User avatar placeholder.",
+      "imageUrl": "https://images.unsplash.com/photo-1535643302794-19c3804b874b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjEzMjQyNDB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person portrait"
+    },
+    {
+      "id": "cover-minimal",
+      "description": "Minimal style ebook cover.",
+      "imageUrl": "https://images.unsplash.com/photo-1637661175651-fc1bd96f2d0b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxtaW5pbWFsaXN0JTIwZGVzaWdufGVufDB8fHx8MTc2MTM0MTUwMnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "minimalist design"
+    },
+    {
+      "id": "cover-photo",
+      "description": "Photo style ebook cover.",
+      "imageUrl": "https://images.unsplash.com/photo-1588312744377-2adfb7b8578a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxjaXR5JTIwbmlnaHR8ZW58MHx8fHwxNzYxMjU5MDc1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "city night"
+    },
+    {
+      "id": "cover-illustrated",
+      "description": "Illustrated style ebook cover.",
+      "imageUrl": "https://images.unsplash.com/photo-1651223969333-7a02ad74c4f0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8dmVjdG9yJTIwaWxsdXN0cmF0aW9ufGVufDB8fHx8MTc2MTMxMDU1Nnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "vector illustration"
+    }
+  ]
 }

@@ -15,6 +15,12 @@ export default {
         code: ['monospace'],
       },
       colors: {
+        'accent-1-start': '#3B82F6',
+        'accent-1-mid': '#7C3AED',
+        'accent-1-end': '#06B6D4',
+        'accent-2-start': '#2563EB',
+        'accent-2-mid': '#06B6D4',
+        'accent-2-end': '#34D399',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {
