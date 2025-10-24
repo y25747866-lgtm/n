@@ -31,6 +31,7 @@ import { SubscriptionGate } from "@/components/boss-os/subscription-gate";
 import { useSubscription } from "@/contexts/subscription-provider";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { UnifiedProgressModal } from "@/components/boss-os/unified-progress-modal";
+import Link from "next/link";
 
 const formSchema = z.object({
   topic: z.string().min(5, "Topic must be at least 5 characters."),
@@ -56,7 +57,7 @@ export default function GeneratePage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationData, setGenerationData] = useState<FormData | null>(null);
 
-  const isSubscribed = subscription.status === "active" || subscription.status === "trial";
+  const isSubscribed = subscription.status === "active";
   const hasCredits = subscription.credits > 0;
   const canGenerate = isSubscribed && hasCredits;
 
@@ -243,7 +244,7 @@ export default function GeneratePage() {
                             </TooltipTrigger>
                             {!canGenerate && (
                                 <TooltipContent>
-                                    <p>{!isSubscribed ? "Subscribe or start a trial to enable generation." : "You are out of credits."}</p>
+                                    <p>{!isSubscribed ? "Subscribe to a plan to enable generation." : "You are out of credits."}</p>
                                 </TooltipContent>
                             )}
                         </Tooltip>

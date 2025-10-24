@@ -13,11 +13,10 @@ import { Badge } from "@/components/ui/badge";
 export default function SettingsPage() {
   const { subscription } = useSubscription();
 
-  const maxCredits = subscription.status === 'trial' ? 3 :
-                     subscription.status === 'active' && subscription.planId === 'monthly' ? 50 :
-                     subscription.status === 'active' && subscription.planId === 'annual' ? 600 : 1;
+  const maxCredits = subscription.status === 'active' && subscription.planId === 'monthly' ? 50 :
+                     subscription.status === 'active' && subscription.planId === 'annual' ? 600 : 0;
                      
-  const creditUsage = (maxCredits - subscription.credits) / maxCredits * 100;
+  const creditUsage = maxCredits > 0 ? (maxCredits - subscription.credits) / maxCredits * 100 : 0;
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
@@ -63,13 +62,15 @@ export default function SettingsPage() {
                     {subscription.status}
                 </Badge>
             </div>
-            <div>
-                <div className="flex justify-between mb-2">
-                    <h4 className="font-semibold">Credit Usage</h4>
-                    <p className="text-sm text-muted-foreground">{subscription.credits} / {maxCredits} remaining</p>
-                </div>
-                <Progress value={creditUsage} />
-            </div>
+            {subscription.status !== 'unsubscribed' && (
+              <div>
+                  <div className="flex justify-between mb-2">
+                      <h4 className="font-semibold">Credit Usage</h4>
+                      <p className="text-sm text-muted-foreground">{subscription.credits} / {maxCredits} remaining</p>
+                  </div>
+                  <Progress value={creditUsage} />
+              </div>
+            )}
             <Button variant="outline">Manage Subscription</Button>
         </CardContent>
       </Card>

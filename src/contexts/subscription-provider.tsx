@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useMemo, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 
-export type PlanStatus = "unsubscribed" | "trial" | "active";
+export type PlanStatus = "unsubscribed" | "active";
 
 type SubscriptionState = {
   status: PlanStatus;
@@ -14,7 +14,6 @@ type SubscriptionState = {
 
 type SubscriptionContextType = {
   subscription: SubscriptionState;
-  startTrial: () => void;
   startSubscription: (planId: "monthly" | "annual") => void;
   isLoading: boolean;
 };
@@ -30,25 +29,6 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     renewalDate: null,
   });
   const [isLoading, setIsLoading] = useState(false);
-
-  const startTrial = useCallback(() => {
-    setIsLoading(true);
-    setTimeout(() => {
-      const renewalDate = new Date();
-      renewalDate.setDate(renewalDate.getDate() + 7);
-      setSubscription({
-        status: "trial",
-        credits: 3,
-        planId: null,
-        renewalDate,
-      });
-      setIsLoading(false);
-      toast({
-        title: "Trial Started!",
-        description: "You now have 3 generation credits for 7 days.",
-      });
-    }, 1500);
-  }, [toast]);
 
   const startSubscription = useCallback((planId: "monthly" | "annual") => {
     setIsLoading(true);
@@ -76,11 +56,10 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const value = useMemo(
     () => ({
       subscription,
-      startTrial,
       startSubscription,
       isLoading,
     }),
-    [subscription, isLoading, startTrial, startSubscription]
+    [subscription, isLoading, startSubscription]
   );
 
   return (

@@ -51,12 +51,12 @@ const howItWorks = [
 ];
 
 export default function DashboardPage() {
-  const { subscription, startTrial, isLoading } = useSubscription();
+  const { subscription, startSubscription, isLoading } = useSubscription();
   const router = useRouter();
 
   const handlePrimaryAction = () => {
     if (subscription.status === 'unsubscribed') {
-      startTrial();
+      router.push('/subscription');
     } else {
       router.push('/generate');
     }
@@ -78,7 +78,7 @@ export default function DashboardPage() {
             onClick={handlePrimaryAction}
             disabled={isLoading}
           >
-            {subscription.status === 'unsubscribed' ? 'Start Free Trial' : 'Create New Product'}
+            {subscription.status === 'unsubscribed' ? 'Subscribe to Create' : 'Create New Product'}
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
         </div>

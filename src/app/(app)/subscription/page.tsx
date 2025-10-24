@@ -6,6 +6,7 @@ import { useSubscription } from "@/contexts/subscription-provider";
 import { CheckCircle2, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 const Plan = ({
   title,
@@ -64,7 +65,7 @@ const Plan = ({
 };
 
 export default function SubscriptionPage() {
-    const { startTrial, isLoading, subscription } = useSubscription();
+    const { isLoading, subscription } = useSubscription();
   return (
     <div className="space-y-8">
       <div>
@@ -72,47 +73,26 @@ export default function SubscriptionPage() {
         <p className="text-muted-foreground">Choose the plan that's right for your empire.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-        {subscription.status === 'unsubscribed' && (
-            <Card className="glass-card w-full flex flex-col items-center text-center p-8">
-                <Star className="h-10 w-10 text-yellow-400 mb-4"/>
-                <h3 className="text-xl font-bold">Not sure yet?</h3>
-                <p className="text-muted-foreground mt-2 mb-6">Get a taste of Boss OS with a free trial. No commitment required.</p>
-                <Button 
-                    size="lg" 
-                    className="w-full"
-                    onClick={startTrial}
-                    disabled={isLoading}
-                >
-                    {isLoading && subscription.status === 'unsubscribed' ? "Starting..." : "Start 7-day Trial"}
-                </Button>
-                <p className="text-xs text-muted-foreground mt-4">3 generations included</p>
-            </Card>
-        )}
-        
-        <div className={cn("flex flex-col gap-8", subscription.status === 'unsubscribed' && 'md:col-span-2')}>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <Plan
-                title="Monthly"
-                description="Perfect for getting started and testing the waters."
-                price="60"
-                pricePeriod="month"
-                features={["50 credits/month", "50 cover regenerations", "Full feature access", "Cancel anytime"]}
-                planId="monthly"
-                isCurrent={subscription.planId === 'monthly'}
-                />
-                <Plan
-                title="Annual"
-                description="Best value for serious creators and business owners."
-                price="600"
-                pricePeriod="year"
-                features={["600 credits/year", "Unlimited regenerations", "Priority support", "Early access to new features"]}
-                isPopular
-                planId="annual"
-                isCurrent={subscription.planId === 'annual'}
-                />
-            </div>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+        <Plan
+        title="Monthly"
+        description="Perfect for getting started and testing the waters."
+        price="60"
+        pricePeriod="month"
+        features={["50 credits/month", "50 cover regenerations", "Full feature access", "Cancel anytime"]}
+        planId="monthly"
+        isCurrent={subscription.planId === 'monthly'}
+        />
+        <Plan
+        title="Annual"
+        description="Best value for serious creators and business owners."
+        price="600"
+        pricePeriod="year"
+        features={["600 credits/year", "Unlimited regenerations", "Priority support", "Early access to new features"]}
+        isPopular
+        planId="annual"
+        isCurrent={subscription.planId === 'annual'}
+        />
       </div>
     </div>
   );

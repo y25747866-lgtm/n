@@ -41,9 +41,9 @@ export default function AppSidebar() {
   const pathname = usePathname();
   const { subscription } = useSubscription();
 
-  const creditUsage = subscription.status === 'trial' ? (3 - subscription.credits) / 3 * 100 : 
-                      subscription.status === 'active' && subscription.planId === 'monthly' ? (50 - subscription.credits) / 50 * 100 :
-                      subscription.status === 'active' && subscription.planId === 'annual' ? (600 - subscription.credits) / 600 * 100 : 0;
+  const maxCredits = subscription.status === 'active' && subscription.planId === 'monthly' ? 50 :
+                     subscription.status === 'active' && subscription.planId === 'annual' ? 600 : 0;
+  const creditUsage = maxCredits > 0 ? (maxCredits - subscription.credits) / maxCredits * 100 : 0;
 
   return (
     <Sidebar variant="inset" collapsible="icon">
@@ -73,12 +73,11 @@ export default function AppSidebar() {
               <CardTitle className="text-sm font-medium flex items-center justify-between">
                 <span>
                 {subscription.status === 'unsubscribed' && 'No Plan'}
-                {subscription.status === 'trial' && 'Trial Plan'}
                 {subscription.status === 'active' && subscription.planId === 'monthly' && 'Monthly Plan'}
                 {subscription.status === 'active' && subscription.planId === 'annual' && 'Annual Plan'}
                 </span>
                 {subscription.status !== 'unsubscribed' && (
-                  <Badge variant={subscription.status === 'trial' ? 'secondary' : 'default'} className="capitalize">
+                  <Badge variant="default" className="capitalize">
                      {subscription.status}
                   </Badge>
                 )}
