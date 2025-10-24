@@ -1,12 +1,69 @@
-import { Rocket } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export function Logo({ className }: { className?: string }) {
+export function Logo({ className, ...props }: { className?: string;[key: string]: any }) {
   return (
-    <div className={cn("flex items-center gap-2 text-lg font-bold tracking-tighter", className)}>
-      <div className="flex items-center justify-center rounded-lg bg-primary p-1.5">
-        <Rocket className="h-5 w-5 text-primary-foreground" />
-      </div>
+    <div className={cn("flex items-center gap-2 text-lg font-bold tracking-tighter", className)} {...props}>
+      {/* Boss OS Neural Circuit Logo */}
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="40" height="40" role="img" aria-labelledby="title desc">
+        <title id="title">Boss OS Neural Circuit Logo</title>
+        <desc id="desc">Stylized brain-shaped circuit logo with blue-to-green gradient</desc>
+
+        {/* background */}
+        <rect width="512" height="512" fill="#0A0D1A" rx="20" ry="20"/>
+
+        {/* gradient */}
+        <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#00C6FF"/>
+          <stop offset="100%" stopColor="#00FF88"/>
+        </linearGradient>
+
+        {/* circuit brain shape */}
+        <path fill="none" stroke="url(#grad)" strokeWidth="32" strokeLinecap="round" strokeLinejoin="round"
+              d="M160 160 
+                 L240 160 Q320 160 320 240
+                 L320 272 M320 272 
+                 Q320 352 400 352
+                 L416 352
+                 M320 240 
+                 L400 160
+                 M160 240 
+                 Q160 320 240 320 
+                 L272 320
+                 M160 160 
+                 Q160 120 200 120 
+                 L240 120
+                 M160 240 
+                 L120 200
+                 M272 320 
+                 L240 360
+                 M400 352 
+                 L440 400
+                 M320 272 
+                 L360 312
+                 M240 160 
+                 L200 200
+                 M240 120 
+                 L272 80
+                 M160 240 
+                 L120 280
+                 M240 320 
+                 L200 360
+                 M272 320 
+                 L312 360
+                 M200 200 
+                 L240 240
+                 M360 312 
+                 L400 352"/>
+
+        {/* connector circles */}
+        <circle cx="200" cy="120" r="16" fill="url(#grad)"/>
+        <circle cx="272" cy="80" r="16" fill="url(#grad)"/>
+        <circle cx="120" cy="200" r="16" fill="url(#grad)"/>
+        <circle cx="120" cy="280" r="16" fill="url(#grad)"/>
+        <circle cx="200" cy="360" r="16" fill="url(#grad)"/>
+        <circle cx="312" cy="360" r="16" fill="url(#grad)"/>
+        <circle cx="440" cy="400" r="16" fill="url(#grad)"/>
+      </svg>
       <span className="font-headline">Boss OS</span>
     </div>
   );
