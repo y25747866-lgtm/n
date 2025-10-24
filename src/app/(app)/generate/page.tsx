@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState } from "react";
@@ -58,10 +59,10 @@ const lengthValueMap: Record<FormData['length'], number> = {
   'Long': 100,
 };
 
-const lengthLabelMap: Record<FormData['length'], string> = {
-  'Short': 'Short (5-10p)',
-  'Medium': 'Medium (20-40p)',
-  'Long': 'Long (40-100p)',
+const lengthLabelMap: Record<number, string> = {
+  0: 'Short (5-10p)',
+  50: 'Medium (20-40p)',
+  100: 'Long (40-100p)',
 };
 
 const numberToLength = (value: number): FormData['length'] => {
@@ -94,6 +95,8 @@ export default function GeneratePage() {
     setGenerationData(values);
     setIsGenerating(true);
   }
+  
+  const currentLengthValue = lengthValueMap[form.watch('length')];
 
   return (
     <>
@@ -179,10 +182,10 @@ export default function GeneratePage() {
                   name="length"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Length: {lengthLabelMap[field.value]}</FormLabel>
+                      <FormLabel>Length: {lengthLabelMap[currentLengthValue] || 'Medium (20-40p)'}</FormLabel>
                       <FormControl>
                         <Slider
-                          value={[lengthValueMap[field.value]]}
+                          value={[currentLengthValue]}
                           onValueChange={(vals) => field.onChange(numberToLength(vals[0]))}
                           step={50}
                           max={100}
