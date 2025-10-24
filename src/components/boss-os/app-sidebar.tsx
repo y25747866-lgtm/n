@@ -46,7 +46,7 @@ export default function AppSidebar() {
   const creditUsage = maxCredits > 0 ? (maxCredits - subscription.credits) / maxCredits * 100 : 0;
 
   return (
-    <Sidebar variant="inset" collapsible="icon">
+    <Sidebar collapsible="none">
       <SidebarHeader>
         <Logo />
       </SidebarHeader>
@@ -57,7 +57,6 @@ export default function AppSidebar() {
               <Link href={item.href}>
                 <SidebarMenuButton
                   isActive={pathname === item.href}
-                  tooltip={{ children: item.label }}
                 >
                   <item.icon />
                   <span>{item.label}</span>
