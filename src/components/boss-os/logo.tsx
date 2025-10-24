@@ -6,14 +6,11 @@ export function Logo({ className, ...props }: { className?: string;[key: string]
       {/* Boss OS Neural Circuit Logo */}
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="40" height="40" role="img" aria-labelledby="title desc">
         <title id="title">Boss OS Neural Circuit Logo</title>
-        <desc id="desc">Stylized brain-shaped circuit logo with blue-to-green gradient</desc>
-
-        {/* background */}
-        <rect width="512" height="512" fill="#0A0D1A" rx="20" ry="20"/>
+        <desc id="desc">Stylized brain-shaped circuit logo with adaptable colors for light and dark themes.</desc>
 
         {/* gradient */}
         <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#00C6FF"/>
+          <stop offset="0%" stopColor="hsl(var(--primary))"/>
           <stop offset="100%" stopColor="#00FF88"/>
         </linearGradient>
 
