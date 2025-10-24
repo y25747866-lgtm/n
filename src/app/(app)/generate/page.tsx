@@ -44,12 +44,30 @@ const formSchema = z.object({
     "Printable",
   ]),
   tone: z.enum(["Casual", "Professional", "Persuasive"]),
-  length: z.number().min(0).max(100),
+  length: z.enum(['Short', 'Medium', 'Long']),
   coverStyle: z.enum(["Minimal", "Photo", "Illustrated", "Bold Title", "Modern"]),
   optionalPriceSuggestion: z.boolean(),
 });
 
 type FormData = z.infer<typeof formSchema>;
+
+const lengthValueMap: Record<FormData['length'], number> = {
+  'Short': 0,
+  'Medium': 50,
+  'Long': 100,
+};
+
+const lengthLabelMap: Record<FormData['length'], string> = {
+  'Short': 'Short (5-10p)',
+  'Medium': 'Medium (20-40p)',
+  'Long': 'Long (40-100p)',
+};
+
+const numberToLength = (value: number): FormData['length'] => {
+    if (value < 50) return 'Short';
+    if (value < 100) return 'Medium';
+    return 'Long';
+}
 
 export default function GeneratePage() {
   const { subscription } = useSubscription();
@@ -64,7 +82,7 @@ export default function GeneratePage() {
       topic: "",
       productType: "Ebook",
       tone: "Professional",
-      length: 50,
+      length: 'Medium',
       coverStyle: "Modern",
       optionalPriceSuggestion: false,
     },
@@ -75,12 +93,6 @@ export default function GeneratePage() {
     setGenerationData(values);
     setIsGenerating(true);
   }
-
-  const lengthLabels: { [key: number]: string } = {
-    0: "Short (5-10p)",
-    50: "Medium (20-40p)",
-    100: "Long (40-100p)",
-  };
 
   return (
     <>
@@ -147,7 +159,7 @@ export default function GeneratePage() {
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a tone" />
-                            </SelectTrigger>
+                            </Trigger>
                           </FormControl>
                           <SelectContent>
                              {formSchema.shape.tone.options.map(tone => (
@@ -166,11 +178,11 @@ export default function GeneratePage() {
                   name="length"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Length: {lengthLabels[field.value as keyof typeof lengthLabels] || "Medium (20-40p)"}</FormLabel>
+                      <FormLabel>Length: {lengthLabelMap[field.value] ?? 'Medium (20-40p)'}</FormLabel>
                       <FormControl>
                         <Slider
-                          value={[field.value]}
-                          onValueChange={(vals) => field.onChange(vals[0])}
+                          value={[lengthValueMap[field.value]]}
+                          onValueChange={(vals) => field.onChange(numberToLength(vals[0]))}
                           step={50}
                           max={100}
                         />
