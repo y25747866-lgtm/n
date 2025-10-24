@@ -21,18 +21,20 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { useToast } from "@/hooks/use-toast";
 import { DialogHeader, DialogTitle, DialogDescription } from "../ui/dialog";
 import { Separator } from "../ui/separator";
+import { GenerateEbookContentOutput } from "@/ai/flows/generate-ebook-content";
+import { GenerateCoverImageOutput } from "@/ai/flows/generate-cover-image";
 
-type GenerationParams = {
-  topic: string;
-};
+type ProductResult = {
+  content: GenerateEbookContentOutput;
+  cover: GenerateCoverImageOutput;
+}
 
-export function ProductPackagePreview({ generationParams }: { generationParams: GenerationParams }) {
-  const [title, setTitle] = useState(generationParams.topic);
-  const coverImage = PlaceHolderImages.find((p) => p.id === "cover-photo");
+export function ProductPackagePreview({ productResult }: { productResult: ProductResult }) {
+  const [title, setTitle] = useState(productResult.content.title);
+  const [coverImageUrl, setCoverImageUrl] = useState(productResult.cover.imageUrl);
   const { toast } = useToast();
 
   const handleAction = (actionName: string, delay = 1000) => {
@@ -62,14 +64,14 @@ export function ProductPackagePreview({ generationParams }: { generationParams: 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1 mt-6 overflow-hidden">
         {/* Left Column: Cover Preview */}
         <div className="md:col-span-1 flex flex-col gap-4">
-          <div className="aspect-[3/4] relative rounded-lg overflow-hidden border">
-            {coverImage && (
+          <div className="aspect-[3/4] relative rounded-lg overflow-hidden border bg-muted">
+            {coverImageUrl && (
               <Image
-                src={coverImage.imageUrl}
+                src={coverImageUrl}
                 alt={title}
                 fill
                 className="object-cover"
-                data-ai-hint={coverImage.imageHint}
+                unoptimized // Since it's a data URI
               />
             )}
           </div>
@@ -105,25 +107,15 @@ export function ProductPackagePreview({ generationParams }: { generationParams: 
 
           <div>
             <h3 className="font-semibold mb-2">Content Preview</h3>
-            <Accordion type="single" collapsible className="w-full border rounded-lg">
-              <AccordionItem value="item-1">
-                <AccordionTrigger className="px-4">Chapter 1: Introduction</AccordionTrigger>
-                <AccordionContent className="px-4">
-                  Welcome to the world of {generationParams.topic}. This book will guide you through the essentials, providing you with the knowledge and skills to master this exciting field.
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="item-2">
-                <AccordionTrigger className="px-4">Chapter 2: The Core Principles</AccordionTrigger>
-                <AccordionContent className="px-4">
-                  Here we dive deep into the fundamental concepts that form the backbone of {generationParams.topic}.
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="item-3">
-                <AccordionTrigger className="px-4">Chapter 3: Advanced Techniques</AccordionTrigger>
-                <AccordionContent className="px-4">
-                  Take your skills to the next level with these advanced strategies and expert tips.
-                </AccordionContent>
-              </AccordionItem>
+            <Accordion type="multiple" className="w-full border rounded-lg">
+              {productResult.content.chapters.map((chapter, index) => (
+                 <AccordionItem value={`item-${index+1}`} key={index}>
+                    <AccordionTrigger className="px-4 text-left">{chapter.title}</AccordionTrigger>
+                    <AccordionContent className="px-4 prose prose-sm dark:prose-invert max-w-none">
+                      <div dangerouslySetInnerHTML={{ __html: chapter.content.replace(/\n/g, '<br />') }} />
+                    </AccordionContent>
+                </AccordionItem>
+              ))}
             </Accordion>
           </div>
           
