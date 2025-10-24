@@ -159,7 +159,7 @@ export default function GeneratePage() {
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a tone" />
-                            </Trigger>
+                            </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                              {formSchema.shape.tone.options.map(tone => (
@@ -178,7 +178,7 @@ export default function GeneratePage() {
                   name="length"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Length: {lengthLabelMap[field.value] ?? 'Medium (20-40p)'}</FormLabel>
+                      <FormLabel>Length: {lengthLabelMap[field.value] ?? lengthLabelMap.Medium}</FormLabel>
                       <FormControl>
                         <Slider
                           value={[lengthValueMap[field.value]]}
