@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import {
+  Sidebar,
   SidebarContent,
   SidebarMenu,
   SidebarMenuItem,
@@ -43,7 +44,7 @@ export default function AppSidebar() {
   const creditUsage = maxCredits > 0 ? (maxCredits - subscription.credits) / maxCredits * 100 : 0;
 
   return (
-    <>
+    <Sidebar>
       <SidebarHeader>
         <Logo />
       </SidebarHeader>
@@ -87,6 +88,6 @@ export default function AppSidebar() {
             </CardContent>
         </Card>
       </SidebarFooter>
-    </>
+    </Sidebar>
   );
 }

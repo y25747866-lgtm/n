@@ -3,6 +3,7 @@ import './globals.css';
 import { ThemeProvider } from '@/contexts/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { SubscriptionProvider } from '@/contexts/subscription-provider';
+import { SidebarProvider } from '@/contexts/sidebar-provider';
 
 export const metadata: Metadata = {
   title: 'Boss OS - AI Digital Product Factory',
@@ -24,7 +25,9 @@ export default function RootLayout({
       <body className="font-body antialiased">
         <ThemeProvider>
           <SubscriptionProvider>
-            {children}
+            <SidebarProvider>
+              {children}
+            </SidebarProvider>
             <Toaster />
           </SubscriptionProvider>
         </ThemeProvider>
