@@ -7,7 +7,6 @@ import {
   Download,
   CreditCard,
   Settings,
-  Badge,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -24,7 +23,9 @@ import {
 import { Logo } from './logo';
 import { useSubscription } from '@/contexts/subscription-provider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
+import { ArrowRight } from 'lucide-react';
 
 const menuItems = [
   { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
@@ -38,10 +39,6 @@ const menuItems = [
 export default function AppSidebar() {
   const pathname = usePathname();
   const { subscription } = useSubscription();
-
-  const maxCredits = subscription.status === 'active' && subscription.planId === 'monthly' ? 50 :
-                     subscription.status === 'active' && subscription.planId === 'annual' ? 600 : 0;
-  const creditUsage = maxCredits > 0 ? (maxCredits - subscription.credits) / maxCredits * 100 : 0;
 
   return (
     <Sidebar>
@@ -66,7 +63,7 @@ export default function AppSidebar() {
       </SidebarContent>
       <SidebarFooter>
          <Card className="m-2 bg-transparent border-dashed">
-            <CardHeader className="p-4">
+            <CardHeader className="p-4 pb-2">
               <CardTitle className="text-sm font-medium flex items-center justify-between">
                 <span>
                 {subscription.status === 'unsubscribed' && 'No Plan'}
@@ -80,12 +77,16 @@ export default function AppSidebar() {
                 )}
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-4 pt-0">
-               <div className="text-xs text-muted-foreground mb-2">
-                {subscription.credits} Credits Remaining
-               </div>
-               <Progress value={100 - creditUsage} className="h-2"/>
-            </CardContent>
+            {subscription.status === 'unsubscribed' && (
+              <CardContent className="p-4 pt-0">
+                  <Link href="/subscription">
+                    <Button size="sm" className="w-full">
+                      Subscribe
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+              </CardContent>
+            )}
         </Card>
       </SidebarFooter>
     </Sidebar>

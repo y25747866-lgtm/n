@@ -4,20 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/boss-os/theme-toggle";
 import { useSubscription } from "@/contexts/subscription-provider";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 
 export default function SettingsPage() {
   const { subscription } = useSubscription();
-
-  const maxCredits = subscription.status === 'active' && subscription.planId === 'monthly' ? 50 :
-                     subscription.status === 'active' && subscription.planId === 'annual' ? 600 : 0;
                      
-  const creditUsage = maxCredits > 0 ? (maxCredits - subscription.credits) / maxCredits * 100 : 0;
-
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
       <div>
@@ -47,8 +42,8 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Subscription & Usage</CardTitle>
-          <CardDescription>View your current plan and credit usage.</CardDescription>
+          <CardTitle>Subscription</CardTitle>
+          <CardDescription>View and manage your current plan.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
             <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -59,19 +54,13 @@ export default function SettingsPage() {
                     </p>
                 </div>
                 <Badge variant={subscription.status === 'unsubscribed' ? 'destructive' : 'default'} className="capitalize text-lg px-4 py-1">
-                    {subscription.status}
+                    {subscription.status === 'unsubscribed' ? 'Unsubscribed' : subscription.planId}
                 </Badge>
             </div>
-            {subscription.status !== 'unsubscribed' && (
-              <div>
-                  <div className="flex justify-between mb-2">
-                      <h4 className="font-semibold">Credit Usage</h4>
-                      <p className="text-sm text-muted-foreground">{subscription.credits} / {maxCredits} remaining</p>
-                  </div>
-                  <Progress value={creditUsage} />
-              </div>
-            )}
-            <Button variant="outline">Manage Subscription</Button>
+            
+            <Link href="/subscription">
+              <Button variant="outline">Manage Subscription</Button>
+            </Link>
         </CardContent>
       </Card>
       

@@ -25,13 +25,12 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Sparkles, Wand2 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Wand2 } from "lucide-react";
 import { SubscriptionGate } from "@/components/boss-os/subscription-gate";
 import { useSubscription } from "@/contexts/subscription-provider";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { UnifiedProgressModal } from "@/components/boss-os/unified-progress-modal";
-import Link from "next/link";
 
 const formSchema = z.object({
   topic: z.string().min(5, "Topic must be at least 5 characters."),
@@ -58,8 +57,6 @@ export default function GeneratePage() {
   const [generationData, setGenerationData] = useState<FormData | null>(null);
 
   const isSubscribed = subscription.status === "active";
-  const hasCredits = subscription.credits > 0;
-  const canGenerate = isSubscribed && hasCredits;
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -74,7 +71,7 @@ export default function GeneratePage() {
   });
 
   function onSubmit(values: FormData) {
-    if (!canGenerate) return;
+    if (!isSubscribed) return;
     setGenerationData(values);
     setIsGenerating(true);
   }
@@ -235,16 +232,16 @@ export default function GeneratePage() {
                                     type="submit" 
                                     size="lg" 
                                     className="bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end text-white"
-                                    disabled={!canGenerate || form.formState.isSubmitting}
+                                    disabled={!isSubscribed || form.formState.isSubmitting}
                                 >
                                     <Wand2 className="mr-2 h-5 w-5" />
                                     Generate
                                 </Button>
                                 </div>
                             </TooltipTrigger>
-                            {!canGenerate && (
+                            {!isSubscribed && (
                                 <TooltipContent>
-                                    <p>{!isSubscribed ? "Subscribe to a plan to enable generation." : "You are out of credits."}</p>
+                                    <p>Subscribe to a plan to enable generation.</p>
                                 </TooltipContent>
                             )}
                         </Tooltip>
