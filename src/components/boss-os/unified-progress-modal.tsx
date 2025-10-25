@@ -10,7 +10,7 @@ import { Terminal } from "lucide-react";
 import { generateEbookContent, GenerateEbookContentInput, GenerateEbookContentOutput } from "@/ai/flows/generate-ebook-content";
 import { generateCoverImage, GenerateCoverImageInput, GenerateCoverImageOutput } from "@/ai/flows/generate-cover-image";
 
-export type GenerationParams = GenerateEbookContentInput & GenerateCoverImageInput;
+export type GenerationParams = Omit<GenerateEbookContentInput, 'authorName'> & Omit<GenerateCoverImageInput, 'title' | 'authorName'> & { authorName: string };
 
 type JobStatus = "pending" | "running" | "completed" | "error";
 
@@ -32,75 +32,79 @@ export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { is
 
   const runJobs = async () => {
     setContentStatus("running");
-    setCoverStatus("running");
+    setCoverStatus("pending");
     setError(null);
+    setProductResult({ content: null, cover: null });
 
-    const contentPromise = (async () => {
-      try {
-        const contentResult = await generateEbookContent(generationParams);
-        setContentStatus("completed");
-        return contentResult;
-      } catch (e: any) {
-        console.error("Content generation failed:", e);
-        setError(e.message || "Failed to generate ebook content.");
-        setContentStatus("error");
-        return null;
-      }
-    })();
+    let generatedContent: GenerateEbookContentOutput | null = null;
+    try {
+      const contentResult = await generateEbookContent(generationParams);
+      generatedContent = contentResult;
+      setContentStatus("completed");
+      setProductResult(prev => ({ ...prev, content: contentResult }));
+    } catch (e: any) {
+      console.error("Content generation failed:", e);
+      setError(e.message || "Failed to generate ebook content.");
+      setContentStatus("error");
+      return;
+    }
 
-    const coverPromise = (async () => {
+    if (generatedContent) {
+      setCoverStatus("running");
       try {
-        const coverResult = await generateCoverImage(generationParams);
+        const coverResult = await generateCoverImage({
+          ...generationParams,
+          title: generatedContent.title,
+        });
         setCoverStatus("completed");
-        return coverResult;
+        setProductResult(prev => ({ ...prev, cover: coverResult }));
       } catch (e: any) {
         console.error("Cover generation failed:", e);
         setError(e.message || "Failed to generate cover image.");
         setCoverStatus("error");
-        return null;
       }
-    })();
-    
-    const [content, cover] = await Promise.all([contentPromise, coverPromise]);
-    setProductResult({ content, cover });
+    }
   };
 
   useEffect(() => {
     if (!isOpen) return;
-    
-    setProductResult({ content: null, cover: null });
     runJobs();
   }, [isOpen]);
 
   useEffect(() => {
-    let contentInterval: NodeJS.Timeout;
+    let contentInterval: NodeJS.Timeout | undefined;
     if (contentStatus === 'running') {
+      setContentProgress(0);
       contentInterval = setInterval(() => {
         setContentProgress(prev => Math.min(prev + Math.random() * 5, 99));
-      }, 300);
+      }, 500);
     } else if (contentStatus === 'completed') {
+      if (contentInterval) clearInterval(contentInterval);
       setContentProgress(100);
+    } else if (contentStatus === 'error') {
+        if (contentInterval) clearInterval(contentInterval);
     }
     return () => clearInterval(contentInterval);
   }, [contentStatus]);
 
   useEffect(() => {
-    let coverInterval: NodeJS.Timeout;
+    let coverInterval: NodeJS.Timeout | undefined;
     if (coverStatus === 'running') {
+      setCoverProgress(0);
       coverInterval = setInterval(() => {
         setCoverProgress(prev => Math.min(prev + Math.random() * 7, 99));
-      }, 250);
+      }, 400);
     } else if (coverStatus === 'completed') {
+      if (coverInterval) clearInterval(coverInterval);
       setCoverProgress(100);
+    } else if (coverStatus === 'error') {
+        if (coverInterval) clearInterval(coverInterval);
     }
     return () => clearInterval(coverInterval);
   }, [coverStatus]);
 
 
   const handleRetry = () => {
-    if (!hasError) return;
-    
-    // Simple retry all for now
     runJobs();
   };
   
@@ -131,14 +135,14 @@ export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { is
                 <div className="space-y-4">
                     <div className="flex justify-between items-center">
                         <label>Content Generation</label>
-                        <span className="text-sm font-medium">{contentStatus === 'completed' ? 'Complete' : `${Math.round(contentProgress)}%`}</span>
+                        <span className="text-sm font-medium capitalize">{contentStatus === 'completed' ? 'Complete' : contentStatus} {contentStatus === 'running' && `(${Math.round(contentProgress)}%)`}</span>
                     </div>
                     <Progress value={contentProgress} data-status={contentStatus} className="data-[status=error]:[&>*]:bg-destructive" />
                 </div>
                 <div className="space-y-4">
                     <div className="flex justify-between items-center">
                         <label>Cover Generation</label>
-                        <span className="text-sm font-medium">{coverStatus === 'completed' ? 'Complete' : `${Math.round(coverProgress)}%`}</span>
+                        <span className="text-sm font-medium capitalize">{coverStatus === 'completed' ? 'Complete' : coverStatus} {coverStatus === 'running' && `(${Math.round(coverProgress)}%)`}</span>
                     </div>
                     <Progress value={coverProgress} data-status={coverStatus} className="[&>*]:bg-gradient-to-r [&>*]:from-accent-1-start [&>*]:to-accent-1-end data-[status=error]:[&>*]:bg-destructive" />
                 </div>
@@ -146,7 +150,7 @@ export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { is
 
             <DialogFooter>
                 {hasError ? (
-                  <Button onClick={handleRetry}>Retry Failed Jobs</Button>
+                  <Button onClick={handleRetry}>Retry</Button>
                 ) : (
                   <Button variant="ghost" onClick={onClose}>Cancel</Button>
                 )}

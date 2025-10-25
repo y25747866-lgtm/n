@@ -13,6 +13,8 @@ import {z} from 'genkit';
 
 const GenerateCoverImageInputSchema = z.object({
   topic: z.string().describe('The topic of the ebook.'),
+  title: z.string().describe('The title of the ebook to be placed on the cover.'),
+  authorName: z.string().describe('The author\'s name to be placed on the cover.'),
   coverStyle: z.enum([
     'Minimal',
     'Photo',
@@ -32,20 +34,6 @@ export async function generateCoverImage(input: GenerateCoverImageInput): Promis
   return generateCoverImageFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'generateCoverImagePrompt',
-  input: {schema: GenerateCoverImageInputSchema},
-  output: {schema: GenerateCoverImageOutputSchema},
-  prompt: `You are an AI cover image generator for ebooks.
-
-  Generate a cover image for an ebook with the following characteristics:
-
-  Topic: {{{topic}}}
-  Style: {{{coverStyle}}}
-
-  The image URL MUST be a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'.`,
-});
-
 const generateCoverImageFlow = ai.defineFlow(
   {
     name: 'generateCoverImageFlow',
@@ -55,7 +43,16 @@ const generateCoverImageFlow = ai.defineFlow(
   async input => {
     const {media} = await ai.generate({
       model: 'googleai/imagen-4.0-fast-generate-001',
-      prompt: `Generate a cover image for an ebook with the following characteristics:\n\nTopic: ${input.topic}\nStyle: ${input.coverStyle}`,
+      prompt: `Generate a realistic, high-quality ebook cover.
+The cover must include the following text clearly visible:
+- Title: "${input.title}"
+- Author: "${input.authorName}"
+
+The overall theme and topic is: "${input.topic}".
+The desired artistic style is: "${input.coverStyle}".
+
+The image should be a downloadable, high-quality image.
+`,
     });
 
     if (!media || !media.url) {

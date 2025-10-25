@@ -1,13 +1,11 @@
+'use client';
 
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 
-"use client";
-
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -16,76 +14,100 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
-import { Card, CardContent } from "@/components/ui/card";
-import { Wand2 } from "lucide-react";
-import { SubscriptionGate } from "@/components/boss-os/subscription-gate";
-import { useSubscription } from "@/contexts/subscription-provider";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { UnifiedProgressModal, GenerationParams } from "@/components/boss-os/unified-progress-modal";
+} from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
+import { Card, CardContent } from '@/components/ui/card';
+import { Wand2 } from 'lucide-react';
+import { SubscriptionGate } from '@/components/boss-os/subscription-gate';
+import { useSubscription } from '@/contexts/subscription-provider';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
+  UnifiedProgressModal,
+  GenerationParams,
+} from '@/components/boss-os/unified-progress-modal';
 
 const formSchema = z.object({
-  topic: z.string().min(5, "Topic must be at least 5 characters."),
+  topic: z.string().min(5, 'Topic must be at least 5 characters.'),
+  authorName: z.string().min(2, "Author's name must be at least 2 characters."),
   productType: z.enum([
-    "Ebook",
-    "Course Script",
-    "Checklist",
-    "Template",
-    "Journal",
-    "Worksheet",
-    "Printable",
+    'Ebook',
+    'Course Script',
+    'Checklist',
+    'Template',
+    'Journal',
+    'Worksheet',
+    'Printable',
   ]),
-  tone: z.enum(["Casual", "Professional", "Persuasive"]),
+  tone: z.enum(['Casual', 'Professional', 'Persuasive']),
   length: z.enum(['Short', 'Medium', 'Long']),
-  coverStyle: z.enum(["Minimal", "Photo", "Illustrated", "Bold Title", "Modern"]),
+  coverStyle: z.enum([
+    'Minimal',
+    'Photo',
+    'Illustrated',
+    'Bold Title',
+    'Modern',
+  ]),
   optionalPriceSuggestion: z.boolean(),
 });
 
 type FormData = z.infer<typeof formSchema>;
 
 const lengthValueMap: Record<FormData['length'], number> = {
-  'Short': 0,
-  'Medium': 50,
-  'Long': 100,
+  Short: 0,
+  Medium: 50,
+  Long: 100,
 };
 
-const lengthLabelMap: Record<number, string> = {
-  0: 'Short (5-10p)',
-  50: 'Medium (20-40p)',
-  100: 'Long (40-100p)',
+const lengthLabelMap: Record<number, FormData['length']> = {
+  0: 'Short',
+  50: 'Medium',
+  100: 'Long',
 };
+
+const lengthDisplayMap: Record<FormData['length'], string> = {
+    'Short': 'Short (5-10p)',
+    'Medium': 'Medium (20-40p)',
+    'Long': 'Long (40-100p)',
+}
 
 const numberToLength = (value: number): FormData['length'] => {
-    if (value < 25) return 'Short';
-    if (value < 75) return 'Medium';
-    return 'Long';
-}
+  if (value < 25) return 'Short';
+  if (value < 75) return 'Medium';
+  return 'Long';
+};
 
 export default function GeneratePage() {
   const { subscription } = useSubscription();
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generationData, setGenerationData] = useState<GenerationParams | null>(null);
+  const [generationData, setGenerationData] = useState<GenerationParams | null>(
+    null
+  );
 
-  const isSubscribed = subscription.status === "active";
+  const isSubscribed = subscription.status === 'active';
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      topic: "",
-      productType: "Ebook",
-      tone: "Professional",
+      topic: '',
+      authorName: 'Boss User',
+      productType: 'Ebook',
+      tone: 'Professional',
       length: 'Medium',
-      coverStyle: "Modern",
+      coverStyle: 'Modern',
       optionalPriceSuggestion: false,
     },
   });
@@ -95,8 +117,8 @@ export default function GeneratePage() {
     setGenerationData(values);
     setIsGenerating(true);
   }
-  
-  const currentLengthValue = lengthValueMap[form.watch('length')];
+
+  const watchedLength = form.watch('length');
 
   return (
     <>
@@ -104,15 +126,22 @@ export default function GeneratePage() {
         {!isSubscribed && <SubscriptionGate />}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Generate Product</h1>
-            <p className="text-muted-foreground">Fill in the details to create your next digital asset.</p>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Generate Product
+            </h1>
+            <p className="text-muted-foreground">
+              Fill in the details to create your next digital asset.
+            </p>
           </div>
         </div>
 
         <Card className="glass-card">
           <CardContent className="p-6">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-8"
+              >
                 <FormField
                   control={form.control}
                   name="topic"
@@ -120,10 +149,32 @@ export default function GeneratePage() {
                     <FormItem>
                       <FormLabel>Topic / Niche</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., 'Beginner's Guide to Sourdough Baking'" {...field} />
+                        <Input
+                          placeholder="e.g., 'Beginner's Guide to Sourdough Baking'"
+                          {...field}
+                        />
                       </FormControl>
                       <FormDescription>
                         This is the core subject of your digital product.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="authorName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Author Name</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="e.g., 'Jane Doe'"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        The name that will appear on the cover and title page.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -137,7 +188,10 @@ export default function GeneratePage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Product Type</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a product type" />
@@ -145,7 +199,9 @@ export default function GeneratePage() {
                           </FormControl>
                           <SelectContent>
                             {formSchema.shape.productType.options.map(type => (
-                              <SelectItem key={type} value={type}>{type}</SelectItem>
+                              <SelectItem key={type} value={type}>
+                                {type}
+                              </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -159,15 +215,20 @@ export default function GeneratePage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Tone</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a tone" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                             {formSchema.shape.tone.options.map(tone => (
-                              <SelectItem key={tone} value={tone}>{tone}</SelectItem>
+                            {formSchema.shape.tone.options.map(tone => (
+                              <SelectItem key={tone} value={tone}>
+                                {tone}
+                              </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -182,11 +243,13 @@ export default function GeneratePage() {
                   name="length"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Length: {lengthLabelMap[currentLengthValue] || 'Medium (20-40p)'}</FormLabel>
+                      <FormLabel>Length: {lengthDisplayMap[watchedLength]}</FormLabel>
                       <FormControl>
                         <Slider
-                          value={[currentLengthValue]}
-                          onValueChange={(vals) => field.onChange(numberToLength(vals[0]))}
+                          value={[lengthValueMap[watchedLength]]}
+                          onValueChange={vals =>
+                            field.onChange(numberToLength(vals[0]))
+                          }
                           step={50}
                           max={100}
                         />
@@ -201,7 +264,10 @@ export default function GeneratePage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Cover Style</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a cover style" />
@@ -209,7 +275,9 @@ export default function GeneratePage() {
                         </FormControl>
                         <SelectContent>
                           {formSchema.shape.coverStyle.options.map(style => (
-                            <SelectItem key={style} value={style}>{style}</SelectItem>
+                            <SelectItem key={style} value={style}>
+                              {style}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -240,28 +308,28 @@ export default function GeneratePage() {
                 />
 
                 <div className="flex justify-end">
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <div className="inline-block">
-                                <Button 
-                                    type="submit" 
-                                    size="lg" 
-                                    className="bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end text-white"
-                                    disabled={!isSubscribed || form.formState.isSubmitting}
-                                >
-                                    <Wand2 className="mr-2 h-5 w-5" />
-                                    Generate
-                                </Button>
-                                </div>
-                            </TooltipTrigger>
-                            {!isSubscribed && (
-                                <TooltipContent>
-                                    <p>Subscribe to a plan to enable generation.</p>
-                                </TooltipContent>
-                            )}
-                        </Tooltip>
-                    </TooltipProvider>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="inline-block">
+                          <Button
+                            type="submit"
+                            size="lg"
+                            className="bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end text-white"
+                            disabled={!isSubscribed || form.formState.isSubmitting}
+                          >
+                            <Wand2 className="mr-2 h-5 w-5" />
+                            Generate
+                          </Button>
+                        </div>
+                      </TooltipTrigger>
+                      {!isSubscribed && (
+                        <TooltipContent>
+                          <p>Subscribe to a plan to enable generation.</p>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               </form>
             </Form>
@@ -269,10 +337,10 @@ export default function GeneratePage() {
         </Card>
       </div>
       {isGenerating && generationData && (
-        <UnifiedProgressModal 
-            isOpen={isGenerating}
-            onClose={() => setIsGenerating(false)}
-            generationParams={generationData}
+        <UnifiedProgressModal
+          isOpen={isGenerating}
+          onClose={() => setIsGenerating(false)}
+          generationParams={generationData}
         />
       )}
     </>
