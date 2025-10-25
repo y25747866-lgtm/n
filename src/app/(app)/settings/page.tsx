@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -9,10 +10,33 @@ import { ThemeToggle } from "@/components/boss-os/theme-toggle";
 import { useSubscription } from "@/contexts/subscription-provider";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { saveApiKey } from "@/app/actions/settings";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 export default function SettingsPage() {
   const { subscription } = useSubscription();
+  const { toast } = useToast();
+  const [apiKey, setApiKey] = useState("");
                      
+  const handleSaveApiKey = async () => {
+    try {
+      await saveApiKey(apiKey);
+      toast({
+        title: "API Key Saved",
+        description: "Your Gemini API key has been securely saved.",
+      });
+      setApiKey("");
+    } catch (error) {
+      toast({
+        title: "Error Saving Key",
+        description: "There was a problem saving your API key. Please try again.",
+        variant: "destructive",
+      });
+      console.error(error);
+    }
+  };
+
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
       <div>
@@ -37,7 +61,35 @@ export default function SettingsPage() {
           <Button>Save Changes</Button>
         </CardContent>
       </Card>
-      
+
+      <Separator />
+
+      <Card>
+        <CardHeader>
+          <CardTitle>API Keys</CardTitle>
+          <CardDescription>Manage your third-party API keys here.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="gemini-api-key">Gemini API Key</Label>
+            <Input 
+              id="gemini-api-key" 
+              type="password" 
+              placeholder="Enter your Google AI Studio API Key" 
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+            />
+            <p className="text-sm text-muted-foreground">
+              You can get your key from {" "}
+              <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline">
+                Google AI Studio
+              </a>.
+            </p>
+          </div>
+          <Button onClick={handleSaveApiKey} disabled={!apiKey}>Save API Key</Button>
+        </CardContent>
+      </Card>
+
       <Separator />
 
       <Card>
