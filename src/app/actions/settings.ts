@@ -24,7 +24,7 @@ export async function saveApiKey(apiKey: string) {
       // File doesn't exist, we'll create it.
     }
 
-    const lines = envContent.split('\n');
+    const lines = envContent.split('\n').filter(line => line.trim() !== '');
     let keyFound = false;
     const newLines = lines.map(line => {
       if (line.startsWith('GEMINI_API_KEY=')) {
@@ -38,12 +38,13 @@ export async function saveApiKey(apiKey: string) {
       newLines.push(`GEMINI_API_KEY=${apiKey}`);
     }
 
-    await fs.writeFile(envPath, newLines.join('\n'));
-
-    // NOTE: In a real Node.js application, you would need to restart the process
-    // for the new environment variable to be loaded. Next.js dev server may
-    // pick it up automatically, but this is not guaranteed for production builds.
+    await fs.writeFile(envPath, newLines.join('\n') + '\n');
     
+    // This is the crucial part for Next.js to pick up the change.
+    // In a real production server, you'd need to restart the process.
+    // In development, this helps trigger a reload.
+    process.env.GEMINI_API_KEY = apiKey;
+
     return { success: true };
   } catch (error) {
     console.error('Failed to save API key:', error);
