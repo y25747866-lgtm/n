@@ -10,11 +10,12 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const GenerateCoverImageInputSchema = z.object({
   topic: z.string().describe('The topic of the ebook.'),
   title: z.string().describe('The title of the ebook to be placed on the cover.'),
-  authorName: z.string().describe('The author\'s name to be placed on the cover.'),
+  authorName: z.string().describe("The author's name to be placed on the cover."),
   coverStyle: z.enum([
     'Minimal',
     'Photo',
@@ -41,23 +42,25 @@ const generateCoverImageFlow = ai.defineFlow(
     outputSchema: GenerateCoverImageOutputSchema,
   },
   async input => {
-    const {media} = await ai.generate({
-      model: 'googleai/imagen-4.0-fast-generate-001',
-      prompt: `Generate a realistic, high-quality ebook cover.
-The cover must include the following text clearly visible:
-- Title: "${input.title}"
-- Author: "${input.authorName}"
-
-The overall theme and topic is: "${input.topic}".
-The desired artistic style is: "${input.coverStyle}".
-
-The image should be a downloadable, high-quality image.
-`,
-    });
-
-    if (!media || !media.url) {
-      throw new Error('Failed to generate cover image.');
+    // Select a placeholder image based on the cover style
+    let placeholder;
+    switch (input.coverStyle.toLowerCase()) {
+      case 'minimal':
+        placeholder = PlaceHolderImages.find(p => p.id === 'cover-minimal');
+        break;
+      case 'photo':
+        placeholder = PlaceHolderImages.find(p => p.id === 'cover-photo');
+        break;
+      case 'illustrated':
+        placeholder = PlaceHolderImages.find(p => p.id === 'cover-illustrated');
+        break;
+      default:
+         // Default to a random picsum image if no specific style matches
+        placeholder = { imageUrl: 'https://picsum.photos/seed/1/600/800' };
     }
-    return {imageUrl: media.url};
+
+    const imageUrl = placeholder?.imageUrl || 'https://picsum.photos/seed/fallback/600/800';
+
+    return {imageUrl};
   }
 );

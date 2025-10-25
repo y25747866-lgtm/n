@@ -17,6 +17,7 @@ type JobStatus = "pending" | "running" | "completed" | "error";
 interface ProductResult {
     content: GenerateEbookContentOutput | null;
     cover: GenerateCoverImageOutput | null;
+    params: GenerationParams | null;
 }
 
 export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { isOpen: boolean, onClose: () => void, generationParams: GenerationParams }) {
@@ -24,7 +25,7 @@ export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { is
   const [coverProgress, setCoverProgress] = useState(0);
   const [contentStatus, setContentStatus] = useState<JobStatus>("pending");
   const [coverStatus, setCoverStatus] = useState<JobStatus>("pending");
-  const [productResult, setProductResult] = useState<ProductResult>({ content: null, cover: null });
+  const [productResult, setProductResult] = useState<ProductResult>({ content: null, cover: null, params: null });
   const [error, setError] = useState<string | null>(null);
 
   const isComplete = contentStatus === "completed" && coverStatus === "completed";
@@ -32,85 +33,70 @@ export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { is
 
   const runJobs = async () => {
     setContentStatus("running");
-    setCoverStatus("pending");
+    setCoverStatus("pending"); // Will start after content generates a title
     setError(null);
-    setProductResult({ content: null, cover: null });
+    setProductResult({ content: null, cover: null, params: generationParams });
 
-    let generatedContent: GenerateEbookContentOutput | null = null;
+    // Use Promise.all to run jobs concurrently where possible, but cover depends on content title.
     try {
-      const contentResult = await generateEbookContent(generationParams);
-      generatedContent = contentResult;
-      setContentStatus("completed");
-      setProductResult(prev => ({ ...prev, content: contentResult }));
-    } catch (e: any) {
-      console.error("Content generation failed:", e);
-      setError(e.message || "Failed to generate ebook content.");
-      setContentStatus("error");
-      return;
-    }
+        const contentPromise = generateEbookContent(generationParams);
 
-    if (generatedContent) {
-      setCoverStatus("running");
-      try {
-        const coverResult = await generateCoverImage({
-          ...generationParams,
-          title: generatedContent.title,
+        // Simulate progress for content
+        const contentProgressInterval = setInterval(() => {
+            setContentProgress(prev => Math.min(prev + Math.random() * 5, 95));
+        }, 800);
+
+        const contentResult = await contentPromise;
+        clearInterval(contentProgressInterval);
+        setContentProgress(100);
+        setContentStatus("completed");
+        setProductResult(prev => ({...prev, content: contentResult}));
+
+        // Now that we have a title, start cover generation
+        setCoverStatus("running");
+        const coverProgressInterval = setInterval(() => {
+            setCoverProgress(prev => Math.min(prev + Math.random() * 10, 95));
+        }, 200);
+
+        const coverPromise = generateCoverImage({
+            ...generationParams,
+            title: contentResult.title,
         });
+
+        const coverResult = await coverPromise;
+        clearInterval(coverProgressInterval);
+        setCoverProgress(100);
         setCoverStatus("completed");
-        setProductResult(prev => ({ ...prev, cover: coverResult }));
-      } catch (e: any) {
-        console.error("Cover generation failed:", e);
-        setError(e.message || "Failed to generate cover image.");
-        setCoverStatus("error");
-      }
+        setProductResult(prev => ({...prev, cover: coverResult}));
+
+    } catch (e: any) {
+        console.error("A generation job failed:", e);
+        setError(e.message || "An unknown error occurred during generation.");
+        if (contentStatus === 'running') setContentStatus("error");
+        if (coverStatus === 'running') setCoverStatus("error");
     }
   };
 
-  useEffect(() => {
-    if (!isOpen) return;
-    runJobs();
-  }, [isOpen]);
 
   useEffect(() => {
-    let contentInterval: NodeJS.Timeout | undefined;
-    if (contentStatus === 'running') {
-      setContentProgress(0);
-      contentInterval = setInterval(() => {
-        setContentProgress(prev => Math.min(prev + Math.random() * 5, 99));
-      }, 500);
-    } else if (contentStatus === 'completed') {
-      if (contentInterval) clearInterval(contentInterval);
-      setContentProgress(100);
-    } else if (contentStatus === 'error') {
-        if (contentInterval) clearInterval(contentInterval);
+    if (isOpen) {
+      runJobs();
     }
-    return () => clearInterval(contentInterval);
-  }, [contentStatus]);
+  }, [isOpen, generationParams]);
 
-  useEffect(() => {
-    let coverInterval: NodeJS.Timeout | undefined;
-    if (coverStatus === 'running') {
-      setCoverProgress(0);
-      coverInterval = setInterval(() => {
-        setCoverProgress(prev => Math.min(prev + Math.random() * 7, 99));
-      }, 400);
-    } else if (coverStatus === 'completed') {
-      if (coverInterval) clearInterval(coverInterval);
-      setCoverProgress(100);
-    } else if (coverStatus === 'error') {
-        if (coverInterval) clearInterval(coverInterval);
-    }
-    return () => clearInterval(coverInterval);
-  }, [coverStatus]);
-
-
+  
   const handleRetry = () => {
+    // Reset state before retrying
+    setContentProgress(0);
+    setCoverProgress(0);
+    setContentStatus("pending");
+    setCoverStatus("pending");
     runJobs();
   };
   
   const getDialogContent = () => {
-    if (isComplete && productResult.content && productResult.cover) {
-      return <ProductPackagePreview productResult={productResult as {content: GenerateEbookContentOutput, cover: GenerateCoverImageOutput}} />;
+    if (isComplete && productResult.content && productResult.cover && productResult.params) {
+      return <ProductPackagePreview productResult={productResult as {content: GenerateEbookContentOutput, cover: GenerateCoverImageOutput, params: GenerationParams}} />;
     }
 
     return (
@@ -160,7 +146,7 @@ export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { is
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent className="max-w-4xl min-h-[500px] flex flex-col">
         {getDialogContent()}
       </DialogContent>

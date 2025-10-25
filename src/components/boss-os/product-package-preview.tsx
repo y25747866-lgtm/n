@@ -12,7 +12,7 @@ import {
   LayoutTemplate,
 } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import {
   Accordion,
   AccordionContent,
@@ -26,15 +26,19 @@ import { DialogHeader, DialogTitle, DialogDescription } from "../ui/dialog";
 import { Separator } from "../ui/separator";
 import { GenerateEbookContentOutput } from "@/ai/flows/generate-ebook-content";
 import { GenerateCoverImageOutput } from "@/ai/flows/generate-cover-image";
+import { regenerateCoverImage } from "@/ai/flows/regenerate-cover-image";
+import { GenerationParams } from "./unified-progress-modal";
 
 type ProductResult = {
   content: GenerateEbookContentOutput;
   cover: GenerateCoverImageOutput;
+  params: GenerationParams;
 }
 
 export function ProductPackagePreview({ productResult }: { productResult: ProductResult }) {
   const [title, setTitle] = useState(productResult.content.title);
   const [coverImageUrl, setCoverImageUrl] = useState(productResult.cover.imageUrl);
+  const [isRegenerating, startRegenerateTransition] = useTransition();
   const { toast } = useToast();
 
   const handleAction = (actionName: string, delay = 1000) => {
@@ -51,6 +55,35 @@ export function ProductPackagePreview({ productResult }: { productResult: Produc
       });
     }, delay);
   };
+
+  const handleRegenerateCover = () => {
+    startRegenerateTransition(async () => {
+      const { id } = toast({
+        title: 'Regenerating Cover...',
+        description: 'AI is creating a new cover variant.',
+      });
+      try {
+        const result = await regenerateCoverImage({
+          topic: productResult.params.topic,
+          coverStyle: productResult.params.coverStyle,
+          seed: Math.random().toString(), // Ensure a new image
+        });
+        setCoverImageUrl(result.coverImageUrl);
+        toast.update(id, {
+          title: 'Cover Regenerated!',
+          description: 'The new cover has been applied.',
+          variant: 'default',
+        });
+      } catch (error) {
+        toast.update(id, {
+          title: 'Regeneration Failed',
+          description: 'Could not generate a new cover. Please try again.',
+          variant: 'destructive',
+        });
+        console.error(error);
+      }
+    });
+  }
   
   return (
     <div className="flex flex-col h-full">
@@ -71,13 +104,13 @@ export function ProductPackagePreview({ productResult }: { productResult: Produc
                 alt={title}
                 fill
                 className="object-cover"
-                unoptimized // Since it's a data URI
+                unoptimized
               />
             )}
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <Button variant="outline" onClick={() => handleAction("Regeneration")}>
-              <RefreshCw className="mr-2 h-4 w-4" /> Regenerate
+            <Button variant="outline" onClick={handleRegenerateCover} disabled={isRegenerating}>
+              <RefreshCw className="mr-2 h-4 w-4" /> {isRegenerating ? 'Working...' : 'Regenerate'}
             </Button>
             <Button variant="outline" onClick={() => handleAction("Edit Cover")}>
               <Edit className="mr-2 h-4 w-4" /> Edit
@@ -112,7 +145,7 @@ export function ProductPackagePreview({ productResult }: { productResult: Produc
                  <AccordionItem value={`item-${index+1}`} key={index}>
                     <AccordionTrigger className="px-4 text-left">{chapter.title}</AccordionTrigger>
                     <AccordionContent className="px-4 prose prose-sm dark:prose-invert max-w-none">
-                      <div dangerouslySetInnerHTML={{ __html: chapter.content.replace(/\n/g, '<br />') }} />
+                      <div dangerouslySetInnerHTML={{ __html: chapter.content.replace(/\\n/g, '<br />') }} />
                     </AccordionContent>
                 </AccordionItem>
               ))}
