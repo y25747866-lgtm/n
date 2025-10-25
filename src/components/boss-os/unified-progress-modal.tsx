@@ -1,11 +1,12 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "../ui/button";
 import { ProductPackagePreview } from "./product-package-preview";
-import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { Alert, AlertDescription, AlertTitle as AlertTitleComponent } from "../ui/alert";
 import { Terminal } from "lucide-react";
 import { generateEbookContent, GenerateEbookContentInput, GenerateEbookContentOutput } from "@/ai/flows/generate-ebook-content";
 import { generateCoverImage, GenerateCoverImageInput, GenerateCoverImageOutput } from "@/ai/flows/generate-cover-image";
@@ -101,18 +102,18 @@ export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { is
 
     return (
         <>
-            <div className="text-center pt-8">
-                <h2 className="text-2xl font-bold">Your Product is Brewing</h2>
-                <p className="text-muted-foreground">
+            <DialogHeader className="text-center pt-8">
+                <DialogTitle className="text-2xl font-bold">Your Product is Brewing</DialogTitle>
+                <DialogDescription className="text-muted-foreground">
                     Our AI is crafting your content and cover. Feel free to monitor the progress.
-                </p>
-            </div>
+                </DialogDescription>
+            </DialogHeader>
 
             <div className="flex-1 space-y-8 py-6">
                 {hasError && (
                     <Alert variant="destructive">
                       <Terminal className="h-4 w-4" />
-                      <AlertTitle>Generation Error</AlertTitle>
+                      <AlertTitleComponent>Generation Error</AlertTitleComponent>
                       <AlertDescription>
                         {error || "An unknown error occurred."}
                       </AlertDescription>
