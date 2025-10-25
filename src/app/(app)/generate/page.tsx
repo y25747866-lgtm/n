@@ -61,6 +61,11 @@ const formSchema = z.object({
     'Bold Title',
     'Modern',
   ]),
+  imageModel: z.enum([
+    'googleai/gemini-2.5-flash-image-preview',
+    'googleai/imagen-4.0-fast-generate-001',
+    'placeholder',
+  ]),
   optionalPriceSuggestion: z.boolean(),
 });
 
@@ -108,6 +113,7 @@ export default function GeneratePage() {
       tone: 'Professional',
       length: 'Medium',
       coverStyle: 'Modern',
+      imageModel: 'googleai/gemini-2.5-flash-image-preview',
       optionalPriceSuggestion: false,
     },
   });
@@ -222,7 +228,7 @@ export default function GeneratePage() {
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a tone" />
-                            </SelectTrigger>
+                            </Trigger>
                           </FormControl>
                           <SelectContent>
                             {formSchema.shape.tone.options.map(tone => (
@@ -245,11 +251,12 @@ export default function GeneratePage() {
                     <FormItem>
                       <FormLabel>Length: {lengthDisplayMap[watchedLength]}</FormLabel>
                       <FormControl>
-                        <Slider
-                          value={[lengthValueMap[watchedLength]]}
-                          onValueChange={vals =>
-                            field.onChange(numberToLength(vals[0]))
-                          }
+                      <Slider
+                          value={[lengthValueMap[form.getValues('length')]]}
+                          onValueChange={(vals) => {
+                            const enumValue = numberToLength(vals[0]);
+                            form.setValue('length', enumValue, { shouldValidate: true });
+                          }}
                           step={50}
                           max={100}
                         />
@@ -258,33 +265,60 @@ export default function GeneratePage() {
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="coverStyle"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Cover Style</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a cover style" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {formSchema.shape.coverStyle.options.map(style => (
-                            <SelectItem key={style} value={style}>
-                              {style}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <FormField
+                    control={form.control}
+                    name="coverStyle"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Cover Style</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a cover style" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {formSchema.shape.coverStyle.options.map(style => (
+                              <SelectItem key={style} value={style}>
+                                {style}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                   <FormField
+                    control={form.control}
+                    name="imageModel"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Image Generation API</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select an API" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="googleai/gemini-2.5-flash-image-preview">Gemini 2.5 Flash (Recommended)</SelectItem>
+                            <SelectItem value="googleai/imagen-4.0-fast-generate-001">Imagen 4 (Paid Users)</SelectItem>
+                            <SelectItem value="placeholder">Placeholder (No API)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
                 <FormField
                   control={form.control}
