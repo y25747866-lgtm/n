@@ -77,10 +77,10 @@ const lengthValueMap: Record<FormData['length'], number> = {
   Long: 100,
 };
 
-const lengthLabelMap: Record<number, FormData['length']> = {
-  0: 'Short',
-  50: 'Medium',
-  100: 'Long',
+const numberToLength = (value: number): FormData['length'] => {
+  if (value < 25) return 'Short';
+  if (value < 75) return 'Medium';
+  return 'Long';
 };
 
 const lengthDisplayMap: Record<FormData['length'], string> = {
@@ -88,12 +88,6 @@ const lengthDisplayMap: Record<FormData['length'], string> = {
     'Medium': 'Medium (20-40p)',
     'Long': 'Long (40-100p)',
 }
-
-const numberToLength = (value: number): FormData['length'] => {
-  if (value < 25) return 'Short';
-  if (value < 75) return 'Medium';
-  return 'Long';
-};
 
 export default function GeneratePage() {
   const { subscription } = useSubscription();
@@ -188,7 +182,7 @@ export default function GeneratePage() {
                 />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <FormField
+                   <FormField
                     control={form.control}
                     name="productType"
                     render={({ field }) => (
@@ -228,7 +222,7 @@ export default function GeneratePage() {
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a tone" />
-                            </Trigger>
+                            </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             {formSchema.shape.tone.options.map(tone => (
@@ -249,19 +243,16 @@ export default function GeneratePage() {
                   name="length"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Length: {lengthDisplayMap[watchedLength]}</FormLabel>
-                      <FormControl>
-                      <Slider
-                          value={[lengthValueMap[form.getValues('length')]]}
-                          onValueChange={(vals) => {
-                            const enumValue = numberToLength(vals[0]);
-                            form.setValue('length', enumValue, { shouldValidate: true });
-                          }}
+                       <FormLabel>Length: {lengthDisplayMap[watchedLength]}</FormLabel>
+                       <FormControl>
+                        <Slider
+                          value={[lengthValueMap[field.value]]}
+                          onValueChange={(vals) => field.onChange(numberToLength(vals[0]))}
                           step={50}
                           max={100}
                         />
-                      </FormControl>
-                    </FormItem>
+                       </FormControl>
+                     </FormItem>
                   )}
                 />
 
