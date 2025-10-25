@@ -12,29 +12,32 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { saveApiKey } from "@/app/actions/settings";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 
 export default function SettingsPage() {
   const { subscription } = useSubscription();
   const { toast } = useToast();
   const [apiKey, setApiKey] = useState("");
+  const [isSaving, startSavingTransition] = useTransition();
                      
   const handleSaveApiKey = async () => {
-    try {
-      await saveApiKey(apiKey);
-      toast({
-        title: "API Key Saved",
-        description: "Your Gemini API key has been securely saved.",
-      });
-      setApiKey("");
-    } catch (error) {
-      toast({
-        title: "Error Saving Key",
-        description: "There was a problem saving your API key. Please try again.",
-        variant: "destructive",
-      });
-      console.error(error);
-    }
+    startSavingTransition(async () => {
+      try {
+        await saveApiKey(apiKey);
+        toast({
+          title: "API Key Saved",
+          description: "Your Gemini API key has been securely saved.",
+        });
+        setApiKey("");
+      } catch (error) {
+        toast({
+          title: "Error Saving Key",
+          description: "There was a problem saving your API key. Please try again.",
+          variant: "destructive",
+        });
+        console.error(error);
+      }
+    });
   };
 
   return (
@@ -86,7 +89,9 @@ export default function SettingsPage() {
               </a>.
             </p>
           </div>
-          <Button onClick={handleSaveApiKey} disabled={!apiKey}>Save API Key</Button>
+          <Button onClick={handleSaveApiKey} disabled={!apiKey || isSaving}>
+            {isSaving ? "Saving..." : "Save API Key"}
+          </Button>
         </CardContent>
       </Card>
 
