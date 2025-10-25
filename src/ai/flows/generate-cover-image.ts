@@ -56,7 +56,8 @@ const generateCoverImageFlow = ai.defineFlow(
         break;
       default:
          // Default to a random picsum image if no specific style matches
-        placeholder = { imageUrl: 'https://picsum.photos/seed/1/600/800' };
+        const seed = Math.floor(Math.random() * 1000);
+        placeholder = { imageUrl: `https://picsum.photos/seed/${seed}/600/800` };
     }
 
     const imageUrl = placeholder?.imageUrl || 'https://picsum.photos/seed/fallback/600/800';
