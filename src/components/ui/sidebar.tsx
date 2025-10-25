@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { Sheet, SheetContent } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
 import { useSidebar } from "@/contexts/sidebar-provider"
 
@@ -16,6 +16,9 @@ const Sidebar = React.forwardRef<
     return (
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="left" className="w-72 bg-card p-0 flex flex-col">
+          <SheetHeader>
+            <SheetTitle className="sr-only">Sidebar Navigation</SheetTitle>
+          </SheetHeader>
           {children}
         </SheetContent>
       </Sheet>
