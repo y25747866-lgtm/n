@@ -10,7 +10,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const GenerateCoverImageInputSchema = z.object({
   topic: z.string().describe('The topic of the ebook.'),
@@ -42,26 +41,28 @@ const generateCoverImageFlow = ai.defineFlow(
     outputSchema: GenerateCoverImageOutputSchema,
   },
   async input => {
-    // Select a placeholder image based on the cover style
-    let placeholder;
-    switch (input.coverStyle.toLowerCase()) {
-      case 'minimal':
-        placeholder = PlaceHolderImages.find(p => p.id === 'cover-minimal');
-        break;
-      case 'photo':
-        placeholder = PlaceHolderImages.find(p => p.id === 'cover-photo');
-        break;
-      case 'illustrated':
-        placeholder = PlaceHolderImages.find(p => p.id === 'cover-illustrated');
-        break;
-      default:
-         // Default to a random picsum image if no specific style matches
-        const seed = Math.floor(Math.random() * 1000);
-        placeholder = { imageUrl: `https://picsum.photos/seed/${seed}/600/800` };
+    const { media } = await ai.generate({
+      model: 'googleai/gemini-2.5-flash-image-preview',
+      prompt: `Generate a realistic, high-quality ebook cover.
+      The cover must include the following text elements:
+      - Title: "${input.title}"
+      - Author: "${input.authorName}"
+      
+      The overall topic is "${input.topic}".
+      The desired style is "${input.coverStyle}".
+      
+      The final output should be just the image, with the text beautifully integrated into the design.`,
+      config: {
+        responseModalities: ['IMAGE'],
+      },
+    });
+    
+    if (!media.url) {
+      throw new Error('Image generation failed to return a URL.');
     }
 
-    const imageUrl = placeholder?.imageUrl || 'https://picsum.photos/seed/fallback/600/800';
-
-    return {imageUrl};
+    return { imageUrl: media.url };
   }
 );
+
+    
