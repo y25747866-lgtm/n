@@ -65,8 +65,10 @@ export function ProductPackagePreview({ productResult }: { productResult: Produc
       try {
         const result = await regenerateCoverImage({
           topic: productResult.params.topic,
+          title: title,
+          authorName: productResult.params.authorName,
           coverStyle: productResult.params.coverStyle,
-          seed: Math.random().toString(), // Ensure a new image
+          imageModel: productResult.params.imageModel,
         });
         setCoverImageUrl(result.coverImageUrl);
         toast.update(id, {

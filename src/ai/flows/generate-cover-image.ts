@@ -10,7 +10,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const GenerateCoverImageInputSchema = z.object({
   topic: z.string().describe('The topic of the ebook.'),
@@ -26,7 +25,6 @@ const GenerateCoverImageInputSchema = z.object({
   imageModel: z.enum([
     'googleai/gemini-2.5-flash-image-preview',
     'googleai/imagen-4.0-fast-generate-001',
-    'placeholder',
   ]).describe('The image generation model to use.'),
 });
 export type GenerateCoverImageInput = z.infer<typeof GenerateCoverImageInputSchema>;
@@ -47,26 +45,6 @@ const generateCoverImageFlow = ai.defineFlow(
     outputSchema: GenerateCoverImageOutputSchema,
   },
   async input => {
-    if (input.imageModel === 'placeholder') {
-      let placeholder;
-      switch (input.coverStyle.toLowerCase()) {
-        case 'minimal':
-          placeholder = PlaceHolderImages.find(p => p.id === 'cover-minimal');
-          break;
-        case 'photo':
-          placeholder = PlaceHolderImages.find(p => p.id === 'cover-photo');
-          break;
-        case 'illustrated':
-          placeholder = PlaceHolderImages.find(p => p.id === 'cover-illustrated');
-          break;
-        default:
-          const seed = Math.floor(Math.random() * 1000);
-          placeholder = { imageUrl: `https://picsum.photos/seed/${seed}/600/800` };
-      }
-      const imageUrl = placeholder?.imageUrl || `https://picsum.photos/seed/fallback/600/800`;
-      return { imageUrl };
-    }
-
     const { media } = await ai.generate({
       model: input.imageModel,
       prompt: `Generate a realistic, high-quality ebook cover.

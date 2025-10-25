@@ -64,7 +64,6 @@ const formSchema = z.object({
   imageModel: z.enum([
     'googleai/gemini-2.5-flash-image-preview',
     'googleai/imagen-4.0-fast-generate-001',
-    'placeholder',
   ]),
   optionalPriceSuggestion: z.boolean(),
 });
@@ -291,7 +290,7 @@ export default function GeneratePage() {
                       <FormItem>
                         <FormLabel>Image Generation API</FormLabel>
                         <Select
-                          onValueChange={field.onChange}
+                          onValuecha nge={field.onChange}
                           defaultValue={field.value}
                         >
                           <FormControl>
@@ -300,9 +299,8 @@ export default function GeneratePage() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="googleai/gemini-2.5-flash-image-preview">Gemini 2.5 Flash (Recommended)</SelectItem>
-                            <SelectItem value="googleai/imagen-4.0-fast-generate-001">Imagen 4 (Paid Users)</SelectItem>
-                            <SelectItem value="placeholder">Placeholder (No API)</SelectItem>
+                            <SelectItem value="googleai/gemini-2.5-flash-image-preview">Gemini 2.5 Flash (Fast, Good Quality)</SelectItem>
+                            <SelectItem value="googleai/imagen-4.0-fast-generate-001">Imagen 4 (Highest Quality, Billed Users)</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />

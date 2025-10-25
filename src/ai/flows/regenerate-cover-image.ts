@@ -9,12 +9,16 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const RegenerateCoverImageInputSchema = z.object({
   topic: z.string().describe('The topic or niche of the product.'),
+  title: z.string().describe('The title of the ebook.'),
+  authorName: z.string().describe("The author's name."),
   coverStyle: z.string().describe('The desired style of the cover image (e.g., Minimal, Photo, Illustrated).'),
-  seed: z.string().optional().describe('An optional seed value to use for the image generation. If not specified, a new seed will be generated.'),
+  imageModel: z.enum([
+    'googleai/gemini-2.5-flash-image-preview',
+    'googleai/imagen-4.0-fast-generate-001',
+  ]).describe('The image generation model to use.'),
 });
 export type RegenerateCoverImageInput = z.infer<typeof RegenerateCoverImageInputSchema>;
 
@@ -34,28 +38,28 @@ const regenerateCoverImageFlow = ai.defineFlow(
     outputSchema: RegenerateCoverImageOutputSchema,
   },
   async (input) => {
-    let placeholder;
-    switch (input.coverStyle.toLowerCase()) {
-      case 'minimal':
-        placeholder = PlaceHolderImages.find(p => p.id === 'cover-minimal');
-        break;
-      case 'photo':
-        placeholder = PlaceHolderImages.find(p => p.id === 'cover-photo');
-        break;
-      case 'illustrated':
-        placeholder = PlaceHolderImages.find(p => p.id === 'cover-illustrated');
-        break;
-      default:
-        // Use a random seed for picsum to get a new image
-        const seed = input.seed || Math.floor(Math.random() * 1000);
-        placeholder = { imageUrl: `https://picsum.photos/seed/${seed}/600/800` };
+     const { media } = await ai.generate({
+      model: input.imageModel,
+      prompt: `Regenerate a new, different version of a realistic, high-quality ebook cover.
+      The cover must include the following text elements:
+      - Title: "${input.title}"
+      - Author: "${input.authorName}"
+      
+      The overall topic is "${input.topic}".
+      The desired style is "${input.coverStyle}".
+      
+      Make sure this new version is visually distinct from any previous versions.
+
+      The final output should be just the image, with the text beautifully integrated into the design.`,
+      config: {
+        responseModalities: ['IMAGE'],
+      },
+    });
+    
+    if (!media.url) {
+      throw new Error('Image regeneration failed to return a URL.');
     }
 
-    const imageUrl = placeholder?.imageUrl || `https://picsum.photos/seed/fallback-regenerate/600/800`;
-
-    // To ensure variation even for matching styles, we can append a random query param
-    const finalUrl = `${imageUrl}${imageUrl.includes('?') ? '&' : '?'}v=${Math.random()}`;
-
-    return { coverImageUrl: finalUrl };
+    return { coverImageUrl: media.url };
   }
 );
