@@ -61,11 +61,11 @@ const formSchema = z.object({
     'Bold Title',
     'Modern',
   ]),
+  optionalPriceSuggestion: z.boolean(),
   imageModel: z.enum([
     'googleai/gemini-2.5-flash-image-preview',
     'googleai/imagen-4.0-fast-generate-001',
   ]),
-  optionalPriceSuggestion: z.boolean(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -106,8 +106,8 @@ export default function GeneratePage() {
       tone: 'Professional',
       length: 'Medium',
       coverStyle: 'Modern',
-      imageModel: 'googleai/gemini-2.5-flash-image-preview',
       optionalPriceSuggestion: false,
+      imageModel: 'googleai/imagen-4.0-fast-generate-001',
     },
   });
 
@@ -197,7 +197,7 @@ export default function GeneratePage() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {formSchema.shape.productType.options.map(type => (
+                            {(form.schema as any)._def.shape.productType.options.map((type: string) => (
                               <SelectItem key={type} value={type}>
                                 {type}
                               </SelectItem>
@@ -224,7 +224,7 @@ export default function GeneratePage() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {formSchema.shape.tone.options.map(tone => (
+                            {(form.schema as any)._def.shape.tone.options.map((tone: string) => (
                               <SelectItem key={tone} value={tone}>
                                 {tone}
                               </SelectItem>
@@ -255,7 +255,7 @@ export default function GeneratePage() {
                   )}
                 />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-8">
                   <FormField
                     control={form.control}
                     name="coverStyle"
@@ -272,35 +272,11 @@ export default function GeneratePage() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {formSchema.shape.coverStyle.options.map(style => (
+                            {(form.schema as any)._def.shape.coverStyle.options.map((style: string) => (
                               <SelectItem key={style} value={style}>
                                 {style}
                               </SelectItem>
                             ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                   <FormField
-                    control={form.control}
-                    name="imageModel"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Image Generation API</FormLabel>
-                        <Select
-                          onValuecha nge={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select an API" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="googleai/gemini-2.5-flash-image-preview">Gemini 2.5 Flash (Fast, Good Quality)</SelectItem>
-                            <SelectItem value="googleai/imagen-4.0-fast-generate-001">Imagen 4 (Highest Quality, Billed Users)</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
