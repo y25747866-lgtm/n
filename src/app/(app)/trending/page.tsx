@@ -28,33 +28,56 @@ export default function TrendingIdeasPage() {
   };
 
   const fetchIdeas = async (topic: string) => {
-    try {
-      const result = await suggestTrendingIdeas({ topic });
-      setTrendingIdeas(result.ideas);
-    } catch (error) {
-      console.error("Failed to fetch trending ideas:", error);
-      toast({
-        title: "Search Failed",
-        description: "Could not fetch new trending ideas. Please try again.",
-        variant: "destructive",
-      })
-    }
+    startSearchTransition(async () => {
+      // If it's not the initial load, we are searching.
+      if (!isLoadingInitial) {
+        setIsLoadingInitial(true); // Re-use loading state for subsequent searches
+      }
+      try {
+        const result = await suggestTrendingIdeas({ topic });
+        setTrendingIdeas(result.ideas);
+      } catch (error) {
+        console.error("Failed to fetch trending ideas:", error);
+        toast({
+          title: "Search Failed",
+          description: "Could not fetch new trending ideas. Please try again.",
+          variant: "destructive",
+        })
+      } finally {
+        setIsLoadingInitial(false);
+      }
+    });
   }
   
   useEffect(() => {
     const getInitialIdeas = async () => {
       setIsLoadingInitial(true);
-      await fetchIdeas("trending digital products");
+      try {
+        const result = await suggestTrendingIdeas({ topic: "trending digital products" });
+        setTrendingIdeas(result.ideas);
+      } catch (error) {
+         console.error("Failed to fetch initial ideas:", error);
+         toast({
+            title: "Error",
+            description: "Could not load initial trending ideas.",
+            variant: "destructive",
+         });
+      }
       setIsLoadingInitial(false);
     }
     getInitialIdeas();
-  }, []);
+  }, [toast]);
   
   const handleSearch = () => {
     if (!searchTerm.trim()) {
       return;
     }
-    startSearchTransition(() => fetchIdeas(searchTerm));
+    fetchIdeas(searchTerm);
+  };
+
+  const handleFilterClick = (filter: string) => {
+    setSearchTerm(filter);
+    fetchIdeas(filter);
   };
   
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -85,13 +108,19 @@ export default function TrendingIdeasPage() {
             onClick={handleSearch}
             disabled={isSearching}
           >
-            {isSearching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
+            {isSearching && !isLoadingInitial ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
             Search
           </Button>
         </div>
         <div className="flex flex-wrap gap-2">
           {filters.map(filter => (
-            <Button key={filter} variant="outline" className="rounded-full">
+            <Button 
+              key={filter} 
+              variant="outline" 
+              className="rounded-full"
+              onClick={() => handleFilterClick(filter)}
+              disabled={isSearching}
+            >
               {filter}
             </Button>
           ))}
