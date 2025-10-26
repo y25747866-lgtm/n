@@ -1,7 +1,8 @@
+
 'use client';
 
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
@@ -69,6 +70,24 @@ const formSchema = z.object({
 });
 
 type FormData = z.infer<typeof formSchema>;
+
+const productTypes: FormData['productType'][] = [
+    'Ebook',
+    'Course Script',
+    'Checklist',
+    'Template',
+    'Journal',
+    'Worksheet',
+    'Printable',
+];
+const tones: FormData['tone'][] = ['Casual', 'Professional', 'Persuasive'];
+const coverStyles: FormData['coverStyle'][] = [
+    'Minimal',
+    'Photo',
+    'Illustrated',
+    'Bold Title',
+    'Modern',
+];
 
 const lengthValueMap: Record<FormData['length'], number> = {
   Short: 0,
@@ -181,7 +200,7 @@ export default function GeneratePage() {
                 />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                   <FormField
+                  <FormField
                     control={form.control}
                     name="productType"
                     render={({ field }) => (
@@ -197,7 +216,7 @@ export default function GeneratePage() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {(form.schema as any)._def.shape.productType.options.map((type: string) => (
+                            {productTypes.map((type: string) => (
                               <SelectItem key={type} value={type}>
                                 {type}
                               </SelectItem>
@@ -224,7 +243,7 @@ export default function GeneratePage() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {(form.schema as any)._def.shape.tone.options.map((tone: string) => (
+                            {tones.map((tone: string) => (
                               <SelectItem key={tone} value={tone}>
                                 {tone}
                               </SelectItem>
@@ -272,7 +291,7 @@ export default function GeneratePage() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {(form.schema as any)._def.shape.coverStyle.options.map((style: string) => (
+                            {coverStyles.map((style: string) => (
                               <SelectItem key={style} value={style}>
                                 {style}
                               </SelectItem>
@@ -344,4 +363,5 @@ export default function GeneratePage() {
       )}
     </>
   );
-}
+
+    
