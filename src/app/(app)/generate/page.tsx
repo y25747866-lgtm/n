@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm } from 'react';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
@@ -72,21 +72,21 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 const productTypes: FormData['productType'][] = [
-    'Ebook',
-    'Course Script',
-    'Checklist',
-    'Template',
-    'Journal',
-    'Worksheet',
-    'Printable',
+  'Ebook',
+  'Course Script',
+  'Checklist',
+  'Template',
+  'Journal',
+  'Worksheet',
+  'Printable',
 ];
 const tones: FormData['tone'][] = ['Casual', 'Professional', 'Persuasive'];
 const coverStyles: FormData['coverStyle'][] = [
-    'Minimal',
-    'Photo',
-    'Illustrated',
-    'Bold Title',
-    'Modern',
+  'Minimal',
+  'Photo',
+  'Illustrated',
+  'Bold Title',
+  'Modern',
 ];
 
 const lengthValueMap: Record<FormData['length'], number> = {
@@ -102,10 +102,10 @@ const numberToLength = (value: number): FormData['length'] => {
 };
 
 const lengthDisplayMap: Record<FormData['length'], string> = {
-    'Short': 'Short (5-10p)',
-    'Medium': 'Medium (20-40p)',
-    'Long': 'Long (40-100p)',
-}
+  Short: 'Short (5-10p)',
+  Medium: 'Medium (20-40p)',
+  Long: 'Long (40-100p)',
+};
 
 export default function GeneratePage() {
   const { subscription } = useSubscription();
@@ -179,17 +179,14 @@ export default function GeneratePage() {
                     </FormItem>
                   )}
                 />
-                 <FormField
+                <FormField
                   control={form.control}
                   name="authorName"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Author Name</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="e.g., 'Jane Doe'"
-                          {...field}
-                        />
+                        <Input placeholder="e.g., 'Jane Doe'" {...field} />
                       </FormControl>
                       <FormDescription>
                         The name that will appear on the cover and title page.
@@ -261,16 +258,20 @@ export default function GeneratePage() {
                   name="length"
                   render={({ field }) => (
                     <FormItem>
-                       <FormLabel>Length: {lengthDisplayMap[watchedLength]}</FormLabel>
-                       <FormControl>
+                      <FormLabel>
+                        Length: {lengthDisplayMap[watchedLength]}
+                      </FormLabel>
+                      <FormControl>
                         <Slider
                           value={[lengthValueMap[field.value]]}
-                          onValueChange={(vals) => field.onChange(numberToLength(vals[0]))}
+                          onValueChange={(vals) =>
+                            field.onChange(numberToLength(vals[0]))
+                          }
                           step={50}
                           max={100}
                         />
-                       </FormControl>
-                     </FormItem>
+                      </FormControl>
+                    </FormItem>
                   )}
                 />
 
@@ -334,7 +335,9 @@ export default function GeneratePage() {
                             type="submit"
                             size="lg"
                             className="bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end text-white"
-                            disabled={!isSubscribed || form.formState.isSubmitting}
+                            disabled={
+                              !isSubscribed || form.formState.isSubmitting
+                            }
                           >
                             <Wand2 className="mr-2 h-5 w-5" />
                             Generate
@@ -363,5 +366,4 @@ export default function GeneratePage() {
       )}
     </>
   );
-
-    
+}
