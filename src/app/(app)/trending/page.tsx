@@ -7,42 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Search, ArrowRight, BarChart, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { suggestTrendingIdeas, SuggestTrendingIdeasOutput } from "@/ai/flows/suggest-trending-ideas";
 import { useToast } from "@/hooks/use-toast";
-
-const initialTrendingIdeas: SuggestTrendingIdeasOutput['ideas'] = [
-  {
-    title: "AI-Powered Productivity Planner",
-    rationale: "The intersection of AI and personal productivity is a booming market with high demand.",
-    trendScore: 95,
-  },
-  {
-    title: "Beginner's Guide to DeFi",
-    rationale: "As cryptocurrency goes mainstream, educational content for beginners is highly sought after.",
-    trendScore: 92,
-  },
-  {
-    title: "Sustainable Living Checklist",
-    rationale: "Eco-consciousness is a major global trend, driving interest in practical guides for sustainable habits.",
-    trendScore: 88,
-  },
-  {
-    title: "The 30-Day Mindfulness Journal",
-    rationale: "Mental wellness and mindfulness continue to be a top priority for a broad audience.",
-    trendScore: 85,
-  },
-  {
-    title: "Canva Templates for Solopreneurs",
-    rationale: "The creator economy is expanding, and time-saving design assets are always in demand.",
-    trendScore: 82,
-  },
-  {
-    title: "Meal Prep Course for Busy Professionals",
-    rationale: "Health, wellness, and convenience are powerful motivators for this target demographic.",
-    trendScore: 78,
-  },
-];
+import { Skeleton } from "@/components/ui/skeleton";
 
 const filters = ["Amazon PLR", "Etsy Digital", "Udemy", "Google Trends", "Future Prediction"];
 
@@ -50,32 +18,43 @@ export default function TrendingIdeasPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSearching, startSearchTransition] = useTransition();
+  const [isLoadingInitial, setIsLoadingInitial] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [trendingIdeas, setTrendingIdeas] = useState(initialTrendingIdeas);
+  const [trendingIdeas, setTrendingIdeas] = useState<SuggestTrendingIdeasOutput['ideas']>([]);
 
 
   const handleUseTrend = (topic: string) => {
     router.push(`/generate?topic=${encodeURIComponent(topic)}`);
   };
+
+  const fetchIdeas = async (topic: string) => {
+    try {
+      const result = await suggestTrendingIdeas({ topic });
+      setTrendingIdeas(result.ideas);
+    } catch (error) {
+      console.error("Failed to fetch trending ideas:", error);
+      toast({
+        title: "Search Failed",
+        description: "Could not fetch new trending ideas. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+  
+  useEffect(() => {
+    const getInitialIdeas = async () => {
+      setIsLoadingInitial(true);
+      await fetchIdeas("trending digital products");
+      setIsLoadingInitial(false);
+    }
+    getInitialIdeas();
+  }, []);
   
   const handleSearch = () => {
     if (!searchTerm.trim()) {
-      setTrendingIdeas(initialTrendingIdeas);
       return;
     }
-    startSearchTransition(async () => {
-      try {
-        const result = await suggestTrendingIdeas({ topic: searchTerm });
-        setTrendingIdeas(result.ideas);
-      } catch (error) {
-        console.error("Failed to fetch trending ideas:", error);
-        toast({
-          title: "Search Failed",
-          description: "Could not fetch new trending ideas. Please try again.",
-          variant: "destructive",
-        })
-      }
-    });
+    startSearchTransition(() => fetchIdeas(searchTerm));
   };
   
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -120,27 +99,44 @@ export default function TrendingIdeasPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {trendingIdeas.map((idea, index) => (
-          <Card key={index} className="glass-card flex flex-col">
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                  <CardTitle>{idea.title}</CardTitle>
-                  <Badge variant="secondary" className="flex items-center gap-1">
-                    <BarChart className="h-3 w-3" />
-                    {idea.trendScore}
-                  </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="flex-1">
-              <p className="text-muted-foreground text-sm">{idea.rationale}</p>
-            </CardContent>
-            <CardFooter>
-              <Button className="w-full" onClick={() => handleUseTrend(idea.title)}>
-                Use This Trend <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
+        {isLoadingInitial ? (
+          Array.from({ length: 6 }).map((_, index) => (
+            <Card key={index} className="glass-card flex flex-col">
+              <CardHeader>
+                <Skeleton className="h-6 w-3/4" />
+              </CardHeader>
+              <CardContent className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+              </CardContent>
+              <CardFooter>
+                <Skeleton className="h-10 w-full" />
+              </CardFooter>
+            </Card>
+          ))
+        ) : (
+          trendingIdeas.map((idea, index) => (
+            <Card key={index} className="glass-card flex flex-col">
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                    <CardTitle>{idea.title}</CardTitle>
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      <BarChart className="h-3 w-3" />
+                      {idea.trendScore}
+                    </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="flex-1">
+                <p className="text-muted-foreground text-sm">{idea.rationale}</p>
+              </CardContent>
+              <CardFooter>
+                <Button className="w-full" onClick={() => handleUseTrend(idea.title)}>
+                  Use This Trend <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </CardFooter>
+            </Card>
+          ))
+        )}
       </div>
     </div>
   );
