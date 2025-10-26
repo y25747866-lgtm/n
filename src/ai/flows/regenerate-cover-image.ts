@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Regenerates a cover image for a product.
@@ -14,7 +15,12 @@ const RegenerateCoverImageInputSchema = z.object({
   topic: z.string().describe('The topic or niche of the product.'),
   title: z.string().describe('The title of the ebook.'),
   authorName: z.string().describe("The author's name."),
-  coverStyle: z.string().describe('The desired style of the cover image (e.g., Minimal, Photo, Illustrated).'),
+  coverStyle: z.enum([
+    'Realistic',
+    '3D',
+    'Minimal',
+    'Premium Gradient',
+  ]).describe('The desired style of the cover image (e.g., Minimal, Photo, Illustrated).'),
   imageModel: z.string().describe('The image generation model to use.'),
 });
 export type RegenerateCoverImageInput = z.infer<typeof RegenerateCoverImageInputSchema>;

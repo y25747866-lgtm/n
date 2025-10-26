@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -16,12 +17,8 @@ const GenerateEbookContentInputSchema = z.object({
   authorName: z.string().describe("The author's name for the title page."),
   productType: z.enum([
     'Ebook',
-    'Course Script',
-    'Checklist',
+    'Course',
     'Template',
-    'Journal',
-    'Worksheet',
-    'Printable',
   ]).describe('The type of product to generate.'),
   tone: z.enum(['Casual', 'Professional', 'Persuasive']).describe('The tone of the ebook.'),
   length: z

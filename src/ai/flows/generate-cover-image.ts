@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -16,11 +17,10 @@ const GenerateCoverImageInputSchema = z.object({
   title: z.string().describe('The title of the ebook to be placed on the cover.'),
   authorName: z.string().describe("The author's name to be placed on the cover."),
   coverStyle: z.enum([
+    'Realistic',
+    '3D',
     'Minimal',
-    'Photo',
-    'Illustrated',
-    'Bold Title',
-    'Modern',
+    'Premium Gradient',
   ]).describe('The desired style for the cover image.'),
   imageModel: z.string().describe('The image generation model to use.'),
 });

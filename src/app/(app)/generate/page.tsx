@@ -46,21 +46,16 @@ const formSchema = z.object({
   authorName: z.string().min(2, "Author's name must be at least 2 characters."),
   productType: z.enum([
     'Ebook',
-    'Course Script',
-    'Checklist',
+    'Course',
     'Template',
-    'Journal',
-    'Worksheet',
-    'Printable',
   ]),
   tone: z.enum(['Casual', 'Professional', 'Persuasive']),
   length: z.enum(['Short', 'Medium', 'Long']),
   coverStyle: z.enum([
+    'Realistic',
+    '3D',
     'Minimal',
-    'Photo',
-    'Illustrated',
-    'Bold Title',
-    'Modern',
+    'Premium Gradient',
   ]),
   optionalPriceSuggestion: z.boolean(),
 });
@@ -69,20 +64,15 @@ type FormData = z.infer<typeof formSchema>;
 
 const productTypes: FormData['productType'][] = [
   'Ebook',
-  'Course Script',
-  'Checklist',
+  'Course',
   'Template',
-  'Journal',
-  'Worksheet',
-  'Printable',
 ];
 const tones: FormData['tone'][] = ['Casual', 'Professional', 'Persuasive'];
 const coverStyles: FormData['coverStyle'][] = [
+  'Realistic',
+  '3D',
   'Minimal',
-  'Photo',
-  'Illustrated',
-  'Bold Title',
-  'Modern',
+  'Premium Gradient',
 ];
 
 const lengthValueMap: Record<FormData['length'], number> = {
@@ -120,7 +110,7 @@ export default function GeneratePage() {
       productType: 'Ebook',
       tone: 'Professional',
       length: 'Medium',
-      coverStyle: 'Modern',
+      coverStyle: 'Realistic',
       optionalPriceSuggestion: false,
     },
   });
