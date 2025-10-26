@@ -1,13 +1,17 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search, ArrowRight, BarChart } from "lucide-react";
+import { Search, ArrowRight, BarChart, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { useState, useTransition } from "react";
+import { suggestTrendingIdeas, SuggestTrendingIdeasOutput } from "@/ai/flows/suggest-trending-ideas";
+import { useToast } from "@/hooks/use-toast";
 
-const trendingIdeas = [
+const initialTrendingIdeas: SuggestTrendingIdeasOutput['ideas'] = [
   {
     title: "AI-Powered Productivity Planner",
     rationale: "The intersection of AI and personal productivity is a booming market with high demand.",
@@ -44,9 +48,40 @@ const filters = ["Amazon PLR", "Etsy Digital", "Udemy", "Google Trends", "Future
 
 export default function TrendingIdeasPage() {
   const router = useRouter();
+  const { toast } = useToast();
+  const [isSearching, startSearchTransition] = useTransition();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [trendingIdeas, setTrendingIdeas] = useState(initialTrendingIdeas);
+
 
   const handleUseTrend = (topic: string) => {
     router.push(`/generate?topic=${encodeURIComponent(topic)}`);
+  };
+  
+  const handleSearch = () => {
+    if (!searchTerm.trim()) {
+      setTrendingIdeas(initialTrendingIdeas);
+      return;
+    }
+    startSearchTransition(async () => {
+      try {
+        const result = await suggestTrendingIdeas({ topic: searchTerm });
+        setTrendingIdeas(result.ideas);
+      } catch (error) {
+        console.error("Failed to fetch trending ideas:", error);
+        toast({
+          title: "Search Failed",
+          description: "Could not fetch new trending ideas. Please try again.",
+          variant: "destructive",
+        })
+      }
+    });
+  };
+  
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      handleSearch();
+    }
   };
 
   return (
@@ -58,8 +93,22 @@ export default function TrendingIdeasPage() {
 
       <div className="flex flex-col space-y-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input placeholder="Search trends..." className="pl-10 h-12" />
+          <Input 
+            placeholder="Search for a topic to find trends..." 
+            className="h-12 pr-28" 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={handleKeyDown}
+            disabled={isSearching}
+          />
+          <Button 
+            className="absolute right-2 top-1/2 -translate-y-1/2 h-9"
+            onClick={handleSearch}
+            disabled={isSearching}
+          >
+            {isSearching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
+            Search
+          </Button>
         </div>
         <div className="flex flex-wrap gap-2">
           {filters.map(filter => (
