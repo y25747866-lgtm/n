@@ -63,10 +63,6 @@ const formSchema = z.object({
     'Modern',
   ]),
   optionalPriceSuggestion: z.boolean(),
-  imageModel: z.enum([
-    'googleai/gemini-2.5-flash-image-preview',
-    'googleai/imagen-4.0-fast-generate-001',
-  ]),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -126,13 +122,15 @@ export default function GeneratePage() {
       length: 'Medium',
       coverStyle: 'Modern',
       optionalPriceSuggestion: false,
-      imageModel: 'googleai/imagen-4.0-fast-generate-001',
     },
   });
 
   function onSubmit(values: FormData) {
     if (!isSubscribed) return;
-    setGenerationData(values);
+    setGenerationData({
+        ...values,
+        imageModel: 'googleai/imagen-4.0-fast-generate-001'
+    });
     setIsGenerating(true);
   }
 
@@ -213,7 +211,7 @@ export default function GeneratePage() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {productTypes.map((type: string) => (
+                            {productTypes.map((type) => (
                               <SelectItem key={type} value={type}>
                                 {type}
                               </SelectItem>
@@ -240,7 +238,7 @@ export default function GeneratePage() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {tones.map((tone: string) => (
+                            {tones.map((tone) => (
                               <SelectItem key={tone} value={tone}>
                                 {tone}
                               </SelectItem>
@@ -292,7 +290,7 @@ export default function GeneratePage() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {coverStyles.map((style: string) => (
+                            {coverStyles.map((style) => (
                               <SelectItem key={style} value={style}>
                                 {style}
                               </SelectItem>

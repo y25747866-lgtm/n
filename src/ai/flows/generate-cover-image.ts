@@ -22,10 +22,7 @@ const GenerateCoverImageInputSchema = z.object({
     'Bold Title',
     'Modern',
   ]).describe('The desired style for the cover image.'),
-  imageModel: z.enum([
-    'googleai/gemini-2.5-flash-image-preview',
-    'googleai/imagen-4.0-fast-generate-001',
-  ]).describe('The image generation model to use.'),
+  imageModel: z.string().describe('The image generation model to use.'),
 });
 export type GenerateCoverImageInput = z.infer<typeof GenerateCoverImageInputSchema>;
 

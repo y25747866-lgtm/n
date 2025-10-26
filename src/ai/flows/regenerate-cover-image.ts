@@ -15,10 +15,7 @@ const RegenerateCoverImageInputSchema = z.object({
   title: z.string().describe('The title of the ebook.'),
   authorName: z.string().describe("The author's name."),
   coverStyle: z.string().describe('The desired style of the cover image (e.g., Minimal, Photo, Illustrated).'),
-  imageModel: z.enum([
-    'googleai/gemini-2.5-flash-image-preview',
-    'googleai/imagen-4.0-fast-generate-001',
-  ]).describe('The image generation model to use.'),
+  imageModel: z.string().describe('The image generation model to use.'),
 });
 export type RegenerateCoverImageInput = z.infer<typeof RegenerateCoverImageInputSchema>;
 
