@@ -3,10 +3,11 @@ import { cn } from '@/lib/utils';
 import { useSidebar } from '@/contexts/sidebar-provider';
 
 export function Logo({ className, ...props }: { className?: string; [key: string]: any }) {
-  const { isOpen, isMobile } = useSidebar();
+  const { isOpen, isDesktop } = useSidebar();
   
   // On mobile, the logo text should always be visible inside the sidebar.
-  const showText = isMobile || isOpen;
+  // On desktop, it's only visible when the sidebar is open.
+  const showText = !isDesktop || isOpen;
   
   return (
     <div 
@@ -73,7 +74,7 @@ export function Logo({ className, ...props }: { className?: string; [key: string
         <circle cx="312" cy="360" r="16" fill="url(#grad)"/>
         <circle cx="440" cy="400" r="16" fill="url(#grad)"/>
       </svg>
-      {showText && <span className="font-headline bg-clip-text text-transparent bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end">Boss OS</span>}
+      {showText && <span className="font-headline bg-clip-text text-transparent bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end"></span>}
     </div>
   );
 }
