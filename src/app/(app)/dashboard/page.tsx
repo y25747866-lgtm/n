@@ -56,11 +56,7 @@ export default function DashboardPage() {
   const router = useRouter();
 
   const handlePrimaryAction = () => {
-    if (subscription.status === 'unsubscribed') {
-      router.push('/subscription');
-    } else {
-      router.push('/generate');
-    }
+    router.push('/downloads');
   };
 
   return (
@@ -79,7 +75,7 @@ export default function DashboardPage() {
             onClick={handlePrimaryAction}
             disabled={isLoading}
           >
-            {subscription.status === 'unsubscribed' ? 'Get Started' : 'Create New Product'}
+            Get Started
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
         </div>
