@@ -2,7 +2,6 @@
 "use client"
 
 import * as React from "react"
-import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
 import { useSidebar } from "@/contexts/sidebar-provider"
 
@@ -10,17 +9,7 @@ const Sidebar = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, children, ...props }, ref) => {
-  const { isMobile, isOpen, setIsOpen } = useSidebar()
-
-  if (isMobile) {
-    return (
-      <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetContent side="left" className="w-72 bg-card p-0 flex flex-col">
-          {children}
-        </SheetContent>
-      </Sheet>
-    )
-  }
+  const { isOpen } = useSidebar()
 
   return (
     <aside
@@ -43,19 +32,16 @@ const SidebarHeader = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => {
-  const { isOpen, isMobile } = useSidebar();
+  const { isOpen } = useSidebar();
   
-  // On mobile, the header with the logo should always be visible and fully expanded.
-  const headerClasses = isMobile ? 'flex h-14 items-center border-b px-4' 
-                                : cn(
-                                    "flex h-14 items-center border-b px-4 transition-all duration-300 ease-in-out",
-                                    !isOpen && "px-0 justify-center"
-                                  );
-
   return (
     <div
       ref={ref}
-      className={cn(headerClasses, className)}
+      className={cn(
+        "flex h-14 items-center border-b px-4 transition-all duration-300 ease-in-out",
+        !isOpen && "px-0 justify-center",
+        className
+      )}
       {...props}
     />
   )

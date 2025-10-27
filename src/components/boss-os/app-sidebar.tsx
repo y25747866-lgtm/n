@@ -33,6 +33,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Separator } from '../ui/separator';
 import { Logo } from './logo';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 
 const menuItems = [
   { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
@@ -167,6 +168,18 @@ function SidebarInnerContent() {
 }
 
 export default function AppSidebar() {
+  const { isMobile, isOpen, setIsOpen } = useSidebar();
+
+  if (isMobile) {
+    return (
+      <Sheet open={isOpen} onOpenChange={setIsOpen}>
+        <SheetContent side="left" className="w-72 bg-card p-0 flex flex-col">
+          <SidebarInnerContent />
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
   return (
     <Sidebar>
       <SidebarInnerContent />

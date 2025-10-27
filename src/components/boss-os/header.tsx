@@ -18,13 +18,7 @@ export default function Header() {
     )}>
         <div className="flex items-center gap-2">
             {/* On mobile, show the logo in the header ONLY when the sidebar is closed */}
-            {isMobile && 
-              <div className={cn(isOpen && "hidden")}>
-                  <Logo />
-              </div>
-            }
-            {/* On desktop, always show the logo */}
-            {!isMobile && <Logo />}
+            {isMobile && !isOpen && <Logo />}
             
             <Button variant="ghost" size="icon" onClick={toggleSidebar}>
                 {isOpen ? <PanelLeft className="h-5 w-5" /> : <PanelRight className="h-5 w-5" />}
