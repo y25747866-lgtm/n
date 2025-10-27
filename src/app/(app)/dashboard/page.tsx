@@ -79,7 +79,7 @@ export default function DashboardPage() {
             onClick={handlePrimaryAction}
             disabled={isLoading}
           >
-            {subscription.status === 'unsubscribed' ? 'Subscribe to Create' : 'Create New Product'}
+            {subscription.status === 'unsubscribed' ? 'Get Started' : 'Create New Product'}
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
         </div>
