@@ -47,7 +47,7 @@ export default function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader>
-        <Logo useIconOnly={!isOpen} />
+        <Logo />
       </SidebarHeader>
       <SidebarContent>
         <TooltipProvider delayDuration={0}>

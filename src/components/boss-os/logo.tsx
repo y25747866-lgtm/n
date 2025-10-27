@@ -2,8 +2,8 @@
 import { cn } from '@/lib/utils';
 import { useSidebar } from '@/contexts/sidebar-provider';
 
-export function Logo({ className, useIconOnly = false, ...props }: { className?: string; useIconOnly?: boolean; [key: string]: any }) {
-  const { setIsOpen } = useSidebar();
+export function Logo({ className, ...props }: { className?: string; [key: string]: any }) {
+  const { isOpen, setIsOpen } = useSidebar();
   
   return (
     <div 
@@ -71,7 +71,7 @@ export function Logo({ className, useIconOnly = false, ...props }: { className?:
         <circle cx="312" cy="360" r="16" fill="url(#grad)"/>
         <circle cx="440" cy="400" r="16" fill="url(#grad)"/>
       </svg>
-      {!useIconOnly && <span className="font-headline bg-clip-text text-transparent bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end">Boss OS</span>}
+      {isOpen && <span className="font-headline bg-clip-text text-transparent bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end">Boss OS</span>}
     </div>
   );
 }
