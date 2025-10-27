@@ -17,17 +17,12 @@ export default function Header() {
        "transition-all duration-300 ease-in-out"
     )}>
         <div className="flex items-center gap-2">
-            {isMobile && <Logo />}
+            {isDesktop && <Logo />}
             <Button variant="ghost" size="icon" onClick={toggleSidebar}>
                 {isOpen ? <PanelLeft className="h-5 w-5" /> : <PanelRight className="h-5 w-5" />}
                 <span className="sr-only">Toggle Sidebar</span>
             </Button>
         </div>
-        {!isDesktop && (
-            <div className="flex-1">
-                <Logo />
-            </div>
-        )}
       <div className="ml-auto flex items-center gap-2">
         <ThemeToggle />
       </div>
