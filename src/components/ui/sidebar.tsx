@@ -10,7 +10,7 @@ const Sidebar = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, children, ...props }, ref) => {
-  const { isMobile, open, setOpen } = useSidebar()
+  const { isMobile, open, setOpen, isDesktop } = useSidebar()
 
   if (isMobile) {
     return (
@@ -28,7 +28,7 @@ const Sidebar = React.forwardRef<
   return (
     <aside
       ref={ref}
-      className={cn("w-72 flex-col border-r bg-card hidden md:flex", className)}
+      className={cn("w-72 flex-col border-r bg-card flex", { "hidden": !open && isDesktop }, className)}
       {...props}
     >
       {children}

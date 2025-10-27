@@ -9,6 +9,7 @@ type SidebarContextType = {
   setOpen: (open: boolean) => void;
   toggleSidebar: () => void;
   isMobile: boolean;
+  isDesktop: boolean;
 };
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
@@ -16,6 +17,7 @@ const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const isMobile = useIsMobile();
+  const isDesktop = !isMobile;
 
   const toggleSidebar = () => {
     setOpen(prev => !prev);
@@ -26,9 +28,10 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
       open,
       setOpen,
       toggleSidebar,
-      isMobile
+      isMobile,
+      isDesktop
     }),
-    [open, isMobile]
+    [open, isMobile, isDesktop]
   );
 
   return (
