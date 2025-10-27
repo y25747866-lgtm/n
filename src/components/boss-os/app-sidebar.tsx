@@ -95,10 +95,15 @@ function ProfileSection() {
 function SidebarInnerContent() {
     const pathname = usePathname();
     const { subscription } = useSubscription();
-    const { isOpen } = useSidebar();
+    const { isOpen, isMobile } = useSidebar();
     
     return (
         <>
+            {isMobile && (
+                <SidebarHeader>
+                    <Logo />
+                </SidebarHeader>
+            )}
             <SidebarContent className="mt-2">
                 <TooltipProvider delayDuration={0}>
                 <SidebarMenu>
@@ -167,9 +172,6 @@ function SidebarInnerContent() {
 export default function AppSidebar() {
   return (
     <Sidebar>
-      <SidebarHeader>
-        <Logo />
-      </SidebarHeader>
       <SidebarInnerContent />
     </Sidebar>
   );
