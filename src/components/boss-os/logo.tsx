@@ -3,12 +3,14 @@ import { cn } from '@/lib/utils';
 import { useSidebar } from '@/contexts/sidebar-provider';
 
 export function Logo({ className, ...props }: { className?: string; [key: string]: any }) {
-  const { isOpen, setIsOpen } = useSidebar();
+  const { isOpen, isMobile } = useSidebar();
+  
+  // On mobile, the logo text should always be visible inside the sidebar.
+  const showText = isMobile || isOpen;
   
   return (
     <div 
-      className={cn("flex items-center gap-2 text-lg font-bold tracking-tighter cursor-pointer", className)} 
-      onClick={() => setIsOpen(true)}
+      className={cn("flex items-center gap-2 text-lg font-bold tracking-tighter", className)} 
       {...props}
     >
       {/* Boss OS Neural Circuit Logo */}
@@ -71,7 +73,7 @@ export function Logo({ className, ...props }: { className?: string; [key: string
         <circle cx="312" cy="360" r="16" fill="url(#grad)"/>
         <circle cx="440" cy="400" r="16" fill="url(#grad)"/>
       </svg>
-      {isOpen && <span className="font-headline bg-clip-text text-transparent bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end">Boss OS</span>}
+      {showText && <span className="font-headline bg-clip-text text-transparent bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end">Boss OS</span>}
     </div>
   );
 }

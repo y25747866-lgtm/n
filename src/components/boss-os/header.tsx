@@ -16,10 +16,15 @@ export default function Header() {
        "transition-all duration-300 ease-in-out"
     )}>
         <div className="flex items-center gap-2">
-            {/* On mobile, hide the logo if the sidebar is open, since the sidebar takes over */}
-            <div className={cn(isMobile && isOpen && "hidden")}>
-                <Logo />
-            </div>
+            {/* On mobile, show the logo in the header. It will be hidden if sidebar is open. */}
+            {isMobile && 
+              <div className={cn(isOpen && "hidden")}>
+                  <Logo />
+              </div>
+            }
+            {/* On desktop, hide the logo in the header since it's in the sidebar */}
+            {!isMobile && <div className="w-[170px]"/>}
+            
             <Button variant="ghost" size="icon" onClick={toggleSidebar}>
                 {isOpen ? <PanelLeft className="h-5 w-5" /> : <PanelRight className="h-5 w-5" />}
                 <span className="sr-only">Toggle Sidebar</span>

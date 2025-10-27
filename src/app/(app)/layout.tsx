@@ -30,6 +30,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
 
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
+  // We wrap the content in SidebarProvider here, so both AppSidebar and AppContent can use it.
   return (
     <SidebarProvider>
       <AppContent>{children}</AppContent>

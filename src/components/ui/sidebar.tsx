@@ -27,7 +27,7 @@ const Sidebar = React.forwardRef<
       ref={ref}
       className={cn(
         "fixed top-0 left-0 h-full z-40 flex flex-col border-r bg-card transition-all duration-300 ease-in-out",
-        isOpen ? "w-72" : "w-20", // Remove items-center
+        isOpen ? "w-72" : "w-20", 
         className
       )}
       {...props}
@@ -43,15 +43,19 @@ const SidebarHeader = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => {
-  const { isOpen } = useSidebar();
+  const { isOpen, isMobile } = useSidebar();
+  
+  // On mobile, the header with the logo should always be visible and fully expanded.
+  const headerClasses = isMobile ? 'flex h-14 items-center border-b px-4' 
+                                : cn(
+                                    "flex h-14 items-center border-b px-4 transition-all duration-300 ease-in-out",
+                                    !isOpen && "px-0 justify-center"
+                                  );
+
   return (
     <div
       ref={ref}
-      className={cn(
-        "flex h-14 items-center border-b px-6 transition-all duration-300 ease-in-out",
-        !isOpen && "px-0 justify-center",
-        className
-      )}
+      className={cn(headerClasses, className)}
       {...props}
     />
   )

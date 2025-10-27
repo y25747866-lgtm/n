@@ -165,24 +165,12 @@ function SidebarInnerContent() {
 }
 
 export default function AppSidebar() {
-  const { isMobile } = useSidebar();
-
-  if (isMobile) {
-    // The Sheet (mobile sidebar) is controlled by the SidebarProvider/Sidebar component
-    return (
-      <Sidebar>
-        {/* The mobile sidebar has its own header inside the sheet now */}
-        <SidebarHeader>
-           {/* The logo is in the main header now, not here */}
-        </SidebarHeader>
-        <SidebarInnerContent />
-      </Sidebar>
-    );
-  }
-
   return (
     <Sidebar>
-        <SidebarInnerContent />
+      <SidebarHeader>
+        <Logo />
+      </SidebarHeader>
+      <SidebarInnerContent />
     </Sidebar>
   );
 }
