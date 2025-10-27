@@ -27,6 +27,7 @@ import Link from 'next/link';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useSidebar } from '@/contexts/sidebar-provider';
 import { cn } from '@/lib/utils';
+import { Logo } from './logo';
 
 export default function Header() {
   const avatarImage = PlaceHolderImages.find(p => p.id === 'avatar-1');
@@ -38,13 +39,15 @@ export default function Header() {
 
   return (
     <header className={cn("sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-md sm:px-6", 
-       isDesktop ? (isOpen ? "left-72" : "left-20") : "left-0",
        "transition-all duration-300 ease-in-out"
     )}>
-       <Button variant="ghost" size="icon" onClick={toggleSidebar}>
-          {isOpen ? <PanelLeft className="h-5 w-5" /> : <PanelRight className="h-5 w-5" />}
-          <span className="sr-only">Toggle Sidebar</span>
-        </Button>
+        <div className="flex items-center gap-2">
+            {!isDesktop && <Logo />}
+            <Button variant="ghost" size="icon" onClick={toggleSidebar}>
+                {isOpen ? <PanelLeft className="h-5 w-5" /> : <PanelRight className="h-5 w-5" />}
+                <span className="sr-only">Toggle Sidebar</span>
+            </Button>
+        </div>
       <div className="ml-auto flex items-center gap-2">
         <ThemeToggle />
         <DropdownMenu>

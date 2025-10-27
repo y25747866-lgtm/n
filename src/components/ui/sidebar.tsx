@@ -27,7 +27,7 @@ const Sidebar = React.forwardRef<
     <aside
       ref={ref}
       className={cn(
-        "flex flex-col border-r bg-card transition-all duration-300 ease-in-out",
+        "fixed top-0 left-0 h-full z-40 flex flex-col border-r bg-card transition-all duration-300 ease-in-out",
         isOpen ? "w-72" : "w-20 items-center",
         className
       )}

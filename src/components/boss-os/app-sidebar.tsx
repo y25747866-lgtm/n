@@ -19,9 +19,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
-  SidebarHeader,
 } from '@/components/ui/sidebar';
-import { Logo } from './logo';
 import { useSubscription } from '@/contexts/subscription-provider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '../ui/badge';
@@ -46,10 +44,7 @@ export default function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader>
-        <Logo />
-      </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="mt-14">
         <TooltipProvider delayDuration={0}>
           <SidebarMenu>
             {menuItems.map((item) => (
