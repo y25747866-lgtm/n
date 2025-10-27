@@ -17,8 +17,7 @@ export default function Header() {
        "transition-all duration-300 ease-in-out"
     )}>
         <div className="flex items-center gap-2">
-            {/* On mobile, show the logo in the header ONLY when the sidebar is closed */}
-            {isMobile && !isOpen && <Logo />}
+            {!isMobile && <Logo />}
             
             <Button variant="ghost" size="icon" onClick={toggleSidebar}>
                 {isOpen ? <PanelLeft className="h-5 w-5" /> : <PanelRight className="h-5 w-5" />}
