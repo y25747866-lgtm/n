@@ -5,7 +5,6 @@ import * as React from "react"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
 import { useSidebar } from "@/contexts/sidebar-provider"
-import { Logo } from "../boss-os/logo"
 
 const Sidebar = React.forwardRef<
   HTMLDivElement,
@@ -17,9 +16,6 @@ const Sidebar = React.forwardRef<
     return (
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetContent side="left" className="w-72 bg-card p-0 flex flex-col">
-          <SidebarHeader>
-            <Logo />
-          </SidebarHeader>
           {children}
         </SheetContent>
       </Sheet>
@@ -31,7 +27,7 @@ const Sidebar = React.forwardRef<
       ref={ref}
       className={cn(
         "fixed top-0 left-0 h-full z-40 flex flex-col border-r bg-card transition-all duration-300 ease-in-out",
-        isOpen ? "w-72" : "w-20 items-center",
+        isOpen ? "w-72" : "w-20", // Remove items-center
         className
       )}
       {...props}
