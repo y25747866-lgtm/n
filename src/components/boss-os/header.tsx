@@ -17,12 +17,22 @@ export default function Header() {
        "transition-all duration-300 ease-in-out"
     )}>
         <div className="flex items-center gap-2">
-            {!isMobile && <Logo />}
-            
-            <Button variant="ghost" size="icon" onClick={toggleSidebar}>
-                {isOpen ? <PanelLeft className="h-5 w-5" /> : <PanelRight className="h-5 w-5" />}
-                <span className="sr-only">Toggle Sidebar</span>
-            </Button>
+            {isMobile ? (
+                // On mobile, the logo is inside the sheet, so we only show the toggle.
+                <Button variant="ghost" size="icon" onClick={toggleSidebar}>
+                    <PanelRight className="h-5 w-5" />
+                    <span className="sr-only">Toggle Sidebar</span>
+                </Button>
+            ) : (
+                // On desktop, we show the logo and the toggle button.
+                <>
+                    <Logo />
+                    <Button variant="ghost" size="icon" onClick={toggleSidebar}>
+                        {isOpen ? <PanelLeft className="h-5 w-5" /> : <PanelRight className="h-5 w-5" />}
+                        <span className="sr-only">Toggle Sidebar</span>
+                    </Button>
+                </>
+            )}
         </div>
         <div className="flex-1"></div>
         <ThemeToggle />
