@@ -2,11 +2,11 @@
 "use client";
 
 import { useIsMobile } from "@/hooks/use-mobile";
-import React, { createContext, useContext, useState, useMemo } from "react";
+import React, { createContext, useContext, useState, useMemo, useEffect } from "react";
 
 type SidebarContextType = {
-  open: boolean;
-  setOpen: (open: boolean) => void;
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
   toggleSidebar: () => void;
   isMobile: boolean;
   isDesktop: boolean;
@@ -15,23 +15,29 @@ type SidebarContextType = {
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
-  const [open, setOpen] = useState(false);
   const isMobile = useIsMobile();
   const isDesktop = !isMobile;
+  // On desktop, default to open. On mobile, default to closed.
+  const [isOpen, setIsOpen] = useState(isDesktop);
+
+  useEffect(() => {
+    // When switching between mobile/desktop, adjust sidebar state
+    setIsOpen(isDesktop);
+  }, [isDesktop]);
 
   const toggleSidebar = () => {
-    setOpen(prev => !prev);
+    setIsOpen(prev => !prev);
   };
   
   const value = useMemo(
     () => ({
-      open,
-      setOpen,
+      isOpen,
+      setIsOpen,
       toggleSidebar,
       isMobile,
       isDesktop
     }),
-    [open, isMobile, isDesktop]
+    [isOpen, isMobile, isDesktop]
   );
 
   return (
@@ -48,4 +54,3 @@ export const useSidebar = () => {
   }
   return context;
 };
-

@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -7,6 +8,7 @@ import {
   Settings,
   LayoutDashboard,
   PanelLeft,
+  PanelRight,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -24,19 +26,23 @@ import { ThemeToggle } from './theme-toggle';
 import Link from 'next/link';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useSidebar } from '@/contexts/sidebar-provider';
+import { cn } from '@/lib/utils';
 
 export default function Header() {
   const avatarImage = PlaceHolderImages.find(p => p.id === 'avatar-1');
-  const { toggleSidebar, isDesktop } = useSidebar();
+  const { toggleSidebar, isOpen, isDesktop } = useSidebar();
 
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('');
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-md sm:px-6">
+    <header className={cn("sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-md sm:px-6", 
+       isDesktop ? (isOpen ? "left-72" : "left-20") : "left-0",
+       "transition-all duration-300 ease-in-out"
+    )}>
        <Button variant="ghost" size="icon" onClick={toggleSidebar}>
-          <PanelLeft className="h-5 w-5" />
+          {isOpen ? <PanelLeft className="h-5 w-5" /> : <PanelRight className="h-5 w-5" />}
           <span className="sr-only">Toggle Sidebar</span>
         </Button>
       <div className="ml-auto flex items-center gap-2">

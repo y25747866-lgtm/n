@@ -1,18 +1,28 @@
-import { cn } from '@/lib/utils';
 
-export function Logo({ className, ...props }: { className?: string;[key: string]: any }) {
+import { cn } from '@/lib/utils';
+import { useSidebar } from '@/contexts/sidebar-provider';
+
+export function Logo({ className, useIconOnly = false, ...props }: { className?: string; useIconOnly?: boolean; [key: string]: any }) {
+  const { setIsOpen } = useSidebar();
+  
   return (
-    <div className={cn("flex items-center gap-2 text-lg font-bold tracking-tighter", className)} {...props}>
+    <div 
+      className={cn("flex items-center gap-2 text-lg font-bold tracking-tighter cursor-pointer", className)} 
+      onClick={() => setIsOpen(true)}
+      {...props}
+    >
       {/* Boss OS Neural Circuit Logo */}
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="40" height="40" role="img" aria-labelledby="title desc">
         <title id="title">Boss OS Neural Circuit Logo</title>
         <desc id="desc">Stylized brain-shaped circuit logo with adaptable colors for light and dark themes.</desc>
 
         {/* gradient */}
-        <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="hsl(var(--primary))"/>
-          <stop offset="100%" stopColor="#00FF88"/>
-        </linearGradient>
+        <defs>
+            <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="hsl(var(--primary))"/>
+              <stop offset="100%" stopColor="#06B6D4"/>
+            </linearGradient>
+        </defs>
 
         {/* circuit brain shape */}
         <path fill="none" stroke="url(#grad)" strokeWidth="32" strokeLinecap="round" strokeLinejoin="round"
@@ -61,7 +71,7 @@ export function Logo({ className, ...props }: { className?: string;[key: string]
         <circle cx="312" cy="360" r="16" fill="url(#grad)"/>
         <circle cx="440" cy="400" r="16" fill="url(#grad)"/>
       </svg>
-      <span className="font-headline bg-clip-text text-transparent bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end">Boss OS</span>
+      {!useIconOnly && <span className="font-headline bg-clip-text text-transparent bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end">Boss OS</span>}
     </div>
   );
 }

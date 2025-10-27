@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -26,6 +27,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { ArrowRight } from 'lucide-react';
+import { useSidebar } from '@/contexts/sidebar-provider';
+import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '../ui/tooltip';
 
 const menuItems = [
   { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
@@ -39,55 +42,69 @@ const menuItems = [
 export default function AppSidebar() {
   const pathname = usePathname();
   const { subscription } = useSubscription();
+  const { isOpen } = useSidebar();
 
   return (
     <Sidebar>
       <SidebarHeader>
-        <Logo />
+        <Logo useIconOnly={!isOpen} />
       </SidebarHeader>
       <SidebarContent>
-        <SidebarMenu>
-          {menuItems.map((item) => (
-            <SidebarMenuItem key={item.href}>
-              <Link href={item.href}>
-                <SidebarMenuButton
-                  isActive={pathname === item.href}
-                >
-                  <item.icon />
-                  <span>{item.label}</span>
-                </SidebarMenuButton>
-              </Link>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
+        <TooltipProvider delayDuration={0}>
+          <SidebarMenu>
+            {menuItems.map((item) => (
+              <SidebarMenuItem key={item.href}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link href={item.href}>
+                      <SidebarMenuButton
+                        isActive={pathname === item.href}
+                      >
+                        <item.icon />
+                        {isOpen && <span>{item.label}</span>}
+                      </SidebarMenuButton>
+                    </Link>
+                  </TooltipTrigger>
+                  {!isOpen && (
+                    <TooltipContent side="right">
+                      {item.label}
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </TooltipProvider>
       </SidebarContent>
-      <SidebarFooter>
-         <Card className="m-2 bg-transparent border-dashed">
-            <CardHeader className="p-4 pb-2">
-              <CardTitle className="text-sm font-medium flex items-center justify-between">
-                <span>
-                {subscription.status === 'unsubscribed' && 'No Plan'}
-                {subscription.status === 'active' && subscription.planId === 'monthly' && 'Monthly Plan'}
-                {subscription.status === 'active' && subscription.planId === 'annual' && 'Annual Plan'}
-                </span>
-                {subscription.status !== 'unsubscribed' && (
-                  <Badge variant="default" className="capitalize">
-                     {subscription.status}
-                  </Badge>
+      <SidebarFooter className={!isOpen ? "p-0" : "p-2"}>
+         {isOpen && (
+            <Card className="bg-transparent border-dashed">
+                <CardHeader className="p-4 pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center justify-between">
+                    <span>
+                    {subscription.status === 'unsubscribed' && 'No Plan'}
+                    {subscription.status === 'active' && subscription.planId === 'monthly' && 'Monthly Plan'}
+                    {subscription.status === 'active' && subscription.planId === 'annual' && 'Annual Plan'}
+                    </span>
+                    {subscription.status !== 'unsubscribed' && (
+                      <Badge variant="default" className="capitalize">
+                        {subscription.status}
+                      </Badge>
+                    )}
+                  </CardTitle>
+                </CardHeader>
+                {subscription.status === 'unsubscribed' && (
+                  <CardContent className="p-4 pt-0">
+                      <Link href="/subscription">
+                        <Button size="sm" className="w-full">
+                          Subscribe
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </Link>
+                  </CardContent>
                 )}
-              </CardTitle>
-            </CardHeader>
-            {subscription.status === 'unsubscribed' && (
-              <CardContent className="p-4 pt-0">
-                  <Link href="/subscription">
-                    <Button size="sm" className="w-full">
-                      Subscribe
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
-              </CardContent>
-            )}
-        </Card>
+            </Card>
+         )}
       </SidebarFooter>
     </Sidebar>
   );

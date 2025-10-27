@@ -2,23 +2,21 @@
 "use client"
 
 import * as React from "react"
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
 import { useSidebar } from "@/contexts/sidebar-provider"
+import { Logo } from "../boss-os/logo"
 
 const Sidebar = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, children, ...props }, ref) => {
-  const { isMobile, open, setOpen, isDesktop } = useSidebar()
+  const { isMobile, isOpen, setIsOpen } = useSidebar()
 
   if (isMobile) {
     return (
-      <Sheet open={open} onOpenChange={setOpen}>
+      <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetContent side="left" className="w-72 bg-card p-0 flex flex-col">
-          <SheetHeader>
-            <SheetTitle className="sr-only">Sidebar Navigation</SheetTitle>
-          </SheetHeader>
           {children}
         </SheetContent>
       </Sheet>
@@ -28,7 +26,11 @@ const Sidebar = React.forwardRef<
   return (
     <aside
       ref={ref}
-      className={cn("w-72 flex-col border-r bg-card flex", { "hidden": !open && isDesktop }, className)}
+      className={cn(
+        "flex flex-col border-r bg-card transition-all duration-300 ease-in-out",
+        isOpen ? "w-72" : "w-20 items-center",
+        className
+      )}
       {...props}
     >
       {children}
@@ -42,10 +44,15 @@ const SidebarHeader = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => {
+  const { isOpen } = useSidebar();
   return (
     <div
       ref={ref}
-      className={cn("flex h-14 items-center border-b px-6", className)}
+      className={cn(
+        "flex h-14 items-center border-b px-6 transition-all duration-300 ease-in-out",
+        !isOpen && "px-0 justify-center",
+        className
+      )}
       {...props}
     />
   )
@@ -73,7 +80,7 @@ const SidebarFooter = React.forwardRef<
   return (
     <div
       ref={ref}
-      className={cn("mt-auto border-t p-2", className)}
+      className={cn("mt-auto border-t", className)}
       {...props}
     />
   )
@@ -83,13 +90,16 @@ SidebarFooter.displayName = "SidebarFooter"
 const SidebarMenu = React.forwardRef<
   HTMLUListElement,
   React.HTMLAttributes<HTMLUListElement>
->(({ className, ...props }, ref) => (
-  <ul
-    ref={ref}
-    className={cn("flex w-full min-w-0 flex-col gap-1 p-2", className)}
-    {...props}
-  />
-))
+>(({ className, ...props }, ref) => {
+  const { isOpen } = useSidebar();
+  return (
+    <ul
+      ref={ref}
+      className={cn("flex w-full min-w-0 flex-col gap-1 p-2", !isOpen && "items-center", className)}
+      {...props}
+    />
+  )
+})
 SidebarMenu.displayName = "SidebarMenu"
 
 const SidebarMenuItem = React.forwardRef<
@@ -115,20 +125,25 @@ const SidebarMenuButton = React.forwardRef<
     {
       isActive = false,
       className,
+      children,
       ...props
     },
     ref
   ) => {
+    const { isOpen } = useSidebar();
     return (
       <button
         ref={ref}
         data-active={isActive}
         className={cn(
-          "flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-muted-foreground outline-none ring-ring transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 active:bg-accent disabled:pointer-events-none disabled:opacity-50 data-[active=true]:bg-accent data-[active=true]:text-accent-foreground",
+          "flex w-full items-center gap-3 rounded-md py-2 text-left text-sm font-medium text-muted-foreground outline-none ring-ring transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 active:bg-accent disabled:pointer-events-none disabled:opacity-50 data-[active=true]:bg-accent data-[active=true]:text-accent-foreground",
+          isOpen ? "px-3" : "justify-center",
           className
         )}
         {...props}
-      />
+      >
+        {children}
+      </button>
     )
   }
 )
