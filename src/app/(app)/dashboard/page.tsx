@@ -66,8 +66,8 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col items-center text-center space-y-16 lg:space-y-24">
       <section className="mt-8 md:mt-16 max-w-4xl mx-auto">
-        <h1 className="text-4xl md:text-6xl font-bold tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end">
-          Boss OS: AI Digital Product Factory
+        <h1 className="text-4xl md:text-6xl font-bold tracking-tighter">
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end">Boss OS</span>: AI Digital Product Factory
         </h1>
         <p className="mt-4 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
           Generate ebooks, courses, covers, and trending digital assets instantly. Turn ideas into income streams with the power of AI.
