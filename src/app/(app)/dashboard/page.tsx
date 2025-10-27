@@ -8,25 +8,24 @@ import { cn } from '@/lib/utils';
 import { ArrowRight, BookOpen, Brush, Lightbulb, StepForward, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const features = [
   {
-    icon: BookOpen,
+    image: PlaceHolderImages.find(p => p.id === 'cover-minimal'),
     title: 'Content Generation',
     description: 'Instantly generate high-quality ebooks, course scripts, and more.',
-    gradient: 'from-accent-1-start to-accent-1-mid',
   },
   {
-    icon: Brush,
+    image: PlaceHolderImages.find(p => p.id === 'cover-photo'),
     title: 'Cover Creation',
     description: 'Concurrently design stunning, professional covers for your digital products.',
-    gradient: 'from-accent-1-mid to-accent-1-end',
   },
   {
-    icon: TrendingUp,
+    image: PlaceHolderImages.find(p => p.id === 'cover-illustrated'),
     title: 'Trend Analysis',
     description: 'Discover viral product ideas and niches before they take off.',
-    gradient: 'from-accent-2-mid to-accent-2-end',
   },
 ];
 
@@ -83,13 +82,22 @@ export default function DashboardPage() {
 
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-6xl">
         {features.map((feature, index) => (
-          <Card key={index} className="glass-card text-left relative overflow-hidden">
-            <div className={cn('absolute top-0 left-0 h-1 w-full bg-gradient-to-r', feature.gradient)}></div>
+          <Card key={index} className="glass-card text-left relative overflow-hidden flex flex-col">
+            {feature.image && (
+              <div className="aspect-[3/4] relative">
+                <Image
+                    src={feature.image.imageUrl}
+                    alt={feature.title}
+                    fill
+                    className="object-cover"
+                    data-ai-hint={feature.image.imageHint}
+                />
+              </div>
+            )}
             <CardHeader>
-              <feature.icon className="h-8 w-8 mb-2 bg-gradient-to-r from-accent-1-start to-accent-1-end text-transparent bg-clip-text" />
               <CardTitle>{feature.title}</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-grow">
               <p className="text-muted-foreground">{feature.description}</p>
             </CardContent>
           </Card>
