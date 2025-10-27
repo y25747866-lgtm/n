@@ -6,33 +6,20 @@ import { PanelLeft, PanelRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/contexts/sidebar-provider';
 import { cn } from '@/lib/utils';
-import { Logo } from './logo';
 import { ThemeToggle } from './theme-toggle';
 
 export default function Header() {
-  const { toggleSidebar, isOpen, isMobile } = useSidebar();
+  const { toggleSidebar, isOpen } = useSidebar();
 
   return (
     <header className={cn("sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-md sm:px-6", 
        "transition-all duration-300 ease-in-out"
     )}>
         <div className="flex items-center gap-2">
-            {isMobile ? (
-                // On mobile, the logo is inside the sheet, so we only show the toggle.
-                <Button variant="ghost" size="icon" onClick={toggleSidebar}>
-                    <PanelRight className="h-5 w-5" />
-                    <span className="sr-only">Toggle Sidebar</span>
-                </Button>
-            ) : (
-                // On desktop, we show the logo and the toggle button.
-                <>
-                    <Logo />
-                    <Button variant="ghost" size="icon" onClick={toggleSidebar}>
-                        {isOpen ? <PanelLeft className="h-5 w-5" /> : <PanelRight className="h-5 w-5" />}
-                        <span className="sr-only">Toggle Sidebar</span>
-                    </Button>
-                </>
-            )}
+            <Button variant="ghost" size="icon" onClick={toggleSidebar}>
+                {isOpen ? <PanelLeft className="h-5 w-5" /> : <PanelRight className="h-5 w-5" />}
+                <span className="sr-only">Toggle Sidebar</span>
+            </Button>
         </div>
         <div className="flex-1"></div>
         <ThemeToggle />
