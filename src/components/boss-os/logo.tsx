@@ -3,22 +3,17 @@ import { cn } from '@/lib/utils';
 import { useSidebar } from '@/contexts/sidebar-provider';
 
 export function Logo({ className, ...props }: { className?: string; [key: string]: any }) {
-  const { isOpen, isDesktop, isMobile } = useSidebar();
-  
-  // Text is shown if sidebar is open, or on mobile header when sidebar is closed
-  const showText = (isDesktop && isOpen) || isMobile;
-  
+  const { isOpen } = useSidebar();
+
   return (
-    <div 
-      className={cn("flex items-center gap-2 text-lg font-bold tracking-tighter", className)} 
+    <div
+      className={cn("flex items-center gap-2 text-lg font-bold tracking-tighter", className)}
       {...props}
     >
-      {/* Boss OS Neural Circuit Logo */}
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="40" height="40" role="img" aria-labelledby="title desc">
         <title id="title">Boss OS Neural Circuit Logo</title>
         <desc id="desc">Stylized brain-shaped circuit logo with adaptable colors for light and dark themes.</desc>
 
-        {/* gradient */}
         <defs>
             <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="hsl(var(--primary))"/>
@@ -26,7 +21,6 @@ export function Logo({ className, ...props }: { className?: string; [key: string
             </linearGradient>
         </defs>
 
-        {/* circuit brain shape */}
         <path fill="none" stroke="url(#grad)" strokeWidth="32" strokeLinecap="round" strokeLinejoin="round"
               d="M160 160 
                  L240 160 Q320 160 320 240
@@ -64,7 +58,6 @@ export function Logo({ className, ...props }: { className?: string; [key: string
                  M360 312 
                  L400 352"/>
 
-        {/* connector circles */}
         <circle cx="200" cy="120" r="16" fill="url(#grad)"/>
         <circle cx="272" cy="80" r="16" fill="url(#grad)"/>
         <circle cx="120" cy="200" r="16" fill="url(#grad)"/>
@@ -73,7 +66,7 @@ export function Logo({ className, ...props }: { className?: string; [key: string
         <circle cx="312" cy="360" r="16" fill="url(#grad)"/>
         <circle cx="440" cy="400" r="16" fill="url(#grad)"/>
       </svg>
-      {showText && <span className="font-headline bg-clip-text text-transparent bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end">Boss OS</span>}
+      {isOpen && <span className="font-headline bg-clip-text text-transparent bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end">Boss OS</span>}
     </div>
   );
 }
