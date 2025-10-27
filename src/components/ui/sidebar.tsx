@@ -17,6 +17,9 @@ const Sidebar = React.forwardRef<
     return (
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetContent side="left" className="w-72 bg-card p-0 flex flex-col">
+          <SidebarHeader>
+            <Logo />
+          </SidebarHeader>
           {children}
         </SheetContent>
       </Sheet>
