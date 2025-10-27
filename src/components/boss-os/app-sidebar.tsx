@@ -9,7 +9,6 @@ import {
   CreditCard,
   Settings,
   LogOut,
-  User,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -30,10 +29,10 @@ import { Button } from '../ui/button';
 import { ArrowRight } from 'lucide-react';
 import { useSidebar } from '@/contexts/sidebar-provider';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '../ui/tooltip';
-import { Logo } from './logo';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Separator } from '../ui/separator';
+import { Logo } from './logo';
 
 const menuItems = [
   { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
@@ -166,13 +165,15 @@ function SidebarInnerContent() {
 }
 
 export default function AppSidebar() {
-  const { isMobile, isOpen } = useSidebar();
+  const { isMobile } = useSidebar();
 
   if (isMobile) {
+    // The Sheet (mobile sidebar) is controlled by the SidebarProvider/Sidebar component
     return (
       <Sidebar>
+        {/* The mobile sidebar has its own header inside the sheet now */}
         <SidebarHeader>
-          <Logo />
+           {/* The logo is in the main header now, not here */}
         </SidebarHeader>
         <SidebarInnerContent />
       </Sidebar>

@@ -4,7 +4,6 @@
 import { PanelLeft, PanelRight } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { ThemeToggle } from './theme-toggle';
 import { useSidebar } from '@/contexts/sidebar-provider';
 import { cn } from '@/lib/utils';
 import { Logo } from './logo';
@@ -17,15 +16,15 @@ export default function Header() {
        "transition-all duration-300 ease-in-out"
     )}>
         <div className="flex items-center gap-2">
-            {isDesktop && <Logo />}
+            {/* On mobile, hide the logo if the sidebar is open, since the sidebar takes over */}
+            <div className={cn(isMobile && isOpen && "hidden")}>
+                <Logo />
+            </div>
             <Button variant="ghost" size="icon" onClick={toggleSidebar}>
                 {isOpen ? <PanelLeft className="h-5 w-5" /> : <PanelRight className="h-5 w-5" />}
                 <span className="sr-only">Toggle Sidebar</span>
             </Button>
         </div>
-      <div className="ml-auto flex items-center gap-2">
-        <ThemeToggle />
-      </div>
     </header>
   );
 }
