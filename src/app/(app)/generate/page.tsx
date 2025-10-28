@@ -1,10 +1,13 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useSearchParams } from 'next/navigation';
+import React from 'react';
+
 
 import { Button } from '@/components/ui/button';
 import {
@@ -93,19 +96,21 @@ const lengthDisplayMap: Record<FormData['length'], string> = {
   Long: 'Long (40-100p)',
 };
 
-export default function GeneratePage() {
+function GeneratePageContent() {
   const { subscription } = useSubscription();
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationData, setGenerationData] = useState<GenerationParams | null>(
     null
   );
+  const searchParams = useSearchParams();
+  const topicFromUrl = searchParams.get('topic');
 
   const isSubscribed = subscription.status === 'active';
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      topic: '',
+      topic: topicFromUrl || '',
       authorName: 'Boss User',
       productType: 'Ebook',
       tone: 'Professional',
@@ -114,6 +119,12 @@ export default function GeneratePage() {
       optionalPriceSuggestion: false,
     },
   });
+
+  useEffect(() => {
+    if (topicFromUrl) {
+      form.setValue('topic', topicFromUrl);
+    }
+  }, [topicFromUrl, form]);
 
   function onSubmit(values: FormData) {
     if (!isSubscribed) return;
@@ -225,7 +236,7 @@ export default function GeneratePage() {
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a tone" />
-                            </SelectTrigger>
+                            </Trigger>
                           </FormControl>
                           <SelectContent>
                             {tones.map((tone) => (
@@ -277,7 +288,7 @@ export default function GeneratePage() {
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a cover style" />
-                            </SelectTrigger>
+                            </Trigger>
                           </FormControl>
                           <SelectContent>
                             {coverStyles.map((style) => (
@@ -353,5 +364,13 @@ export default function GeneratePage() {
         />
       )}
     </>
+  );
+}
+
+export default function GeneratePage() {
+  return (
+    <React.Suspense fallback={<div>Loading...</div>}>
+      <GeneratePageContent />
+    </React.Suspense>
   );
 }

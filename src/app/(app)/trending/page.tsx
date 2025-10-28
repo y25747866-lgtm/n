@@ -7,14 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Search, ArrowRight, BarChart, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition, useEffect, Suspense } from "react";
 import { suggestTrendingIdeas, SuggestTrendingIdeasOutput } from "@/ai/flows/suggest-trending-ideas";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import React from "react";
 
 const filters = ["Amazon PLR", "Etsy Digital", "Udemy", "Google Trends", "Future Prediction"];
 
-export default function TrendingIdeasPage() {
+function TrendingIdeasPageContent() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSearching, startSearchTransition] = useTransition();
@@ -169,4 +170,13 @@ export default function TrendingIdeasPage() {
       </div>
     </div>
   );
+}
+
+
+export default function TrendingIdeasPage() {
+  return (
+    <Suspense fallback={<div>Loading trending ideas...</div>}>
+      <TrendingIdeasPageContent />
+    </Suspense>
+  )
 }
