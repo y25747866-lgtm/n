@@ -15,7 +15,7 @@ const Sidebar = React.forwardRef<
     <aside
       ref={ref}
       className={cn(
-        "fixed top-0 left-0 h-full z-40 flex flex-col border-r bg-card transition-all duration-300 ease-in-out",
+        "fixed top-0 left-0 h-full z-20 flex flex-col border-r bg-card transition-all duration-300 ease-in-out",
         isOpen ? "w-72" : "w-20", 
         className
       )}
@@ -55,7 +55,7 @@ const SidebarContent = React.forwardRef<
   return (
     <div
       ref={ref}
-      className={cn("flex-1 overflow-y-auto", className)}
+      className={cn("flex-1 overflow-y-auto pt-14", className)}
       {...props}
     />
   )
@@ -126,7 +126,7 @@ const SidebarMenuButton = React.forwardRef<
         data-active={isActive}
         className={cn(
           "flex w-full items-center gap-3 rounded-md py-2 text-left text-sm font-medium text-muted-foreground outline-none ring-ring transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 active:bg-accent disabled:pointer-events-none disabled:opacity-50 data-[active=true]:bg-accent data-[active=true]:text-accent-foreground",
-          isOpen ? "px-3" : "justify-center",
+          isOpen ? "px-3" : "h-10 w-10 justify-center",
           className
         )}
         {...props}

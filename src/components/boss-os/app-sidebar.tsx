@@ -21,7 +21,6 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
-  SidebarHeader,
 } from '@/components/ui/sidebar';
 import { useSubscription } from '@/contexts/subscription-provider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,7 +31,6 @@ import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '../ui/
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Separator } from '../ui/separator';
-import { Logo } from './logo';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 
 const menuItems = [
@@ -57,7 +55,7 @@ function ProfileSection() {
                         <TooltipTrigger asChild>
                              <Link href="/settings">
                                 <Avatar className="h-10 w-10">
-                                    <AvatarImage src={avatarImage?.imageUrl} alt="User Avatar" />
+                                    <AvatarImage src={avatarImage?.imageUrl} alt="User Avatar" data-ai-hint={avatarImage?.imageHint} />
                                     <AvatarFallback>{getInitials("Boss User")}</AvatarFallback>
                                 </Avatar>
                             </Link>
@@ -76,7 +74,7 @@ function ProfileSection() {
         <div className="p-4">
             <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10">
-                    <AvatarImage src={avatarImage?.imageUrl} alt="User Avatar" />
+                    <AvatarImage src={avatarImage?.imageUrl} alt="User Avatar" data-ai-hint={avatarImage?.imageHint} />
                     <AvatarFallback>{getInitials("Boss User")}</AvatarFallback>
                 </Avatar>
                 <div>
@@ -99,9 +97,6 @@ function SidebarInnerContent() {
 
     return (
         <>
-            <SidebarHeader>
-                <Logo />
-            </SidebarHeader>
             <SidebarContent>
                 <TooltipProvider delayDuration={0}>
                     <SidebarMenu>
@@ -168,7 +163,11 @@ function SidebarInnerContent() {
 }
 
 export default function AppSidebar() {
-  const { isMobile, isOpen, setIsOpen } = useSidebar();
+  const { isMobile, isOpen, setIsOpen, isNavVisible } = useSidebar();
+
+  if (!isNavVisible) {
+      return null;
+  }
 
   if (isMobile) {
     return (

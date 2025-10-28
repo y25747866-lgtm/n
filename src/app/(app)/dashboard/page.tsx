@@ -4,7 +4,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { ArrowRight, BookOpen, Brush, Lightbulb, StepForward, TrendingUp } from 'lucide-react';
+import { ArrowRight, Lightbulb, StepForward } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -65,14 +65,17 @@ export default function DashboardPage() {
 
   const handlePrimaryAction = () => {
     setIsNavVisible(true);
-    setIsOpen(true);
+    // After revealing nav, if on desktop, open the sidebar. Then navigate.
+    if (isDesktop) {
+        setIsOpen(true);
+    }
     router.push('/generate');
   };
 
   return (
     <div className="flex flex-col items-center text-center space-y-16 lg:space-y-24">
       <section className="mt-8 md:mt-16 max-w-4xl mx-auto">
-        <h1 className="text-4xl md:text-6xl font-bold tracking-tighter">
+        <h1 className="text-4xl md:text-6xl font-black tracking-tighter">
           <span className="bg-clip-text text-transparent bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end">Boss OS</span>: AI Digital Product Factory
         </h1>
         <p className="mt-4 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -81,10 +84,10 @@ export default function DashboardPage() {
         <div className="mt-8 flex justify-center gap-4">
           <Button
             size="lg"
-            className="text-lg px-8 py-6 bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end text-white hover:opacity-90 transition-opacity"
+            className="text-lg px-8 py-6 bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end text-white hover:opacity-90 transition-opacity animate-pulse"
             onClick={handlePrimaryAction}
           >
-            Get Started
+            Start Generating
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
         </div>
