@@ -53,17 +53,18 @@ const howItWorks = [
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { setIsOpen, isDesktop } = useSidebar();
+  const { setIsOpen, isDesktop, setIsNavVisible, isNavVisible } = useSidebar();
 
-  // On mount, if it's a desktop view, close the sidebar initially.
   useEffect(() => {
-    if (isDesktop) {
-      setIsOpen(false);
+    // When this page loads, ensure the nav is hidden until the user acts.
+    if (!isNavVisible) {
+      setIsNavVisible(false);
     }
-  }, [isDesktop, setIsOpen]);
+  }, [isNavVisible, setIsNavVisible]);
+
 
   const handlePrimaryAction = () => {
-    // Open the sidebar and navigate to the generate page
+    setIsNavVisible(true);
     setIsOpen(true);
     router.push('/generate');
   };
@@ -143,12 +144,10 @@ export default function DashboardPage() {
                 <h3 className="text-2xl font-bold">Ready to Build Your Empire?</h3>
                 <p className="text-muted-foreground mt-2">Don't wait for inspiration. Generate it.</p>
               </div>
-              <Link href="/generate">
-                <Button size="lg" variant="secondary" className="px-6 py-5">
-                  Start Generating Now
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
+              <Button size="lg" variant="secondary" className="px-6 py-5" onClick={handlePrimaryAction}>
+                Start Generating Now
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
            </div>
         </Card>
       </section>
