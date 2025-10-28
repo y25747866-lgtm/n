@@ -236,7 +236,7 @@ function GeneratePageContent() {
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a tone" />
-                            </Trigger>
+                            </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             {tones.map((tone) => (
@@ -288,7 +288,7 @@ function GeneratePageContent() {
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a cover style" />
-                            </Trigger>
+                            </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             {coverStyles.map((style) => (
