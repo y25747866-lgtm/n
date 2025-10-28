@@ -3,13 +3,14 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useSubscription } from '@/contexts/subscription-provider';
 import { cn } from '@/lib/utils';
 import { ArrowRight, BookOpen, Brush, Lightbulb, StepForward, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useSidebar } from '@/contexts/sidebar-provider';
+import { useEffect } from 'react';
 
 const features = [
   {
@@ -51,11 +52,20 @@ const howItWorks = [
 ];
 
 export default function DashboardPage() {
-  const { subscription, startSubscription, isLoading } = useSubscription();
   const router = useRouter();
+  const { setIsOpen, isDesktop } = useSidebar();
+
+  // On mount, if it's a desktop view, close the sidebar initially.
+  useEffect(() => {
+    if (isDesktop) {
+      setIsOpen(false);
+    }
+  }, [isDesktop, setIsOpen]);
 
   const handlePrimaryAction = () => {
-    router.push('/downloads');
+    // Open the sidebar and navigate to the generate page
+    setIsOpen(true);
+    router.push('/generate');
   };
 
   return (
@@ -72,7 +82,6 @@ export default function DashboardPage() {
             size="lg"
             className="text-lg px-8 py-6 bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end text-white hover:opacity-90 transition-opacity"
             onClick={handlePrimaryAction}
-            disabled={isLoading}
           >
             Get Started
             <ArrowRight className="ml-2 h-5 w-5" />

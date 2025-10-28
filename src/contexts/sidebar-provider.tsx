@@ -18,10 +18,10 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const isMobile = useIsMobile();
   const isDesktop = !isMobile;
   // On desktop, default to open. On mobile, default to closed.
-  const [isOpen, setIsOpen] = useState(isDesktop);
+  const [isOpen, setIsOpen] = useState(true);
 
+  // When switching between mobile/desktop, adjust sidebar state
   useEffect(() => {
-    // When switching between mobile/desktop, adjust sidebar state
     setIsOpen(isDesktop);
   }, [isDesktop]);
 
