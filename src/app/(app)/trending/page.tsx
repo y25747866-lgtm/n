@@ -15,6 +15,10 @@ import React from "react";
 
 const filters = ["Amazon PLR", "Etsy Digital", "Udemy", "Google Trends", "Future Prediction"];
 
+// Simple in-memory cache
+let cachedIdeas: SuggestTrendingIdeasOutput['ideas'] | null = null;
+
+
 function TrendingIdeasPageContent() {
   const router = useRouter();
   const { toast } = useToast();
@@ -36,12 +40,18 @@ function TrendingIdeasPageContent() {
       }
       try {
         const result = await suggestTrendingIdeas({ topic });
-        setTrendingIdeas(result.ideas);
+        const ideas = result.ideas;
+        setTrendingIdeas(ideas);
+        // If this was the initial default search, cache it.
+        if (topic === "trending digital products") {
+          cachedIdeas = ideas;
+        }
+
       } catch (error) {
         console.error("Failed to fetch trending ideas:", error);
         toast({
-          title: "Search Failed",
-          description: "Could not fetch new trending ideas. Please try again.",
+          title: "Temporary Maintenance",
+          description: "Boss OS Premium update in progress. Please try again later.",
           variant: "destructive",
         })
       } finally {
@@ -52,22 +62,16 @@ function TrendingIdeasPageContent() {
   
   useEffect(() => {
     const getInitialIdeas = async () => {
-      setIsLoadingInitial(true);
-      try {
-        const result = await suggestTrendingIdeas({ topic: "trending digital products" });
-        setTrendingIdeas(result.ideas);
-      } catch (error) {
-         console.error("Failed to fetch initial ideas:", error);
-         toast({
-            title: "Error",
-            description: "Could not load initial trending ideas.",
-            variant: "destructive",
-         });
+      if (cachedIdeas) {
+        setTrendingIdeas(cachedIdeas);
+        setIsLoadingInitial(false);
+        return;
       }
-      setIsLoadingInitial(false);
+      setIsLoadingInitial(true);
+      await fetchIdeas("trending digital products");
     }
     getInitialIdeas();
-  }, [toast]);
+  }, []);
   
   const handleSearch = () => {
     if (!searchTerm.trim()) {
