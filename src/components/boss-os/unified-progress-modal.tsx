@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "../ui/button";
@@ -28,8 +28,6 @@ export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { is
   const [coverStatus, setCoverStatus] = useState<JobStatus>("pending");
   const [productResult, setProductResult] = useState<ProductResult>({ content: null, cover: null, params: null });
   const [error, setError] = useState<string | null>(null);
-  
-  const hasJobsStarted = useRef(false);
 
   const isComplete = contentStatus === "completed" && coverStatus === "completed";
   const hasError = contentStatus === "error" || coverStatus === "error";
@@ -41,93 +39,93 @@ export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { is
     setCoverStatus("pending");
     setError(null);
     setProductResult({ content: null, cover: null, params: null });
-    hasJobsStarted.current = false;
   }, []);
   
   useEffect(() => {
-    if (isOpen && !hasJobsStarted.current) {
-      hasJobsStarted.current = true;
-
-      const runJobs = async () => {
-          setContentStatus("running");
-          setCoverStatus("pending"); // Ensure cover is pending at the start
-          setError(null);
-          setProductResult({ content: null, cover: null, params: generationParams });
-
-          let contentInterval: NodeJS.Timeout | null = null;
-          let coverInterval: NodeJS.Timeout | null = null;
-
-          try {
-              contentInterval = setInterval(() => {
-                  setContentProgress(prev => Math.min(prev + Math.random() * 5, 95));
-              }, 800);
-
-              const contentResult = await generateEbookContent(generationParams);
-              
-              if (contentInterval) clearInterval(contentInterval);
-              setContentProgress(100);
-              setContentStatus("completed");
-
-              setCoverStatus("running");
-              coverInterval = setInterval(() => {
-                  setCoverProgress(prev => Math.min(prev + Math.random() * 10, 95));
-              }, 200);
-
-              const coverResult = await generateCoverImage({
-                  ...generationParams,
-                  title: contentResult.title,
-              });
-
-              if (coverInterval) clearInterval(coverInterval);
-              setCoverProgress(100);
-              setCoverStatus("completed");
-              setProductResult({ content: contentResult, cover: coverResult, params: generationParams });
-
-          } catch (e: any) {
-              console.error("A generation job failed:", e);
-              setError(e.message || "An unknown error occurred during generation.");
-              if (contentInterval) clearInterval(contentInterval);
-              if (coverInterval) clearInterval(coverInterval);
-
-              if (contentStatus !== 'completed') {
-                  setContentStatus("error");
-                  setContentProgress(100); 
-              }
-               if (coverStatus !== 'completed' && contentStatus === 'completed') {
-                  setCoverStatus("error");
-                  setCoverProgress(100);
-              }
-          }
-      };
-      
-      runJobs();
+    if (!isOpen) {
+        return;
     }
-  }, [isOpen, generationParams]);
+
+    let isCancelled = false;
+
+    const runJobs = async () => {
+        if (isCancelled) return;
+        setContentStatus("running");
+        setCoverStatus("pending");
+        setError(null);
+        setProductResult({ content: null, cover: null, params: generationParams });
+
+        let contentInterval: NodeJS.Timeout | null = null;
+        let coverInterval: NodeJS.Timeout | null = null;
+        
+        try {
+            contentInterval = setInterval(() => {
+                if (isCancelled) {
+                    if (contentInterval) clearInterval(contentInterval);
+                    return;
+                }
+                setContentProgress(prev => Math.min(prev + Math.random() * 5, 95));
+            }, 800);
+
+            const contentResult = await generateEbookContent(generationParams);
+            
+            if (isCancelled) return;
+            if (contentInterval) clearInterval(contentInterval);
+            setContentProgress(100);
+            setContentStatus("completed");
+
+            setCoverStatus("running");
+            coverInterval = setInterval(() => {
+                if (isCancelled) {
+                    if (coverInterval) clearInterval(coverInterval);
+                    return;
+                }
+                setCoverProgress(prev => Math.min(prev + Math.random() * 10, 95));
+            }, 200);
+
+            const coverResult = await generateCoverImage({
+                ...generationParams,
+                title: contentResult.title,
+            });
+
+            if (isCancelled) return;
+            if (coverInterval) clearInterval(coverInterval);
+            setCoverProgress(100);
+            setCoverStatus("completed");
+            setProductResult({ content: contentResult, cover: coverResult, params: generationParams });
+
+        } catch (e: any) {
+            if (isCancelled) return;
+            console.error("A generation job failed:", e);
+            setError(e.message || "An unknown error occurred during generation.");
+            if (contentInterval) clearInterval(contentInterval);
+            if (coverInterval) clearInterval(coverInterval);
+
+            if (contentStatus !== 'completed') {
+                setContentStatus("error");
+                setContentProgress(100); 
+            } else {
+                setCoverStatus("error");
+                setCoverProgress(100);
+            }
+        }
+    };
+    
+    runJobs();
+
+    return () => {
+        isCancelled = true;
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
 
   const handleClose = () => {
     onClose();
+    // Delay reset to allow for closing animation
     setTimeout(() => {
       resetState();
     }, 300);
-  };
-  
-  const handleRetry = () => {
-    resetState();
-    setTimeout(() => {
-      // Re-running the effect logic by toggling the ref
-      hasJobsStarted.current = false;
-      if (isOpen) {
-        hasJobsStarted.current = true;
-         const runJobs = async () => {
-              setContentStatus("running");
-              setCoverStatus("pending");
-              setError(null);
-              // The rest of the job logic...
-          };
-          runJobs();
-      }
-    }, 100);
   };
   
   const getDialogContent = () => {
@@ -171,7 +169,7 @@ export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { is
             </div>
 
             <DialogFooter>
-                {hasError ? (
+                {isComplete || hasError ? (
                   <Button onClick={handleClose}>Close</Button>
                 ) : (
                   <Button variant="ghost" onClick={handleClose}>Cancel</Button>
