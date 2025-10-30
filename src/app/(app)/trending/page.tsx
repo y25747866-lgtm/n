@@ -31,7 +31,7 @@ function TrendingIdeasPageContent() {
   };
 
   const fetchIdeas = useCallback((topic: string) => {
-    setCurrentTopic(topic);
+    // No need to set currentTopic here, it's set by the caller.
     if (ideasCache.has(topic)) {
       setTrendingIdeas(ideasCache.get(topic)!);
       return;
@@ -47,13 +47,18 @@ function TrendingIdeasPageContent() {
       } catch (error) {
         console.error("Failed to fetch trending ideas:", error);
         toast({
-          title: "Temporary Maintenance",
-          description: "Boss OS Premium update in progress. Please try again later.",
+          title: "Error Fetching Ideas",
+          description: "Could not fetch new trending ideas. Please try again later.",
           variant: "destructive",
         });
+        // Restore previous ideas if any, or clear if the errored topic was the one being viewed
+        const previousIdeas = ideasCache.get(currentTopic);
+        if (previousIdeas) {
+          setTrendingIdeas(previousIdeas);
+        }
       }
     });
-  }, [toast]);
+  }, [toast, currentTopic]); // Added currentTopic as dependency
 
   useEffect(() => {
     // Fetch ideas for the current topic on initial load or when topic changes
@@ -63,15 +68,16 @@ function TrendingIdeasPageContent() {
 
   const handleSearch = () => {
     const trimmedTerm = searchTerm.trim();
-    if (!trimmedTerm) {
+    if (!trimmedTerm || trimmedTerm === currentTopic) {
       return;
     }
-    fetchIdeas(trimmedTerm);
+    setCurrentTopic(trimmedTerm);
   };
 
   const handleFilterClick = (filter: string) => {
+    if (filter === currentTopic) return;
     setSearchTerm(filter);
-    fetchIdeas(filter);
+    setCurrentTopic(filter);
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
