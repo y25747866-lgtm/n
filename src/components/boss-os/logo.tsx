@@ -54,8 +54,7 @@ export function Logo({ className, ...props }: { className?: string; [key: string
                  L120 280
                  M240 320 
                  L200 360
-                 M272 320 
-                 L312 360
+                 M272 320 L312 360
                  M200 200 
                  L240 240
                  M360 312 
@@ -69,7 +68,7 @@ export function Logo({ className, ...props }: { className?: string; [key: string
         <circle cx="312" cy="360" r="16" fill="url(#grad)"/>
         <circle cx="440" cy="400" r="16" fill="url(#grad)"/>
       </svg>
-      {showText && <span className="font-headline font-black text-xl bg-clip-text text-transparent bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end">Boss OS</span>}
+      {showText && <span className="font-headline font-black text-xl bg-clip-text text-transparent bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end">Your Company</span>}
     </div>
   );
 }
