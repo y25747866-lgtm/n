@@ -1,15 +1,16 @@
 
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { useEffect, useState, useCallback } from "react";
+import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "../ui/button";
 import { ProductPackagePreview } from "./product-package-preview";
-import { Alert, AlertDescription, AlertTitle as AlertTitleComponent } from "../ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { Terminal } from "lucide-react";
 import { generateEbookContent, GenerateEbookContentInput, GenerateEbookContentOutput } from "@/ai/flows/generate-ebook-content";
 import { generateCoverImage, GenerateCoverImageInput, GenerateCoverImageOutput } from "@/ai/flows/generate-cover-image";
+import { DialogHeader, DialogTitle, DialogDescription } from "../ui/dialog";
 
 export type GenerationParams = Omit<GenerateEbookContentInput, 'authorName'> & Omit<GenerateCoverImageInput, 'title' | 'authorName'> & { authorName: string };
 
@@ -115,7 +116,7 @@ export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { is
     return () => {
         isCancelled = true;
     };
-  // The empty dependency array is critical. It ensures this effect runs ONLY ONCE when the modal opens.
+  // The empty dependency array is the critical fix. It ensures this effect runs ONLY ONCE when the modal opens.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
@@ -146,7 +147,7 @@ export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { is
                 {hasError && (
                     <Alert variant="destructive">
                       <Terminal className="h-4 w-4" />
-                      <AlertTitleComponent>Generation Error</AlertTitleComponent>
+                      <AlertTitle>Generation Error</AlertTitle>
                       <AlertDescription>
                         {error || "An unknown error occurred."}
                       </AlertDescription>
@@ -164,7 +165,7 @@ export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { is
                         <label>Cover Generation</label>
                         <span className="text-sm font-medium capitalize">{coverStatus === 'completed' ? 'Complete' : coverStatus} {coverStatus === 'running' && `(${Math.round(coverProgress)}%)`}</span>
                     </div>
-                    <Progress value={coverProgress} data-status={coverStatus} className="[&>*]:bg-gradient-to-r [&>*]:from-accent-1-start [&>*]:to-accent-1-end data-[status=error]:[&>*]:bg-destructive" />
+                    <Progress value={coverProgress} data-status={coverStatus} className="[&>*]:bg-gradient-to-r [&>*]:from-accent-1-start [&>*]:to-accent-1-end data-[status=error]:-bg-destructive" />
                 </div>
             </div>
 
