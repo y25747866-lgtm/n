@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Search, ArrowRight, BarChart, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
-import { useState, useTransition, useEffect, Suspense, useCallback } from 'react';
+import { useState, useTransition, Suspense, useCallback } from 'react';
 import { suggestTrendingIdeas, SuggestTrendingIdeasOutput } from '@/ai/flows/suggest-trending-ideas';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -15,14 +15,45 @@ import React from 'react';
 
 const filters = ['Amazon PLR', 'Etsy Digital', 'Udemy', 'Google Trends', 'Future Prediction'];
 
-// In-memory cache using a Map, defined at the module level to persist across re-renders and navigations.
+// In-memory cache using a Map to store search results.
 const ideasCache = new Map<string, SuggestTrendingIdeasOutput['ideas']>();
-const initialTopic = 'trending digital products';
 
-// Pre-populate cache for initial state if it's empty
-if (!ideasCache.has(initialTopic)) {
-  ideasCache.set(initialTopic, []);
-}
+const defaultIdeas: SuggestTrendingIdeasOutput['ideas'] = [
+    {
+      "title": "AI-Powered Ebook Generator",
+      "rationale": "With the rise of generative AI, tools that automate content creation are in high demand. An ebook generator appeals to marketers, writers, and entrepreneurs.",
+      "trendScore": 95
+    },
+    {
+      "title": "Niche-Specific Notion Templates",
+      "rationale": "Notion's popularity continues to soar. Users are looking for well-designed templates for specific needs like project management, personal finance, or fitness tracking.",
+      "trendScore": 90
+    },
+    {
+      "title": "Personalized Digital Planners",
+      "rationale": "The demand for digital organization tools is evergreen. Planners that can be customized for specific goals or aesthetics are highly sought after on platforms like Etsy.",
+      "trendScore": 88
+    },
+    {
+      "title": "Micro-SaaS Boilerplates (Next.js/Firebase)",
+      "rationale": "Developers are always looking for starters to kickstart their projects. A boilerplate with pre-integrated authentication, payments, and database setup is a huge time-saver.",
+      "trendScore": 85
+    },
+    {
+      "title": "Short-Form Video (Reels/TikToks) Course",
+      "rationale": "As video marketing dominates social media, creators and businesses are desperate to learn how to create engaging short-form content that goes viral.",
+      "trendScore": 92
+    },
+    {
+      "title": "Customizable Canva Template Bundles",
+      "rationale": "Canva has empowered non-designers to create stunning visuals. Bundles of templates for social media, presentations, and marketing materials are consistent bestsellers.",
+      "trendScore": 89
+    }
+  ];
+
+// Pre-populate the cache with default ideas
+const initialTopic = 'trending digital products';
+ideasCache.set(initialTopic, defaultIdeas);
 
 function TrendingIdeasPageContent() {
   const router = useRouter();
@@ -31,29 +62,23 @@ function TrendingIdeasPageContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentTopic, setCurrentTopic] = useState(initialTopic);
 
-  // Initialize state with cached data if it exists for the default topic.
-  const [trendingIdeas, setTrendingIdeas] = useState<SuggestTrendingIdeasOutput['ideas']>(
-    () => ideasCache.get(currentTopic) || []
-  );
+  // Initialize state directly with the default ideas.
+  const [trendingIdeas, setTrendingIdeas] = useState<SuggestTrendingIdeasOutput['ideas']>(defaultIdeas);
 
   const handleUseTrend = (topic: string) => {
     router.push(`/generate?topic=${encodeURIComponent(topic)}`);
   };
 
   const fetchIdeas = useCallback(
-    (topic: string, isInitialLoad = false) => {
-      // If data is in cache (and not an empty placeholder for initial load), use it.
+    (topic: string) => {
       const cachedIdeas = ideasCache.get(topic);
-      if (cachedIdeas && (cachedIdeas.length > 0 || !isInitialLoad)) {
+      if (cachedIdeas) {
         setTrendingIdeas(cachedIdeas);
         setCurrentTopic(topic);
         return;
       }
-      
-      // If there are no ideas (e.g. initial load or new search), show loading state
-      if (trendingIdeas.length > 0 && !isInitialLoad) {
-        setTrendingIdeas([]);
-      }
+
+      setTrendingIdeas([]); // Clear current ideas to show loading state
 
       startSearchTransition(async () => {
         try {
@@ -61,7 +86,7 @@ function TrendingIdeasPageContent() {
           if (result?.ideas) {
             ideasCache.set(topic, result.ideas);
             setTrendingIdeas(result.ideas);
-            setCurrentTopic(topic); // Update current topic only on successful fetch
+            setCurrentTopic(topic);
           } else {
             throw new Error('API returned an unexpected response.');
           }
@@ -72,33 +97,23 @@ function TrendingIdeasPageContent() {
             description: 'Could not fetch new trending ideas. Please try again later.',
             variant: 'destructive',
           });
-          // Restore previous successful state on error
-          const previousIdeas = ideasCache.get(currentTopic) || [];
-          setTrendingIdeas(previousIdeas);
+          // Restore to default ideas on error
+          setTrendingIdeas(defaultIdeas);
+          setCurrentTopic(initialTopic);
         }
       });
     },
-    [toast, currentTopic, trendingIdeas.length] // Dependency on currentTopic to restore previous state correctly
+    [toast]
   );
-
-  // Fetch ideas only on initial load if the cache is empty for the default topic.
-  useEffect(() => {
-    const cachedIdeas = ideasCache.get(initialTopic);
-    if (!cachedIdeas || cachedIdeas.length === 0) {
-      fetchIdeas(initialTopic, true);
-    }
-  }, []); // Runs only once on mount
-
+  
   const handleSearch = () => {
     const trimmedTerm = searchTerm.trim();
-    // Only search if the term is new and not empty
     if (trimmedTerm && trimmedTerm !== currentTopic) {
       fetchIdeas(trimmedTerm);
     }
   };
 
   const handleFilterClick = (filter: string) => {
-    // Only fetch if the filter is different from the current topic
     if (filter !== currentTopic) {
       setSearchTerm(filter);
       fetchIdeas(filter);
@@ -111,7 +126,7 @@ function TrendingIdeasPageContent() {
     }
   };
 
-  const isLoading = isSearching;
+  const isLoading = isSearching && trendingIdeas.length === 0;
 
   return (
     <div className="space-y-8">
@@ -159,7 +174,7 @@ function TrendingIdeasPageContent() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {isLoading && trendingIdeas.length === 0 ? (
+        {isLoading ? (
           Array.from({ length: 6 }).map((_, index) => (
             <Card key={index} className="glass-card flex flex-col">
               <CardHeader>
