@@ -202,23 +202,23 @@ function GeneratePageContent() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Product Type</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
+                        <FormControl>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="Select a product type" />
                             </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {productTypes.map((type) => (
-                              <SelectItem key={type} value={type}>
-                                {type}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                            <SelectContent>
+                              {productTypes.map((type) => (
+                                <SelectItem key={type} value={type}>
+                                  {type}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -229,23 +229,23 @@ function GeneratePageContent() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Tone</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
+                        <FormControl>
+                           <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Select a tone" />
-                            </Trigger>
-                          </FormControl>
-                          <SelectContent>
-                            {tones.map((tone) => (
-                              <SelectItem key={tone} value={tone}>
-                                {tone}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {tones.map((tone) => (
+                                <SelectItem key={tone} value={tone}>
+                                  {tone}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -281,23 +281,23 @@ function GeneratePageContent() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Cover Style</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                        <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a cover style" />
-                            </Trigger>
-                          </FormControl>
-                          <SelectContent>
-                            {coverStyles.map((style) => (
-                              <SelectItem key={style} value={style}>
-                                {style}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                            </SelectTrigger>
+                        </FormControl>
+                            <SelectContent>
+                              {coverStyles.map((style) => (
+                                <SelectItem key={style} value={style}>
+                                  {style}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         <FormMessage />
                       </FormItem>
                     )}
