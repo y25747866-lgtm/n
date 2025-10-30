@@ -44,15 +44,16 @@ const generateCoverImageFlow = ai.defineFlow(
   async input => {
     const { media } = await ai.generate({
       model: input.imageModel,
-      prompt: `Generate a realistic, high-quality ebook cover.
-      The cover must include the following text elements:
-      - Title: "${input.title}"
-      - Author: "${input.authorName}"
-      
-      The overall topic is "${input.topic}".
-      The desired style is "${input.coverStyle}".
-      
-      The final output should be just the image, with the text beautifully integrated into the design.`,
+      prompt: `Generate a professional and visually appealing ebook cover.
+
+**Instructions:**
+1.  **Theme:** The cover's design should be based on the topic: **"${input.topic}"**.
+2.  **Style:** The visual style must be **"${input.coverStyle}"**.
+3.  **Text Elements:** The following text must be clearly legible and beautifully integrated into the design:
+    *   **Title:** "${input.title}"
+    *   **Author:** "${input.authorName}"
+4.  **Composition:** This is for a book cover, so the layout and composition should be professional. Do not just generate a background image. The text and design must work together as a cohesive cover.
+5.  **Output:** The final output must be only the complete cover image. Do not include any extra text or descriptions outside of the image itself.`,
       config: {
         responseModalities: ['IMAGE'],
       },

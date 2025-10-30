@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -146,8 +147,8 @@ export function ProductPackagePreview({ productResult }: { productResult: Produc
               {productResult.content.chapters.map((chapter, index) => (
                  <AccordionItem value={`item-${index+1}`} key={index}>
                     <AccordionTrigger className="px-4 text-left">{chapter.title}</AccordionTrigger>
-                    <AccordionContent className="px-4 prose prose-sm dark:prose-invert max-w-none">
-                      <div dangerouslySetInnerHTML={{ __html: chapter.content.replace(/\\n/g, '<br />') }} />
+                    <AccordionContent className="px-4 prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap">
+                      {chapter.content}
                     </AccordionContent>
                 </AccordionItem>
               ))}

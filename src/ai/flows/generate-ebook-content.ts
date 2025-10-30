@@ -49,46 +49,36 @@ const generateEbookContentPrompt = ai.definePrompt({
   name: 'generateEbookContentPrompt',
   input: {schema: GenerateEbookContentInputSchema},
   output: {schema: GenerateEbookContentOutputSchema},
-  prompt: `You are an AI ebook writer. Your task is to generate a complete and structured 40-50 page ebook based on the user's specifications.
+  prompt: `You are an AI ebook writer. Your task is to generate a compelling outline and introduction for an ebook based on the user's specifications.
 
 **Ebook Specifications:**
 - **Topic:** {{{topic}}}
 - **Author:** {{{authorName}}}
 - **Product Type:** {{{productType}}}
 - **Tone:** {{{tone}}}
-- **Target Length:** {{{length}}} (translate this to a 40-50 page book)
+- **Target Length:** {{{length}}}
 
-**Ebook Structure Requirements:**
+**Output Structure Requirements:**
 You must generate the content for the following sections in order, as separate chapters in the output array:
 
 1.  **Title Page:**
     - Create a compelling title and a subtitle.
     - Include the author's name: {{{authorName}}}.
-    - Format this as the first "chapter" with the title "Title Page".
+    - Format this as the first "chapter" with the title "Title Page". Its content should just be the title, subtitle, and author name.
 
-2.  **Table of Contents:**
-    - Generate a table of contents listing all chapters.
+2.  **Table of Contents (Outline):**
+    - Generate a detailed table of contents listing a logical flow of chapters for the book. This serves as the book's outline.
+    - Include an Introduction, 5-7 main chapters, and a Conclusion.
     - Format this as the second "chapter" with the title "Table of Contents".
 
 3.  **Introduction:**
-    - Write an introduction to the ebook.
-    - This should be the first numbered chapter.
-
-4.  **Main Chapters:**
-    - Generate 5-7 main chapters covering the core topic.
-    - Each chapter must be well-structured with professional formatting.
-    - Use Markdown for formatting: use headings (#, ##), sub-headings (###), bullet points (*), numbered lists, bold text, and italics.
-    - Include practical examples, summaries, or key takeaways in each chapter to enhance value.
-
-5.  **Conclusion:**
-    - Write a concluding chapter that summarizes the key points of the ebook.
-    - Provide a call to action or final thoughts.
-
-6.  **About the Author:**
-    - Write a brief, placeholder "About the Author" section for {{{authorName}}}.
+    - Write a full introduction for the ebook based on the topic.
+    - This should be the third "chapter" with the title "Introduction".
 
 {{#if optionalPriceSuggestion}}
-- **Final Chapter: Price Suggestion:** Include a final chapter with a suggested market price for this ebook, based on its content, length, and topic.
+4.  **Price Suggestion:** 
+    - Include a final chapter with a suggested market price for this ebook, based on its content, length, and topic.
+    - Provide a short rationale for the price.
 {{/if}}
 
 Ensure the final output is a single JSON object that strictly follows the output schema.
