@@ -115,7 +115,7 @@ function GeneratePageContent() {
       productType: 'Ebook',
       tone: 'Professional',
       length: 'Medium',
-      coverStyle: 'Realistic',
+      coverStyle: 'Premium Gradient',
       optionalPriceSuggestion: false,
     },
   });
