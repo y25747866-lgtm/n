@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "../ui/button";
@@ -49,7 +49,6 @@ export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { is
     let isCancelled = false;
 
     const runJobs = async () => {
-        if (isCancelled) return;
         setContentStatus("running");
         setCoverStatus("pending");
         setError(null);
@@ -116,6 +115,7 @@ export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { is
     return () => {
         isCancelled = true;
     };
+  // The empty dependency array is critical. It ensures this effect runs ONLY ONCE when the modal opens.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
