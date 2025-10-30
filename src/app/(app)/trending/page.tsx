@@ -1,19 +1,19 @@
 
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Search, ArrowRight, BarChart, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
-import { useState, useTransition, useEffect, Suspense, useCallback } from "react";
-import { suggestTrendingIdeas, SuggestTrendingIdeasOutput } from "@/ai/flows/suggest-trending-ideas";
-import { useToast } from "@/hooks/use-toast";
-import { Skeleton } from "@/components/ui/skeleton";
-import React from "react";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Search, ArrowRight, BarChart, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Badge } from '@/components/ui/badge';
+import { useState, useTransition, useEffect, Suspense, useCallback } from 'react';
+import { suggestTrendingIdeas, SuggestTrendingIdeasOutput } from '@/ai/flows/suggest-trending-ideas';
+import { useToast } from '@/hooks/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
+import React from 'react';
 
-const filters = ["Amazon PLR", "Etsy Digital", "Udemy", "Google Trends", "Future Prediction"];
+const filters = ['Amazon PLR', 'Etsy Digital', 'Udemy', 'Google Trends', 'Future Prediction'];
 
 // In-memory cache using a Map, defined at the module level to persist across re-renders and navigations.
 const ideasCache = new Map<string, SuggestTrendingIdeasOutput['ideas']>();
@@ -22,62 +22,75 @@ function TrendingIdeasPageContent() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSearching, startSearchTransition] = useTransition();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [trendingIdeas, setTrendingIdeas] = useState<SuggestTrendingIdeasOutput['ideas']>([]);
-  const [currentTopic, setCurrentTopic] = useState<string>('trending digital products');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentTopic, setCurrentTopic] = useState('trending digital products');
+
+  // Initialize state with cached data if it exists for the default topic.
+  const [trendingIdeas, setTrendingIdeas] = useState<SuggestTrendingIdeasOutput['ideas']>(
+    () => ideasCache.get(currentTopic) || []
+  );
 
   const handleUseTrend = (topic: string) => {
     router.push(`/generate?topic=${encodeURIComponent(topic)}`);
   };
 
-  const fetchIdeas = useCallback((topic: string) => {
-    // No need to set currentTopic here, it's set by the caller.
-    if (ideasCache.has(topic)) {
-      setTrendingIdeas(ideasCache.get(topic)!);
-      return;
-    }
-
-    setTrendingIdeas([]); // Clear old ideas to show skeleton
-    startSearchTransition(async () => {
-      try {
-        const result = await suggestTrendingIdeas({ topic });
-        const ideas = result.ideas;
-        ideasCache.set(topic, ideas);
-        setTrendingIdeas(ideas);
-      } catch (error) {
-        console.error("Failed to fetch trending ideas:", error);
-        toast({
-          title: "Error Fetching Ideas",
-          description: "Could not fetch new trending ideas. Please try again later.",
-          variant: "destructive",
-        });
-        // Restore previous ideas if any, or clear if the errored topic was the one being viewed
-        const previousIdeas = ideasCache.get(currentTopic);
-        if (previousIdeas) {
-          setTrendingIdeas(previousIdeas);
-        }
+  const fetchIdeas = useCallback(
+    (topic: string) => {
+      // If data is already in cache for the topic, just use it.
+      if (ideasCache.has(topic)) {
+        setTrendingIdeas(ideasCache.get(topic)!);
+        return;
       }
-    });
-  }, [toast, currentTopic]); // Added currentTopic as dependency
 
+      // Show loading skeletons for the new topic.
+      setTrendingIdeas([]);
+      startSearchTransition(async () => {
+        try {
+          const result = await suggestTrendingIdeas({ topic });
+          if (result?.ideas) {
+            ideasCache.set(topic, result.ideas);
+            setTrendingIdeas(result.ideas);
+          } else {
+            throw new Error('API returned an unexpected response.');
+          }
+        } catch (error) {
+          console.error('Failed to fetch trending ideas:', error);
+          toast({
+            title: 'Error Fetching Ideas',
+            description: 'Could not fetch new trending ideas. Please try again later.',
+            variant: 'destructive',
+          });
+          // If the fetch fails, ensure we don't show an empty page if old data exists.
+          setTrendingIdeas(ideasCache.get(currentTopic) || []);
+        }
+      });
+    },
+    [toast, currentTopic] // currentTopic is a dependency to restore previous state on error
+  );
+
+  // Fetch ideas only on initial load if the cache is empty for the default topic.
   useEffect(() => {
-    // Fetch ideas for the current topic on initial load or when topic changes
-    fetchIdeas(currentTopic);
-  }, [currentTopic, fetchIdeas]);
-
+    if (!ideasCache.has(currentTopic)) {
+      fetchIdeas(currentTopic);
+    }
+  }, []); // Runs only once on mount
 
   const handleSearch = () => {
     const trimmedTerm = searchTerm.trim();
-    if (!trimmedTerm || trimmedTerm === currentTopic) {
-      return;
+    // Only search if the term is new and not empty
+    if (trimmedTerm && trimmedTerm !== currentTopic) {
+      setCurrentTopic(trimmedTerm);
+      fetchIdeas(trimmedTerm);
     }
-    setCurrentTopic(trimmedTerm);
   };
 
   const handleFilterClick = (filter: string) => {
-    if (filter === currentTopic) return;
-    setSearchTerm(filter);
-    setCurrentTopic(filter);
+    // Only fetch if the filter is different from the current topic
+    if (filter !== currentTopic) {
+      setSearchTerm(filter);
+      setCurrentTopic(filter);
+      fetchIdeas(filter);
+    }
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -85,8 +98,9 @@ function TrendingIdeasPageContent() {
       handleSearch();
     }
   };
-  
-  const isLoading = isSearching || (trendingIdeas.length === 0 && !ideasCache.has(currentTopic));
+
+  // isLoading should be true only when a search is in progress for a topic not in the cache.
+  const isLoading = isSearching && !ideasCache.has(currentTopic);
 
   return (
     <div className="space-y-8">
@@ -108,17 +122,21 @@ function TrendingIdeasPageContent() {
           <Button
             className="absolute right-2 top-1/2 -translate-y-1/2 h-9"
             onClick={handleSearch}
-            disabled={isSearching}
+            disabled={isSearching || !searchTerm.trim()}
           >
-            {isSearching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
+            {isSearching ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Search className="mr-2 h-4 w-4" />
+            )}
             Search
           </Button>
         </div>
         <div className="flex flex-wrap gap-2">
-          {filters.map(filter => (
+          {filters.map((filter) => (
             <Button
               key={filter}
-              variant="outline"
+              variant={currentTopic === filter ? 'default' : 'outline'}
               className="rounded-full"
               onClick={() => handleFilterClick(filter)}
               disabled={isSearching}
