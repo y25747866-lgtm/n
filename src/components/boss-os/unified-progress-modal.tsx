@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "../ui/button";
@@ -33,40 +33,41 @@ export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { is
   const isComplete = contentStatus === "completed" && coverStatus === "completed";
   const hasError = contentStatus === "error" || coverStatus === "error";
 
-  const runJobs = async () => {
+  const runJobs = useCallback(async () => {
+    if (hasRun.current) return;
+    hasRun.current = true;
+
     setContentStatus("running");
-    setCoverStatus("pending"); // Will start after content generates a title
+    setCoverStatus("pending");
     setError(null);
     setProductResult({ content: null, cover: null, params: generationParams });
 
-    // Use Promise.all to run jobs concurrently where possible, but cover depends on content title.
-    try {
-        const contentPromise = generateEbookContent(generationParams);
+    let contentInterval: NodeJS.Timeout | null = null;
+    let coverInterval: NodeJS.Timeout | null = null;
 
-        // Simulate progress for content
-        const contentProgressInterval = setInterval(() => {
+    try {
+        contentInterval = setInterval(() => {
             setContentProgress(prev => Math.min(prev + Math.random() * 5, 95));
         }, 800);
 
-        const contentResult = await contentPromise;
-        clearInterval(contentProgressInterval);
+        const contentResult = await generateEbookContent(generationParams);
+        
+        if (contentInterval) clearInterval(contentInterval);
         setContentProgress(100);
         setContentStatus("completed");
         setProductResult(prev => ({...prev, content: contentResult}));
 
-        // Now that we have a title, start cover generation
         setCoverStatus("running");
-        const coverProgressInterval = setInterval(() => {
+        coverInterval = setInterval(() => {
             setCoverProgress(prev => Math.min(prev + Math.random() * 10, 95));
         }, 200);
 
-        const coverPromise = generateCoverImage({
+        const coverResult = await generateCoverImage({
             ...generationParams,
             title: contentResult.title,
         });
 
-        const coverResult = await coverPromise;
-        clearInterval(coverProgressInterval);
+        if (coverInterval) clearInterval(coverInterval);
         setCoverProgress(100);
         setCoverStatus("completed");
         setProductResult(prev => ({...prev, cover: coverResult}));
@@ -74,28 +75,29 @@ export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { is
     } catch (e: any) {
         console.error("A generation job failed:", e);
         setError(e.message || "An unknown error occurred during generation.");
+        if (contentInterval) clearInterval(contentInterval);
+        if (coverInterval) clearInterval(coverInterval);
+
         if (contentStatus === 'running' || contentStatus === 'pending') {
             setContentStatus("error");
-            setContentProgress(100); // Mark as complete to stop showing progress
+            setContentProgress(100);
         }
         if (coverStatus === 'running' || coverStatus === 'pending') {
             setCoverStatus("error");
-            setCoverProgress(100); // Mark as complete to stop showing progress
+            setCoverProgress(100);
         }
     }
-  };
+  }, [generationParams, contentStatus, coverStatus]);
 
 
   useEffect(() => {
-    if (isOpen && !hasRun.current) {
-      hasRun.current = true;
+    if (isOpen) {
       runJobs();
     }
-  }, [isOpen]);
+  }, [isOpen, runJobs]);
 
   const handleClose = () => {
     onClose();
-    // Reset state when closing, after a short delay to allow animation
     setTimeout(() => {
       setContentProgress(0);
       setCoverProgress(0);
@@ -108,12 +110,11 @@ export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { is
   };
   
   const handleRetry = () => {
-    // Reset state before retrying
     setContentProgress(0);
     setCoverProgress(0);
     setContentStatus("pending");
     setCoverStatus("pending");
-    hasRun.current = false; // Allow runJobs to execute again
+    hasRun.current = false;
     runJobs();
   };
   
