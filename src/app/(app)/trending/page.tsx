@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Search, ArrowRight, BarChart, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import { useState, useTransition, useEffect, Suspense } from "react";
+import { useState, useTransition, useEffect, Suspense, useCallback } from "react";
 import { suggestTrendingIdeas, SuggestTrendingIdeasOutput } from "@/ai/flows/suggest-trending-ideas";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -15,29 +15,29 @@ import React from "react";
 
 const filters = ["Amazon PLR", "Etsy Digital", "Udemy", "Google Trends", "Future Prediction"];
 
-// In-memory cache using a Map, defined at the module level to persist across re-renders.
+// In-memory cache using a Map, defined at the module level to persist across re-renders and navigations.
 const ideasCache = new Map<string, SuggestTrendingIdeasOutput['ideas']>();
 
 function TrendingIdeasPageContent() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSearching, startSearchTransition] = useTransition();
-  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [trendingIdeas, setTrendingIdeas] = useState<SuggestTrendingIdeasOutput['ideas']>([]);
+  const [currentTopic, setCurrentTopic] = useState<string>('trending digital products');
 
   const handleUseTrend = (topic: string) => {
     router.push(`/generate?topic=${encodeURIComponent(topic)}`);
   };
 
-  const fetchIdeas = (topic: string) => {
+  const fetchIdeas = useCallback((topic: string) => {
+    setCurrentTopic(topic);
     if (ideasCache.has(topic)) {
       setTrendingIdeas(ideasCache.get(topic)!);
-      setIsLoading(false);
       return;
     }
 
-    setIsLoading(true);
+    setTrendingIdeas([]); // Clear old ideas to show skeleton
     startSearchTransition(async () => {
       try {
         const result = await suggestTrendingIdeas({ topic });
@@ -51,21 +51,15 @@ function TrendingIdeasPageContent() {
           description: "Boss OS Premium update in progress. Please try again later.",
           variant: "destructive",
         });
-      } finally {
-        setIsLoading(false);
       }
     });
-  };
+  }, [toast]);
 
   useEffect(() => {
-    // On initial load, check cache first for the default topic.
-    if (ideasCache.has("trending digital products")) {
-      setTrendingIdeas(ideasCache.get("trending digital products")!);
-      setIsLoading(false);
-    } else {
-      fetchIdeas("trending digital products");
-    }
-  }, []);
+    // Fetch ideas for the current topic on initial load or when topic changes
+    fetchIdeas(currentTopic);
+  }, [currentTopic, fetchIdeas]);
+
 
   const handleSearch = () => {
     const trimmedTerm = searchTerm.trim();
@@ -85,6 +79,8 @@ function TrendingIdeasPageContent() {
       handleSearch();
     }
   };
+  
+  const isLoading = isSearching || (trendingIdeas.length === 0 && !ideasCache.has(currentTopic));
 
   return (
     <div className="space-y-8">
@@ -106,9 +102,9 @@ function TrendingIdeasPageContent() {
           <Button
             className="absolute right-2 top-1/2 -translate-y-1/2 h-9"
             onClick={handleSearch}
-            disabled={isSearching || isLoading}
+            disabled={isSearching}
           >
-            {isSearching || isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
+            {isSearching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
             Search
           </Button>
         </div>
@@ -119,7 +115,7 @@ function TrendingIdeasPageContent() {
               variant="outline"
               className="rounded-full"
               onClick={() => handleFilterClick(filter)}
-              disabled={isSearching || isLoading}
+              disabled={isSearching}
             >
               {filter}
             </Button>
