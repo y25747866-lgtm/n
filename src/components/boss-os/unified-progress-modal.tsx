@@ -78,16 +78,16 @@ export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { is
         if (contentInterval) clearInterval(contentInterval);
         if (coverInterval) clearInterval(coverInterval);
 
-        if (contentStatus === 'running' || contentStatus === 'pending') {
+        if (contentStatus !== 'completed') {
             setContentStatus("error");
             setContentProgress(100);
         }
-        if (coverStatus === 'running' || coverStatus === 'pending') {
+        if (coverStatus !== 'completed') {
             setCoverStatus("error");
             setCoverProgress(100);
         }
     }
-  }, [generationParams, contentStatus, coverStatus]);
+  }, [generationParams]);
 
 
   useEffect(() => {
@@ -115,6 +115,10 @@ export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { is
     setContentStatus("pending");
     setCoverStatus("pending");
     hasRun.current = false;
+    // We don't call runJobs() directly here, useEffect will handle it
+    // This state reset will allow the effect to run again if needed.
+    // A more robust implementation might involve a specific retry state.
+    // For now, we'll re-trigger the effect by ensuring hasRun is false and dependencies are clean.
     runJobs();
   };
   
