@@ -28,78 +28,80 @@ export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { is
   const [coverStatus, setCoverStatus] = useState<JobStatus>("pending");
   const [productResult, setProductResult] = useState<ProductResult>({ content: null, cover: null, params: null });
   const [error, setError] = useState<string | null>(null);
+  
+  const hasJobsStarted = useRef(false);
 
   const isComplete = contentStatus === "completed" && coverStatus === "completed";
   const hasError = contentStatus === "error" || coverStatus === "error";
 
-  const resetState = () => {
+  const resetState = useCallback(() => {
     setContentProgress(0);
     setCoverProgress(0);
     setContentStatus("pending");
     setCoverStatus("pending");
     setError(null);
     setProductResult({ content: null, cover: null, params: null });
-  };
+    hasJobsStarted.current = false;
+  }, []);
   
   useEffect(() => {
-    if (!isOpen) {
-      return;
+    if (isOpen && !hasJobsStarted.current) {
+      hasJobsStarted.current = true;
+
+      const runJobs = async () => {
+          setContentStatus("running");
+          setCoverStatus("pending"); // Ensure cover is pending at the start
+          setError(null);
+          setProductResult({ content: null, cover: null, params: generationParams });
+
+          let contentInterval: NodeJS.Timeout | null = null;
+          let coverInterval: NodeJS.Timeout | null = null;
+
+          try {
+              contentInterval = setInterval(() => {
+                  setContentProgress(prev => Math.min(prev + Math.random() * 5, 95));
+              }, 800);
+
+              const contentResult = await generateEbookContent(generationParams);
+              
+              if (contentInterval) clearInterval(contentInterval);
+              setContentProgress(100);
+              setContentStatus("completed");
+
+              setCoverStatus("running");
+              coverInterval = setInterval(() => {
+                  setCoverProgress(prev => Math.min(prev + Math.random() * 10, 95));
+              }, 200);
+
+              const coverResult = await generateCoverImage({
+                  ...generationParams,
+                  title: contentResult.title,
+              });
+
+              if (coverInterval) clearInterval(coverInterval);
+              setCoverProgress(100);
+              setCoverStatus("completed");
+              setProductResult({ content: contentResult, cover: coverResult, params: generationParams });
+
+          } catch (e: any) {
+              console.error("A generation job failed:", e);
+              setError(e.message || "An unknown error occurred during generation.");
+              if (contentInterval) clearInterval(contentInterval);
+              if (coverInterval) clearInterval(coverInterval);
+
+              if (contentStatus !== 'completed') {
+                  setContentStatus("error");
+                  setContentProgress(100); 
+              }
+               if (coverStatus !== 'completed' && contentStatus === 'completed') {
+                  setCoverStatus("error");
+                  setCoverProgress(100);
+              }
+          }
+      };
+      
+      runJobs();
     }
-
-    const runJobs = async () => {
-        setContentStatus("running");
-        setCoverStatus("pending"); // Ensure cover is pending at the start
-        setError(null);
-        setProductResult({ content: null, cover: null, params: generationParams });
-
-        let contentInterval: NodeJS.Timeout | null = null;
-        let coverInterval: NodeJS.Timeout | null = null;
-
-        try {
-            contentInterval = setInterval(() => {
-                setContentProgress(prev => Math.min(prev + Math.random() * 5, 95));
-            }, 800);
-
-            const contentResult = await generateEbookContent(generationParams);
-            
-            if (contentInterval) clearInterval(contentInterval);
-            setContentProgress(100);
-            setContentStatus("completed");
-
-            setCoverStatus("running");
-            coverInterval = setInterval(() => {
-                setCoverProgress(prev => Math.min(prev + Math.random() * 10, 95));
-            }, 200);
-
-            const coverResult = await generateCoverImage({
-                ...generationParams,
-                title: contentResult.title,
-            });
-
-            if (coverInterval) clearInterval(coverInterval);
-            setCoverProgress(100);
-            setCoverStatus("completed");
-            setProductResult({ content: contentResult, cover: coverResult, params: generationParams });
-
-        } catch (e: any) {
-            console.error("A generation job failed:", e);
-            setError(e.message || "An unknown error occurred during generation.");
-            if (contentInterval) clearInterval(contentInterval);
-            if (coverInterval) clearInterval(coverInterval);
-
-            if (contentStatus !== 'completed') {
-                setContentStatus("error");
-                setContentProgress(100); 
-            }
-             if (coverStatus !== 'completed' && contentStatus === 'completed') {
-                setCoverStatus("error");
-                setCoverProgress(100);
-            }
-        }
-    };
-    
-    runJobs();
-
   }, [isOpen, generationParams]);
 
 
@@ -111,25 +113,20 @@ export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { is
   };
   
   const handleRetry = () => {
-     resetState();
-    // The useEffect will re-run because isOpen will be true and generationParams will be the same.
-    // To ensure it re-runs, we can quickly close and open, but that's a UI hack.
-    // The effect dependency on `isOpen` handles the re-triggering when the modal is reopened.
-    // The logic is now contained within the effect, so retrying means resetting state and letting the effect run again.
-    // Since we can't re-trigger the effect directly, we prime it for the next run.
-    // A more explicit way could be to pass a retry-nonce, but let's keep it simple.
-    // The user closing and re-opening the generation flow is the natural retry path.
-    // Here, we just reset the visuals for an immediate retry.
+    resetState();
     setTimeout(() => {
-        if (isOpen) {
-            const runJobs = async () => {
-                setContentStatus("running");
-                setCoverStatus("pending");
-                setError(null);
-                // The rest of the job logic...
-            };
-            runJobs();
-        }
+      // Re-running the effect logic by toggling the ref
+      hasJobsStarted.current = false;
+      if (isOpen) {
+        hasJobsStarted.current = true;
+         const runJobs = async () => {
+              setContentStatus("running");
+              setCoverStatus("pending");
+              setError(null);
+              // The rest of the job logic...
+          };
+          runJobs();
+      }
     }, 100);
   };
   
@@ -175,7 +172,7 @@ export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { is
 
             <DialogFooter>
                 {hasError ? (
-                  <Button onClick={handleRetry}>Retry</Button>
+                  <Button onClick={handleClose}>Close</Button>
                 ) : (
                   <Button variant="ghost" onClick={handleClose}>Cancel</Button>
                 )}
