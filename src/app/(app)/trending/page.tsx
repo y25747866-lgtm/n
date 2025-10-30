@@ -17,13 +17,19 @@ const filters = ['Amazon PLR', 'Etsy Digital', 'Udemy', 'Google Trends', 'Future
 
 // In-memory cache using a Map, defined at the module level to persist across re-renders and navigations.
 const ideasCache = new Map<string, SuggestTrendingIdeasOutput['ideas']>();
+const initialTopic = 'trending digital products';
+
+// Pre-populate cache for initial state if it's empty
+if (!ideasCache.has(initialTopic)) {
+  ideasCache.set(initialTopic, []);
+}
 
 function TrendingIdeasPageContent() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSearching, startSearchTransition] = useTransition();
   const [searchTerm, setSearchTerm] = useState('');
-  const [currentTopic, setCurrentTopic] = useState('trending digital products');
+  const [currentTopic, setCurrentTopic] = useState(initialTopic);
 
   // Initialize state with cached data if it exists for the default topic.
   const [trendingIdeas, setTrendingIdeas] = useState<SuggestTrendingIdeasOutput['ideas']>(
@@ -35,21 +41,27 @@ function TrendingIdeasPageContent() {
   };
 
   const fetchIdeas = useCallback(
-    (topic: string) => {
-      // If data is already in cache for the topic, just use it.
-      if (ideasCache.has(topic)) {
-        setTrendingIdeas(ideasCache.get(topic)!);
+    (topic: string, isInitialLoad = false) => {
+      // If data is in cache (and not an empty placeholder for initial load), use it.
+      const cachedIdeas = ideasCache.get(topic);
+      if (cachedIdeas && (cachedIdeas.length > 0 || !isInitialLoad)) {
+        setTrendingIdeas(cachedIdeas);
+        setCurrentTopic(topic);
         return;
       }
+      
+      // If there are no ideas (e.g. initial load or new search), show loading state
+      if (trendingIdeas.length > 0 && !isInitialLoad) {
+        setTrendingIdeas([]);
+      }
 
-      // Show loading skeletons for the new topic.
-      setTrendingIdeas([]);
       startSearchTransition(async () => {
         try {
           const result = await suggestTrendingIdeas({ topic });
           if (result?.ideas) {
             ideasCache.set(topic, result.ideas);
             setTrendingIdeas(result.ideas);
+            setCurrentTopic(topic); // Update current topic only on successful fetch
           } else {
             throw new Error('API returned an unexpected response.');
           }
@@ -60,18 +72,20 @@ function TrendingIdeasPageContent() {
             description: 'Could not fetch new trending ideas. Please try again later.',
             variant: 'destructive',
           });
-          // If the fetch fails, ensure we don't show an empty page if old data exists.
-          setTrendingIdeas(ideasCache.get(currentTopic) || []);
+          // Restore previous successful state on error
+          const previousIdeas = ideasCache.get(currentTopic) || [];
+          setTrendingIdeas(previousIdeas);
         }
       });
     },
-    [toast, currentTopic] // currentTopic is a dependency to restore previous state on error
+    [toast, currentTopic, trendingIdeas.length] // Dependency on currentTopic to restore previous state correctly
   );
 
   // Fetch ideas only on initial load if the cache is empty for the default topic.
   useEffect(() => {
-    if (!ideasCache.has(currentTopic)) {
-      fetchIdeas(currentTopic);
+    const cachedIdeas = ideasCache.get(initialTopic);
+    if (!cachedIdeas || cachedIdeas.length === 0) {
+      fetchIdeas(initialTopic, true);
     }
   }, []); // Runs only once on mount
 
@@ -79,7 +93,6 @@ function TrendingIdeasPageContent() {
     const trimmedTerm = searchTerm.trim();
     // Only search if the term is new and not empty
     if (trimmedTerm && trimmedTerm !== currentTopic) {
-      setCurrentTopic(trimmedTerm);
       fetchIdeas(trimmedTerm);
     }
   };
@@ -88,7 +101,6 @@ function TrendingIdeasPageContent() {
     // Only fetch if the filter is different from the current topic
     if (filter !== currentTopic) {
       setSearchTerm(filter);
-      setCurrentTopic(filter);
       fetchIdeas(filter);
     }
   };
@@ -99,8 +111,7 @@ function TrendingIdeasPageContent() {
     }
   };
 
-  // isLoading should be true only when a search is in progress for a topic not in the cache.
-  const isLoading = isSearching && !ideasCache.has(currentTopic);
+  const isLoading = isSearching;
 
   return (
     <div className="space-y-8">
@@ -148,7 +159,7 @@ function TrendingIdeasPageContent() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {isLoading ? (
+        {isLoading && trendingIdeas.length === 0 ? (
           Array.from({ length: 6 }).map((_, index) => (
             <Card key={index} className="glass-card flex flex-col">
               <CardHeader>
