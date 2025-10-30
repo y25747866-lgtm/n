@@ -15,7 +15,7 @@ import React from "react";
 
 const filters = ["Amazon PLR", "Etsy Digital", "Udemy", "Google Trends", "Future Prediction"];
 
-// In-memory cache using a Map
+// In-memory cache using a Map, defined at the module level to persist across re-renders.
 const ideasCache = new Map<string, SuggestTrendingIdeasOutput['ideas']>();
 
 function TrendingIdeasPageContent() {
@@ -30,7 +30,7 @@ function TrendingIdeasPageContent() {
     router.push(`/generate?topic=${encodeURIComponent(topic)}`);
   };
 
-  const fetchIdeas = async (topic: string) => {
+  const fetchIdeas = (topic: string) => {
     if (ideasCache.has(topic)) {
       setTrendingIdeas(ideasCache.get(topic)!);
       setIsLoading(false);
@@ -58,7 +58,13 @@ function TrendingIdeasPageContent() {
   };
 
   useEffect(() => {
-    fetchIdeas("trending digital products");
+    // On initial load, check cache first for the default topic.
+    if (ideasCache.has("trending digital products")) {
+      setTrendingIdeas(ideasCache.get("trending digital products")!);
+      setIsLoading(false);
+    } else {
+      fetchIdeas("trending digital products");
+    }
   }, []);
 
   const handleSearch = () => {
@@ -100,9 +106,9 @@ function TrendingIdeasPageContent() {
           <Button
             className="absolute right-2 top-1/2 -translate-y-1/2 h-9"
             onClick={handleSearch}
-            disabled={isSearching}
+            disabled={isSearching || isLoading}
           >
-            {isSearching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
+            {isSearching || isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
             Search
           </Button>
         </div>
@@ -113,7 +119,7 @@ function TrendingIdeasPageContent() {
               variant="outline"
               className="rounded-full"
               onClick={() => handleFilterClick(filter)}
-              disabled={isSearching}
+              disabled={isSearching || isLoading}
             >
               {filter}
             </Button>
