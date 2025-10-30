@@ -5,7 +5,7 @@ import { useSidebar } from '@/contexts/sidebar-provider';
 export function Logo({ className, ...props }: { className?: string; [key: string]: any }) {
   const { isOpen, isMobile } = useSidebar();
 
-  // On mobile, the logo is always in the header, so it doesn't need text.
+  // Show text if sidebar is open, unless we are on mobile where it's always in the sheet header (without text).
   const showText = isOpen && !isMobile;
 
   return (

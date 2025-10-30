@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/contexts/sidebar-provider';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from './theme-toggle';
-import { Logo } from './logo';
 
 export default function Header() {
   const { toggleSidebar, isOpen, isMobile, isNavVisible } = useSidebar();
@@ -25,7 +24,6 @@ export default function Header() {
                 {isMobile ? <Menu className="h-5 w-5" /> : (isOpen ? <PanelLeft className="h-5 w-5" /> : <PanelRight className="h-5 w-5" />)}
                 <span className="sr-only">Toggle Sidebar</span>
             </Button>
-            <Logo />
         </div>
         <div className="flex-1"></div>
         <ThemeToggle />

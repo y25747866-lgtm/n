@@ -31,7 +31,9 @@ import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '../ui/
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Separator } from '../ui/separator';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { Logo } from './logo';
+import { VisuallyHidden } from '@/components/ui/visually-hidden';
 
 const menuItems = [
   { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
@@ -173,7 +175,16 @@ export default function AppSidebar() {
     return (
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetContent side="left" className="w-72 bg-card p-0 flex flex-col">
-          <SidebarInnerContent />
+            <SheetHeader className="p-4 border-b">
+                 <Logo />
+                 <VisuallyHidden>
+                    <SheetTitle>Main Navigation</SheetTitle>
+                    <SheetDescription>
+                        Navigate through the main sections of Boss OS, including the dashboard, generator, trending ideas, and settings.
+                    </SheetDescription>
+                </VisuallyHidden>
+            </SheetHeader>
+            <SidebarInnerContent />
         </SheetContent>
       </Sheet>
     );
@@ -181,6 +192,9 @@ export default function AppSidebar() {
 
   return (
     <Sidebar>
+        <div className="flex h-14 items-center border-b px-4 lg:px-6">
+            <Logo />
+        </div>
       <SidebarInnerContent />
     </Sidebar>
   );
