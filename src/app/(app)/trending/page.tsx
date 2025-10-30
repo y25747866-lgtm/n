@@ -15,76 +15,65 @@ import React from "react";
 
 const filters = ["Amazon PLR", "Etsy Digital", "Udemy", "Google Trends", "Future Prediction"];
 
-// Simple in-memory cache
-let cachedIdeas: SuggestTrendingIdeasOutput['ideas'] | null = null;
-
+// In-memory cache using a Map
+const ideasCache = new Map<string, SuggestTrendingIdeasOutput['ideas']>();
 
 function TrendingIdeasPageContent() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSearching, startSearchTransition] = useTransition();
-  const [isLoadingInitial, setIsLoadingInitial] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [trendingIdeas, setTrendingIdeas] = useState<SuggestTrendingIdeasOutput['ideas']>([]);
-
 
   const handleUseTrend = (topic: string) => {
     router.push(`/generate?topic=${encodeURIComponent(topic)}`);
   };
 
   const fetchIdeas = async (topic: string) => {
+    if (ideasCache.has(topic)) {
+      setTrendingIdeas(ideasCache.get(topic)!);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
     startSearchTransition(async () => {
-      // If it's not the initial load, we are searching.
-      if (!isLoadingInitial) {
-        setIsLoadingInitial(true); // Re-use loading state for subsequent searches
-      }
       try {
         const result = await suggestTrendingIdeas({ topic });
         const ideas = result.ideas;
+        ideasCache.set(topic, ideas);
         setTrendingIdeas(ideas);
-        // If this was the initial default search, cache it.
-        if (topic === "trending digital products") {
-          cachedIdeas = ideas;
-        }
-
       } catch (error) {
         console.error("Failed to fetch trending ideas:", error);
         toast({
           title: "Temporary Maintenance",
           description: "Boss OS Premium update in progress. Please try again later.",
           variant: "destructive",
-        })
+        });
       } finally {
-        setIsLoadingInitial(false);
+        setIsLoading(false);
       }
     });
-  }
-  
+  };
+
   useEffect(() => {
-    const getInitialIdeas = async () => {
-      if (cachedIdeas) {
-        setTrendingIdeas(cachedIdeas);
-        setIsLoadingInitial(false);
-        return;
-      }
-      setIsLoadingInitial(true);
-      await fetchIdeas("trending digital products");
-    }
-    getInitialIdeas();
+    fetchIdeas("trending digital products");
   }, []);
-  
+
   const handleSearch = () => {
-    if (!searchTerm.trim()) {
+    const trimmedTerm = searchTerm.trim();
+    if (!trimmedTerm) {
       return;
     }
-    fetchIdeas(searchTerm);
+    fetchIdeas(trimmedTerm);
   };
 
   const handleFilterClick = (filter: string) => {
     setSearchTerm(filter);
     fetchIdeas(filter);
   };
-  
+
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
       handleSearch();
@@ -100,28 +89,28 @@ function TrendingIdeasPageContent() {
 
       <div className="flex flex-col space-y-4">
         <div className="relative">
-          <Input 
-            placeholder="Search for a topic to find trends..." 
-            className="h-12 pr-28" 
+          <Input
+            placeholder="Search for a topic to find trends..."
+            className="h-12 pr-28"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={isSearching}
           />
-          <Button 
+          <Button
             className="absolute right-2 top-1/2 -translate-y-1/2 h-9"
             onClick={handleSearch}
             disabled={isSearching}
           >
-            {isSearching && !isLoadingInitial ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
+            {isSearching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
             Search
           </Button>
         </div>
         <div className="flex flex-wrap gap-2">
           {filters.map(filter => (
-            <Button 
-              key={filter} 
-              variant="outline" 
+            <Button
+              key={filter}
+              variant="outline"
               className="rounded-full"
               onClick={() => handleFilterClick(filter)}
               disabled={isSearching}
@@ -133,7 +122,7 @@ function TrendingIdeasPageContent() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {isLoadingInitial ? (
+        {isLoading ? (
           Array.from({ length: 6 }).map((_, index) => (
             <Card key={index} className="glass-card flex flex-col">
               <CardHeader>
@@ -153,11 +142,11 @@ function TrendingIdeasPageContent() {
             <Card key={index} className="glass-card flex flex-col">
               <CardHeader>
                 <div className="flex justify-between items-start">
-                    <CardTitle>{idea.title}</CardTitle>
-                    <Badge variant="secondary" className="flex items-center gap-1">
-                      <BarChart className="h-3 w-3" />
-                      {idea.trendScore}
-                    </Badge>
+                  <CardTitle>{idea.title}</CardTitle>
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <BarChart className="h-3 w-3" />
+                    {idea.trendScore}
+                  </Badge>
                 </div>
               </CardHeader>
               <CardContent className="flex-1">
@@ -176,11 +165,10 @@ function TrendingIdeasPageContent() {
   );
 }
 
-
 export default function TrendingIdeasPage() {
   return (
     <Suspense fallback={<div>Loading trending ideas...</div>}>
       <TrendingIdeasPageContent />
     </Suspense>
-  )
+  );
 }
