@@ -1,6 +1,4 @@
 
-'use server';
-
 import {genkit} from 'genkit';
 import { getApiKey } from '@/lib/firebase';
 import { googleAI } from '@genkit-ai/google-genai';
