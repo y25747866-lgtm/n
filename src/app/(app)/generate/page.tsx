@@ -233,7 +233,7 @@ function GeneratePageContent() {
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a tone" />
-                            </Trigger>
+                            </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             {tones.map((tone) => (
@@ -278,23 +278,23 @@ function GeneratePageContent() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Cover Style</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                        <FormControl>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a cover style" />
                             </SelectTrigger>
-                        </FormControl>
-                            <SelectContent>
-                              {coverStyles.map((style) => (
-                                <SelectItem key={style} value={style}>
-                                  {style}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          </FormControl>
+                          <SelectContent>
+                            {coverStyles.map((style) => (
+                              <SelectItem key={style} value={style}>
+                                {style}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
