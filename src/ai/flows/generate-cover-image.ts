@@ -54,9 +54,6 @@ const generateCoverImageFlow = ai.defineFlow(
     *   **Author:** "${input.authorName}"
 4.  **Composition:** This is for a book cover, so the layout and composition should be professional. Do not just generate a background image. The text and design must work together as a cohesive cover.
 5.  **Output:** The final output must be only the complete cover image. Do not include any extra text or descriptions outside of the image itself.`,
-      config: {
-        responseModalities: ['IMAGE'],
-      },
     });
     
     if (!media.url) {

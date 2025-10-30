@@ -64,12 +64,12 @@ You must generate the content for the following sections in order, as separate c
 1.  **Title Page:**
     - Create a compelling title and a subtitle.
     - Include the author's name: {{{authorName}}}.
-    - Format this as the first "chapter" with the title "Title Page". Its content should just be the title, subtitle, and author name.
+    - Format this as the first "chapter" with the title "Title Page". Its content should just be the title, subtitle, and author name formatted with markdown newlines.
 
 2.  **Table of Contents (Outline):**
     - Generate a detailed table of contents listing a logical flow of chapters for the book. This serves as the book's outline.
     - Include an Introduction, 5-7 main chapters, and a Conclusion.
-    - Format this as the second "chapter" with the title "Table of Contents".
+    - Format this as the second "chapter" with the title "Table of Contents". The content should be a markdown list.
 
 3.  **Introduction:**
     - Write a full introduction for the ebook based on the topic.
