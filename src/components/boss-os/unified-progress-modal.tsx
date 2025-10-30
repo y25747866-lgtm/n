@@ -73,8 +73,14 @@ export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { is
     } catch (e: any) {
         console.error("A generation job failed:", e);
         setError(e.message || "An unknown error occurred during generation.");
-        if (contentStatus === 'running') setContentStatus("error");
-        if (coverStatus === 'running') setCoverStatus("error");
+        if (contentStatus === 'running') {
+            setContentStatus("error");
+            setContentProgress(100);
+        }
+        if (coverStatus === 'running') {
+            setCoverStatus("error");
+            setCoverProgress(100);
+        }
     }
   };
 
