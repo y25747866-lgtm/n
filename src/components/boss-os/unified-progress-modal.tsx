@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "../ui/button";
@@ -28,6 +28,7 @@ export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { is
   const [coverStatus, setCoverStatus] = useState<JobStatus>("pending");
   const [productResult, setProductResult] = useState<ProductResult>({ content: null, cover: null, params: null });
   const [error, setError] = useState<string | null>(null);
+  const hasRun = useRef(false);
 
   const isComplete = contentStatus === "completed" && coverStatus === "completed";
   const hasError = contentStatus === "error" || coverStatus === "error";
@@ -73,24 +74,38 @@ export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { is
     } catch (e: any) {
         console.error("A generation job failed:", e);
         setError(e.message || "An unknown error occurred during generation.");
-        if (contentStatus === 'running') {
+        if (contentStatus === 'running' || contentStatus === 'pending') {
             setContentStatus("error");
-            setContentProgress(100);
+            setContentProgress(100); // Mark as complete to stop showing progress
         }
-        if (coverStatus === 'running') {
+        if (coverStatus === 'running' || coverStatus === 'pending') {
             setCoverStatus("error");
-            setCoverProgress(100);
+            setCoverProgress(100); // Mark as complete to stop showing progress
         }
     }
   };
 
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !hasRun.current) {
+      hasRun.current = true;
       runJobs();
     }
-  }, [isOpen, generationParams]);
+  }, [isOpen]);
 
+  const handleClose = () => {
+    onClose();
+    // Reset state when closing, after a short delay to allow animation
+    setTimeout(() => {
+      setContentProgress(0);
+      setCoverProgress(0);
+      setContentStatus("pending");
+      setCoverStatus("pending");
+      setError(null);
+      setProductResult({ content: null, cover: null, params: null });
+      hasRun.current = false;
+    }, 300);
+  };
   
   const handleRetry = () => {
     // Reset state before retrying
@@ -98,6 +113,7 @@ export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { is
     setCoverProgress(0);
     setContentStatus("pending");
     setCoverStatus("pending");
+    hasRun.current = false; // Allow runJobs to execute again
     runJobs();
   };
   
@@ -145,7 +161,7 @@ export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { is
                 {hasError ? (
                   <Button onClick={handleRetry}>Retry</Button>
                 ) : (
-                  <Button variant="ghost" onClick={onClose}>Cancel</Button>
+                  <Button variant="ghost" onClick={handleClose}>Cancel</Button>
                 )}
             </DialogFooter>
         </>
@@ -153,7 +169,7 @@ export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { is
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
       <DialogContent className="max-w-4xl min-h-[500px] flex flex-col">
         {getDialogContent()}
       </DialogContent>
