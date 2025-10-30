@@ -21,7 +21,7 @@ const RegenerateCoverImageInputSchema = z.object({
     'Minimal',
     'Premium Gradient',
   ]).describe('The desired style of the cover image (e.g., Minimal, Photo, Illustrated).'),
-  imageModel: z.string().describe('The image generation model to use.'),
+  imageModel: z.string().describe('The image generation model to use.').default('googleai/imagen-4.0-fast-generate-001'),
 });
 export type RegenerateCoverImageInput = z.infer<typeof RegenerateCoverImageInputSchema>;
 
@@ -51,7 +51,7 @@ const regenerateCoverImageFlow = ai.defineFlow(
 3.  **Text Elements:** The following text must be clearly legible and beautifully integrated into the design:
     *   **Title:** "${input.title}"
     *   **Author:** "${input.authorName}"
-4.  **Composition:** This is for a book cover, so the layout and composition should be professional. Do not just generate a background image. The text and design must work together as a cohesive cover.
+4.  **Composition:** This is for a book cover, so the layout and composition should be professional. Do not just generate a background image. The text and design must work together as a cohesive cover. Ensure all text is spelled correctly and is fully visible on the cover.
 5.  **Output:** The final output must be only the complete cover image. Do not include any extra text or descriptions outside of the image itself.`,
     });
     

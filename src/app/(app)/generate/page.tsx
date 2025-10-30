@@ -99,7 +99,7 @@ const lengthDisplayMap: Record<FormData['length'], string> = {
 function GeneratePageContent() {
   const { subscription } = useSubscription();
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generationData, setGenerationData] = useState<GenerationParams | null>(
+  const [generationData, setGenerationData] = useState<Omit<GenerationParams, 'imageModel'> | null>(
     null
   );
   const searchParams = useSearchParams();
@@ -128,10 +128,7 @@ function GeneratePageContent() {
 
   function onSubmit(values: FormData) {
     if (!isSubscribed) return;
-    setGenerationData({
-        ...values,
-        imageModel: 'googleai/gemini-2.5-flash-image-preview'
-    });
+    setGenerationData(values);
     setIsGenerating(true);
   }
 
@@ -202,23 +199,23 @@ function GeneratePageContent() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Product Type</FormLabel>
-                        <FormControl>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a product type" />
                             </SelectTrigger>
-                            <SelectContent>
-                              {productTypes.map((type) => (
-                                <SelectItem key={type} value={type}>
-                                  {type}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
+                          </FormControl>
+                          <SelectContent>
+                            {productTypes.map((type) => (
+                              <SelectItem key={type} value={type}>
+                                {type}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -229,23 +226,23 @@ function GeneratePageContent() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Tone</FormLabel>
-                        <FormControl>
-                           <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                           >
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a tone" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {tones.map((tone) => (
-                                <SelectItem key={tone} value={tone}>
-                                  {tone}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
+                            </Trigger>
+                          </FormControl>
+                          <SelectContent>
+                            {tones.map((tone) => (
+                              <SelectItem key={tone} value={tone}>
+                                {tone}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -360,7 +357,7 @@ function GeneratePageContent() {
         <UnifiedProgressModal
           isOpen={isGenerating}
           onClose={() => setIsGenerating(false)}
-          generationParams={generationData}
+          generationParams={{...generationData, imageModel: "googleai/imagen-4.0-fast-generate-001"}}
         />
       )}
     </>

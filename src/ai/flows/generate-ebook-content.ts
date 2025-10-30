@@ -64,7 +64,7 @@ You must generate the content for the following sections in order, as separate c
 1.  **Title Page:**
     - Create a compelling title and a subtitle.
     - Include the author's name: {{{authorName}}}.
-    - Format this as the first "chapter" with the title "Title Page". Its content should just be the title, subtitle, and author name formatted with markdown newlines.
+    - Format this as the first "chapter" with the title "Title Page". Its content should just be the title, subtitle, and author name formatted with markdown newlines. The title itself must be returned in the 'title' field of the root JSON object.
 
 2.  **Table of Contents (Outline):**
     - Generate a detailed table of contents listing a logical flow of chapters for the book. This serves as the book's outline.
