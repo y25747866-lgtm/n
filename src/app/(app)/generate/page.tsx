@@ -130,7 +130,7 @@ function GeneratePageContent() {
     if (!isSubscribed) return;
     setGenerationData({
         ...values,
-        imageModel: 'googleai/imagen-4.0-fast-generate-001'
+        imageModel: 'googleai/gemini-2.5-flash-image-preview'
     });
     setIsGenerating(true);
   }
@@ -236,7 +236,7 @@ function GeneratePageContent() {
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a tone" />
-                            </SelectTrigger>
+                            </Trigger>
                           </FormControl>
                           <SelectContent>
                             {tones.map((tone) => (
@@ -288,7 +288,7 @@ function GeneratePageContent() {
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a cover style" />
-                            </SelectTrigger>
+                            </Trigger>
                           </FormControl>
                           <SelectContent>
                             {coverStyles.map((style) => (
