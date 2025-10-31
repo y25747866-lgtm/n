@@ -31,22 +31,16 @@
       "imageHint": "person portrait"
     },
     {
-      "id": "cover-minimal",
+      "id": "cover-gradient",
+      "description": "Premium gradient style ebook cover.",
+      "imageUrl": "https://images.unsplash.com/photo-1557682250-33bd709cbe85?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxibHVlJTIwcHVycGxlJTIwZ3JhZGllbnR8ZW58MHx8fHwxNzY0NTYxMTEyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "blue purple gradient"
+    },
+    {
+      "id": "cover-minimalist",
       "description": "Minimal style ebook cover.",
       "imageUrl": "https://images.unsplash.com/photo-1637661175651-fc1bd96f2d0b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxtaW5pbWFsaXN0JTIwZGVzaWdufGVufDB8fHx8MTc2MTM0MTUwMnww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "minimalist design"
-    },
-    {
-      "id": "cover-photo",
-      "description": "Photo style ebook cover.",
-      "imageUrl": "https://images.unsplash.com/photo-1588312744377-2adfb7b8578a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxjaXR5JTIwbmlnaHR8ZW58MHx8fHwxNzYxMjU5MDc1fDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "city night"
-    },
-    {
-      "id": "cover-illustrated",
-      "description": "Illustrated style ebook cover.",
-      "imageUrl": "https://images.unsplash.com/photo-1651223969333-7a02ad74c4f0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8dmVjdG9yJTIwaWxsdXN0cmF0aW9ufGVufDB8fHx8MTc2MTMxMDU1Nnww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "vector illustration"
     }
   ]
 }

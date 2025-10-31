@@ -100,7 +100,7 @@ export default function GeneratePage() {
 
   const coverStyleImage = (style: string) =>
     PlaceHolderImages.find(
-      (p) => p.id === `cover-${style.replace('photorealistic', 'photo')}`
+      (p) => p.id === `cover-${style}`
     )?.imageUrl || '/placeholder.png';
 
   return (
@@ -370,6 +370,3 @@ export default function GeneratePage() {
     </>
   );
 }
-
-    
-    
