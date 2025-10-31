@@ -6,7 +6,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
-  ChevronDown,
   Download,
   Loader2,
   Sparkles,
@@ -42,17 +41,16 @@ import { Switch } from '@/components/ui/switch';
 import UnifiedProgressModal from '@/components/boss-os/unified-progress-modal';
 import { type GenerationConfig, type EbookContent } from '@/lib/types';
 import Image from 'next/image';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { ErrorDisplay } from '@/components/boss-os/error-display';
 import { downloadFile } from '@/lib/download';
 
 const formSchema = z.object({
-  topic: z.string().min(10, 'Please enter a topic with at least 10 characters.'),
+  topic: z.string().min(1, 'Please enter a topic or keyword.'),
   authorName: z.string().optional(),
   productType: z.enum(['ebook', 'course', 'template']).default('ebook'),
   tone: z.enum(['professional', 'casual', 'persuasive']).default('professional'),
   length: z.number().min(20).max(100).default(40),
-  coverStyle: z.enum(['gradient', 'minimalist']).default('gradient'),
+  coverStyle: z.enum(['gradient', 'minimalist', 'modern']).default('gradient'),
   suggestPrice: z.boolean().default(true),
 });
 
@@ -97,11 +95,6 @@ export default function GeneratePage() {
     80: 'Very Long (≈60-80p)',
     100: 'Book (80-100p+)',
   };
-
-  const coverStyleImage = (style: string) =>
-    PlaceHolderImages.find(
-      (p) => p.id === `cover-${style}`
-    )?.imageUrl || '/placeholder.png';
 
   return (
     <>
@@ -150,7 +143,7 @@ export default function GeneratePage() {
                   name="topic"
                   render={({ field }) => (
                     <FormItem className="md:col-span-2">
-                      <FormLabel>Topic / Niche</FormLabel>
+                      <FormLabel>Enter your topic idea or keyword</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="e.g., 'A beginner's guide to investing in cryptocurrency'"
@@ -158,9 +151,6 @@ export default function GeneratePage() {
                           className="h-12 text-base"
                         />
                       </FormControl>
-                      <FormDescription>
-                        This is the core subject of your digital product.
-                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -256,30 +246,21 @@ export default function GeneratePage() {
                   render={({ field }) => (
                       <FormItem>
                           <FormLabel>Cover Style</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
-                                  <SelectTrigger className="h-14">
-                                      <div className="flex items-center gap-3">
-                                          <Image src={coverStyleImage(field.value)} width={40} height={40} alt={field.value} className="rounded-sm object-cover" />
-                                          <SelectValue placeholder="Select a cover style" />
-                                      </div>
+                                  <SelectTrigger>
+                                      <SelectValue placeholder="Select a cover style" />
                                   </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                  <SelectItem value="gradient">
-                                      <div className="flex items-center gap-3">
-                                          <Image src={coverStyleImage('gradient')} width={24} height={24} alt="Premium Gradient" className="rounded-sm object-cover" />
-                                          Premium Gradient
-                                      </div>
-                                  </SelectItem>
-                                  <SelectItem value="minimalist">
-                                      <div className="flex items-center gap-3">
-                                          <Image src={coverStyleImage('minimalist')} width={24} height={24} alt="Minimal" className="rounded-sm object-cover" />
-                                          Minimal
-                                      </div>
-                                  </SelectItem>
+                                  <SelectItem value="minimalist">Minimal</SelectItem>
+                                  <SelectItem value="gradient">Premium Gradient</SelectItem>
+                                  <SelectItem value="modern">Modern</SelectItem>
                               </SelectContent>
                           </Select>
+                           <FormDescription>
+                           Cover image will be generated automatically when your product is created.
+                          </FormDescription>
                           <FormMessage />
                       </FormItem>
                   )}
@@ -312,7 +293,7 @@ export default function GeneratePage() {
                     size="lg"
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full h-12 text-lg px-8 bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end text-white hover:opacity-90 transition-opacity"
+                    className="w-full h-12 text-lg px-8"
                   >
                     {isSubmitting ? (
                       <>
@@ -322,7 +303,7 @@ export default function GeneratePage() {
                     ) : (
                       <>
                         <Sparkles className="mr-2 h-5 w-5" />
-                        Generate
+                        Generate Your First Product
                       </>
                     )}
                   </Button>

@@ -3,25 +3,30 @@
 
 import {
   Card,
-  CardTitle,
   CardContent,
-  CardFooter,
   CardDescription,
   CardHeader,
+  CardTitle,
 } from '@/components/ui/card';
-import { ArrowRight, Book, Flame, Loader2, Search, Sparkles } from 'lucide-react';
-import { useCollection } from '@/firebase';
 import {
-  collection,
-  query,
-  orderBy,
-} from 'firebase/firestore';
+  Flame,
+  LayoutTemplate,
+  Loader2,
+  Search,
+  Book,
+  Sparkles,
+  ArrowRight,
+} from 'lucide-react';
+import { useCollection } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
 import { useFirestore, useMemoFirebase } from '@/firebase/provider';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import Image from 'next/image';
 
 interface TrendingTopic {
   id: string;
@@ -29,7 +34,45 @@ interface TrendingTopic {
   usage_count: number;
 }
 
-function ProductSearchPage() {
+const templates = [
+  {
+    title: 'Minimalist Portfolio',
+    description: 'A clean and modern portfolio template for creatives.',
+  },
+  {
+    title: 'SaaS Landing Page',
+    description: 'High-converting landing page for software products.',
+  },
+  {
+    title: 'Digital Product Storefront',
+    description: 'A sleek storefront to sell your digital goods.',
+  },
+  {
+    title: 'Agency Website',
+    description: 'Professional template for digital agencies and freelancers.',
+  },
+  {
+    title: 'Blog & Newsletter',
+    description: 'Content-focused template for writers and creators.',
+  },
+  {
+    title: 'Personal Website',
+    description: 'A stylish personal site to build your brand.',
+  },
+];
+
+const gradientStops = [
+  'from-red-500 to-yellow-500',
+  'from-green-400 to-blue-500',
+  'from-purple-500 to-pink-500',
+  'from-blue-400 to-indigo-500',
+  'from-yellow-400 to-orange-500',
+  'from-teal-400 to-cyan-500',
+  'from-rose-400 to-red-500',
+  'from-lime-400 to-green-500',
+];
+
+function DigitalProductSearch() {
   const firestore = useFirestore();
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -49,108 +92,157 @@ function ProductSearchPage() {
     isLoading,
     error,
   } = useCollection<TrendingTopic>(trendingTopicsQuery);
-  
-  const filteredTopics = trendingTopics?.filter(topic => 
+
+  const filteredTopics = trendingTopics?.filter((topic) =>
     topic.topic.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const hasTopics = trendingTopics && trendingTopics.length > 0;
   const hasFilteredTopics = filteredTopics && filteredTopics.length > 0;
 
-  return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-          <Book />
-          Digital Product Ideas
-        </h1>
-        <p className="text-muted-foreground">
-          Browse trending topics for e-books, courses, and guides.
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-muted-foreground">Loading trends...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertTitle>Error Loading Trends</AlertTitle>
+        <AlertDescription>
+          Could not load trending topics. Please check your connection or try
+          again later.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  if (!hasTopics) {
+    return (
+      <div className="text-center py-16 border-2 border-dashed rounded-lg flex flex-col items-center justify-center space-y-4">
+        <Sparkles className="h-12 w-12 text-muted-foreground/50" />
+        <h3 className="text-xl font-semibold">
+          No current trends available.
+        </h3>
+        <p className="text-muted-foreground mt-2 max-w-md">
+          Create your first product to activate your trend dashboard.
         </p>
       </div>
+    );
+  }
 
+  return (
+    <div className="space-y-6">
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+        <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder="Search topics..."
-          className="h-12 pl-10 w-full"
+          className="h-12 w-full pl-10"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
 
-
-      {isLoading && (
-        <div className="flex justify-center items-center h-48 flex-col gap-4 text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Loading trending topics...</p>
+      {hasFilteredTopics ? (
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {filteredTopics.map((topic, index) => (
+            <Card
+              key={topic.id}
+              className={`relative flex flex-col overflow-hidden text-white bg-gradient-to-br ${gradientStops[index % gradientStops.length]}`}
+            >
+              <CardHeader className="flex-1">
+                <CardTitle className="text-2xl font-bold">
+                  {topic.topic}
+                </CardTitle>
+              </CardHeader>
+              <CardFooter className="z-10 flex items-center justify-between bg-black/20 p-3 backdrop-blur-sm">
+                <div className="flex items-center gap-2 text-sm font-semibold">
+                  <Flame className="h-4 w-4" />
+                  <span>{topic.usage_count.toLocaleString()} creators</span>
+                </div>
+              </CardFooter>
+            </Card>
+          ))}
         </div>
-      )}
-
-      {error && (
-        <Alert variant="destructive">
-          <AlertTitle>Error Loading Topics</AlertTitle>
-          <AlertDescription>
-            Could not load trending topics. Please check your connection or try again later.
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {!isLoading && !error && (
-        <>
-          {hasFilteredTopics ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredTopics.map((product) => (
-                <Card key={product.id} className="glass-card flex flex-col">
-                  <CardHeader>
-                    <CardTitle className="text-lg">{product.topic}</CardTitle>
-                    <CardDescription className="flex items-center gap-1 text-amber-400">
-                      <Flame className="h-4 w-4" />
-                      {product.usage_count.toLocaleString()} creators
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex-1 pt-0">
-                    <p className="text-muted-foreground text-sm">
-                      This topic is gaining traction. Explore it to create your next
-                      hit product.
-                    </p>
-                  </CardContent>
-                  <CardFooter>
-                    <Button className="w-full">
-                      Explore Topic <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          ) : (
-             <div className="text-center py-16 border-2 border-dashed rounded-lg flex flex-col items-center justify-center space-y-4">
-                <Sparkles className="h-12 w-12 text-muted-foreground/50" />
-                <h3 className="text-xl font-semibold">
-                  {hasTopics ? 'No Topics Found' : 'Your Trend Dashboard Awaits'}
-                </h3>
-                <p className="text-muted-foreground mt-2 max-w-md">
-                  {hasTopics
-                    ? "Your search didn't match any topics. Try a different keyword."
-                    : "The magic happens when you create! Generate your first e-book, and this page will light up with trending topics."
-                  }
-                </p>
-                {!hasTopics && (
-                   <Button variant="default" className="mt-4 text-lg" asChild>
-                    <Link href="/generate">
-                      <Sparkles className="mr-2 h-5 w-5" />
-                      Generate Your First Product
-                    </Link>
-                  </Button>
-                )}
-            </div>
-          )}
-        </>
+      ) : (
+        <div className="text-center py-16 border-2 border-dashed rounded-lg">
+          <p className="text-muted-foreground">
+            No results found. Try another keyword.
+          </p>
+        </div>
       )}
     </div>
   );
 }
 
-export default function DownloadsPage() {
-  return <ProductSearchPage />;
+function TemplateSearch() {
+  return (
+    <div className="space-y-6">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          placeholder="Search for a template..."
+          className="h-12 w-full pl-10"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {templates.map((template, index) => (
+          <Card key={index} className="glass-card flex flex-col">
+            <CardHeader>
+              <div className="relative aspect-video overflow-hidden rounded-md bg-muted">
+                <Image
+                  src={`https://picsum.photos/seed/${index + 20}/600/400`}
+                  alt={template.title}
+                  fill
+                  className="object-cover"
+                  data-ai-hint="website template"
+                />
+              </div>
+            </CardHeader>
+            <CardContent className="flex-1">
+              <CardTitle className="text-lg">{template.title}</CardTitle>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {template.description}
+              </p>
+            </CardContent>
+            <CardFooter>
+              <Button className="w-full">
+                View Template <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <div className="space-y-8">
+      <Tabs defaultValue="digital-product">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="digital-product">
+            <Book className="mr-2 h-4 w-4" />
+            Digital Product Search
+          </TabsTrigger>
+          <TabsTrigger value="template-search">
+            <LayoutTemplate className="mr-2 h-4 w-4" />
+            Template Search
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="digital-product">
+          <DigitalProductSearch />
+        </TabsContent>
+        <TabsContent value="template-search">
+          <TemplateSearch />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
 }

@@ -3,12 +3,12 @@ import { z } from 'zod';
 
 // Form & Generation Config
 export const GenerationConfigSchema = z.object({
-  topic: z.string().min(10),
+  topic: z.string().min(1),
   authorName: z.string().optional(),
   productType: z.enum(['ebook', 'course', 'template']),
   tone: z.enum(['professional', 'casual', 'persuasive']),
   length: z.number(),
-  coverStyle: z.enum(['gradient', 'minimalist']),
+  coverStyle: z.enum(['gradient', 'minimalist', 'modern']),
   suggestPrice: z.boolean(),
   imageModel: z.string(),
 });
@@ -63,6 +63,3 @@ export type CoverImageResult = z.infer<typeof CoverImageResultSchema>;
 
 // UI State
 export type JobStatus = 'pending' | 'running' | 'completed' | 'error';
-
-    
-    

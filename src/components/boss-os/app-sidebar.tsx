@@ -3,13 +3,12 @@
 
 import {
   LayoutDashboard,
-  LayoutTemplate,
-  Book,
   CreditCard,
   Settings,
   LogOut,
   ArrowRight,
   Wand2,
+  Search,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -38,8 +37,7 @@ import { VisuallyHidden } from '@/components/ui/visually-hidden';
 const menuItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/generate', label: 'Generator', icon: Wand2 },
-  { href: '/trending', label: 'Template Search', icon: LayoutTemplate },
-  { href: '/downloads', label: 'Product Search', icon: Book },
+  { href: '/downloads', label: 'Search', icon: Search },
   { href: '/subscription', label: 'Subscription', icon: CreditCard },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];

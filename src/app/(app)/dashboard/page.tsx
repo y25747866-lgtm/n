@@ -1,93 +1,28 @@
 
 'use client';
 
-import {
-  Book,
-  FileText,
-  Lightbulb,
-  TrendingUp,
-} from 'lucide-react';
-import Link from 'next/link';
-
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-
-const quickActions = [
-  {
-    title: 'Generate a New Product',
-    description: 'Create a new e-book or course from scratch.',
-    icon: Book,
-    href: '/generate',
-  },
-  {
-    title: 'Explore Trending Products',
-    description: 'See what digital products are currently popular.',
-    icon: TrendingUp,
-    href: '/downloads',
-  },
-  {
-    title: 'Browse Templates',
-    description: 'Find a new look for your next landing page or site.',
-    icon: FileText,
-    href: '/trending',
-  },
-  {
-    title: 'Get Inspired',
-    description: 'Discover new ideas and niches for digital products.',
-    icon: Lightbulb,
-    href: '/trending',
-  },
-];
+import { Sparkles } from 'lucide-react';
+import Link from 'next/link';
 
 export default function DashboardPage() {
   return (
-    <div className="container mx-auto p-4 sm:p-6 lg:p-8 max-w-5xl space-y-8">
-      <header>
-        <h1 className="text-4xl md:text-5xl font-black tracking-tighter">
-          Welcome, <span className="bg-clip-text text-transparent bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end">Boss</span>
+    <div className="flex h-full flex-col items-center justify-center text-center">
+      <div className="max-w-xl space-y-6">
+        <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl bg-clip-text text-transparent bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end">
+          Your Trend Dashboard Awaits
         </h1>
-        <p className="mt-2 text-lg text-muted-foreground">
-          This is your command center for creating and managing your digital empire.
+        <p className="text-lg text-muted-foreground md:text-xl">
+          The magic begins when you create! Generate your first e-book, and this
+          page will fill with trending topics.
         </p>
-      </header>
-
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {quickActions.map((action) => (
-          <Link href={action.href} key={action.title}>
-            <Card className="glass-card h-full transform transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl">
-              <CardHeader>
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <action.icon className="h-6 w-6" />
-                </div>
-                <CardTitle>{action.title}</CardTitle>
-                <CardDescription>{action.description}</CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
-        ))}
+        <Link href="/generate">
+          <Button size="lg" className="h-12 px-8 text-lg">
+            <Sparkles className="mr-2 h-5 w-5" />
+            Get Started
+          </Button>
+        </Link>
       </div>
-
-      <Card className="glass-card">
-        <CardHeader>
-          <CardTitle>Ready to Create?</CardTitle>
-          <CardDescription>
-            Start your journey by generating a new digital product. Let our AI do the heavy lifting.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Link href="/generate">
-            <Button size="lg" className="text-lg px-8 bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end text-white hover:opacity-90 transition-opacity">
-              Generate Your First Product
-            </Button>
-          </Link>
-        </CardContent>
-      </Card>
     </div>
   );
 }
