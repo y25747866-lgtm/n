@@ -7,6 +7,7 @@ import { SidebarProvider, useSidebar } from '@/contexts/sidebar-provider';
 import { cn } from '@/lib/utils';
 import React from 'react';
 import { usePathname } from 'next/navigation';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 function AppContent({ children }: { children: React.ReactNode }) {
   const { isOpen, isDesktop, isNavVisible, setIsNavVisible } = useSidebar();
@@ -41,8 +42,10 @@ function AppContent({ children }: { children: React.ReactNode }) {
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   // We wrap the content in SidebarProvider here, so both AppSidebar and AppContent can use it.
   return (
-    <SidebarProvider>
-      <AppContent>{children}</AppContent>
-    </SidebarProvider>
+    <FirebaseClientProvider>
+      <SidebarProvider>
+        <AppContent>{children}</AppContent>
+      </SidebarProvider>
+    </FirebaseClientProvider>
   );
 }

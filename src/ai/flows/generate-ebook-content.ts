@@ -1,9 +1,9 @@
 
 'use server';
 /**
- * @fileOverview A flow for generating e-book content based on a detailed configuration.
+ * @fileOverview A flow for generating e-book content and tracking topic trends.
  *
- * - generateEbookContent - Generates the title and markdown content for an e-book.
+ * - generateEbookContent - Generates title/content and updates the topic's usage count in Firestore.
  * - EbookGenerationConfigSchema - Input schema for the flow.
  * - EbookContentSchema - Output schema for the flow.
  */
@@ -12,6 +12,10 @@ import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { EbookContentSchema, EbookGenerationConfigSchema } from '@/lib/types';
 import type { EbookContent, GenerationConfig } from '@/lib/types';
+import { initializeFirebase } from '@/firebase';
+import { doc, runTransaction, serverTimestamp } from 'firebase/firestore';
+
+const { firestore } = initializeFirebase();
 
 const contentGenerationPrompt = ai.definePrompt({
   name: 'generateEbookPrompt',
@@ -48,6 +52,34 @@ Begin generation now.
 `,
 });
 
+async function trackTopicTrend(topic: string) {
+  if (!firestore) return;
+  const topicId = topic.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  const topicRef = doc(firestore, 'trending_topics', topicId);
+
+  try {
+    await runTransaction(firestore, async (transaction) => {
+      const topicDoc = await transaction.get(topicRef);
+      if (!topicDoc.exists()) {
+        transaction.set(topicRef, {
+          topic: topic,
+          usage_count: 1,
+          lastUpdated: serverTimestamp(),
+        });
+      } else {
+        const newCount = (topicDoc.data().usage_count || 0) + 1;
+        transaction.update(topicRef, {
+          usage_count: newCount,
+          lastUpdated: serverTimestamp(),
+        });
+      }
+    });
+  } catch (error) {
+    console.error("Failed to update topic trend:", error);
+    // Non-critical error, so we don't re-throw. The content generation can still succeed.
+  }
+}
+
 export async function generateEbookContent(
   input: GenerationConfig
 ): Promise<EbookContent> {
@@ -55,6 +87,10 @@ export async function generateEbookContent(
   if (!output) {
     throw new Error('Failed to generate e-book content.');
   }
+  
+  // Track the trend in Firestore, but don't block the response
+  trackTopicTrend(input.topic);
+
   return output;
 }
 
@@ -66,5 +102,3 @@ ai.defineFlow(
   },
   generateEbookContent
 );
-
-    

@@ -178,6 +178,31 @@
         "source",
         "lastUpdated"
       ]
+    },
+    "TrendingTopic": {
+      "title": "Trending Topic",
+      "description": "Represents a topic and its usage count.",
+      "type": "object",
+      "properties": {
+        "topic": {
+          "type": "string",
+          "description": "The name of the topic."
+        },
+        "usage_count": {
+          "type": "number",
+          "description": "How many times this topic has been used to generate a product."
+        },
+        "lastUpdated": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the count was last updated."
+        }
+      },
+      "required": [
+        "topic",
+        "usage_count",
+        "lastUpdated"
+      ]
     }
   },
   "auth": {
@@ -256,6 +281,22 @@
             {
               "name": "trendId",
               "description": "The unique identifier of the trend."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/trending_topics/{topicId}",
+        "definition": {
+          "entityName": "TrendingTopic",
+          "schema": {
+            "$ref": "#/backend/entities/TrendingTopic"
+          },
+          "description": "Stores usage counts for topics to identify trends. Publicly readable.",
+          "params": [
+            {
+              "name": "topicId",
+              "description": "A unique ID for the topic, often a slugified version of the topic name."
             }
           ]
         }
