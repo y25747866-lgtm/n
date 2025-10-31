@@ -1,0 +1,282 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the Boss OS application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "User's email address.",
+          "format": "email"
+        },
+        "firstName": {
+          "type": "string",
+          "description": "User's first name."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "User's last name."
+        },
+        "subscriptionId": {
+          "type": "string",
+          "description": "Reference to the user's current Subscription. (Relationship: User 1:1 Subscription)"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "firstName",
+        "lastName"
+      ]
+    },
+    "Subscription": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Subscription",
+      "type": "object",
+      "description": "Represents a user's subscription plan in Boss OS.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the subscription."
+        },
+        "planId": {
+          "type": "string",
+          "description": "Identifier for the specific subscription plan (e.g., monthly, annual)."
+        },
+        "startDate": {
+          "type": "string",
+          "description": "Date when the subscription started.",
+          "format": "date-time"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "Date when the subscription ends.",
+          "format": "date-time"
+        },
+        "creditsRemaining": {
+          "type": "number",
+          "description": "Number of credits the user has remaining for content generation."
+        },
+        "coverRegenerationsRemaining": {
+          "type": "number",
+          "description": "Number of cover regenerations the user has remaining."
+        }
+      },
+      "required": [
+        "id",
+        "planId",
+        "startDate",
+        "endDate",
+        "creditsRemaining",
+        "coverRegenerationsRemaining"
+      ]
+    },
+    "Product": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Product",
+      "type": "object",
+      "description": "Represents a generated product (ebook, course, etc.) in Boss OS.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the product."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User that generated this product. (Relationship: User 1:N Product)"
+        },
+        "topic": {
+          "type": "string",
+          "description": "Topic of the generated product."
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of product (e.g., Ebook, Course Script)."
+        },
+        "tone": {
+          "type": "string",
+          "description": "Tone of the product (e.g., Casual, Professional)."
+        },
+        "length": {
+          "type": "string",
+          "description": "Length of the product (Short, Medium, Long)."
+        },
+        "coverStyle": {
+          "type": "string",
+          "description": "Style of the generated cover (e.g., Minimal, Photo)."
+        },
+        "contentUrl": {
+          "type": "string",
+          "description": "URL of the generated content (e.g., ebook content)."
+        },
+        "coverImageUrl": {
+          "type": "string",
+          "description": "URL of the generated cover image."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Date and time when the product was generated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "topic",
+        "type",
+        "tone",
+        "length",
+        "coverStyle",
+        "contentUrl",
+        "coverImageUrl",
+        "createdAt"
+      ]
+    },
+    "Trend": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Trend",
+      "type": "object",
+      "description": "Represents a trending idea or topic in Boss OS.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the trend."
+        },
+        "topic": {
+          "type": "string",
+          "description": "Trending topic or keyword."
+        },
+        "rationale": {
+          "type": "string",
+          "description": "Rationale behind why this topic is trending."
+        },
+        "trendScore": {
+          "type": "number",
+          "description": "Score indicating the popularity or potential of the trend."
+        },
+        "source": {
+          "type": "string",
+          "description": "Source of the trending information (e.g., Amazon PLR, Etsy Digital)."
+        },
+        "lastUpdated": {
+          "type": "string",
+          "description": "Date and time when the trend information was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "topic",
+        "rationale",
+        "trendScore",
+        "source",
+        "lastUpdated"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profiles. Uses path-based access control; only the user can read/write their own profile.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/subscriptions/{subscriptionId}",
+        "definition": {
+          "entityName": "Subscription",
+          "schema": {
+            "$ref": "#/backend/entities/Subscription"
+          },
+          "description": "Stores subscription information for a user. Uses path-based access control; only the user can access their own subscriptions.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "subscriptionId",
+              "description": "The unique identifier of the subscription."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/products/{productId}",
+        "definition": {
+          "entityName": "Product",
+          "schema": {
+            "$ref": "#/backend/entities/Product"
+          },
+          "description": "Stores products generated by a user. Includes denormalized 'userId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "productId",
+              "description": "The unique identifier of the product."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/trends/{trendId}",
+        "definition": {
+          "entityName": "Trend",
+          "schema": {
+            "$ref": "#/backend/entities/Trend"
+          },
+          "description": "Stores trending ideas and topics. Global read access, admin-only write access via /roles_admin/{uid}.",
+          "params": [
+            {
+              "name": "trendId",
+              "description": "The unique identifier of the trend."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles_admin/{userId}",
+        "definition": {
+          "entityName": "role_admin",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Collection to store admin roles. Existence of a document grants admin privileges.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who is an admin."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to ensure security, scalability, and ease of debugging, while adhering to the principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). It leverages denormalization to avoid hierarchical authorization dependencies and simplifies security rules by structurally segregating data based on access requirements.\n\n**Authorization Independence:**\nAuthorization Independence is achieved via denormalization of access control data. For example, the `products` subcollection under each `user` uses the `userId` field to determine ownership. This eliminates the need for security rules to perform `get()` operations on parent documents, which would violate atomic operations. The `Trend` collection is globally readable and writable only by admins (defined through the `/roles_admin/{uid}` collection), and the data integrity is upheld without relying on external data.\n\n**Clarity of Intent:**\nThe structure explicitly defines ownership using path-based access control (e.g., `/users/{userId}/products/{productId}`). This approach makes it straightforward to implement security rules based on user ownership.\n\n**DBAC (Database-Based Access Control):**\nGlobal roles (e.g., admin) are managed through the `/roles_admin/{uid}` collection. The existence of a document for a user ID in this collection grants admin privileges.\n\n**QAPs (Rules are not Filters):**\nThe structure supports secure `list` operations by ensuring that collections do not mix data with different access needs. For instance, user-generated products are stored under `/users/{userId}/products/{productId}`, ensuring that listing products under a user only returns the products owned by that user. Similarly, `/trends` can be read globally, as that entire collection has the same access requirements.\n\n**Invariants:**\nThe structure ensures the integrity of ownership, timestamps, and denormalized data. Ownership is explicitly modeled using the `userId` field in the `products` collection, creating a strict link to the user who owns the record."
+  }
+}
