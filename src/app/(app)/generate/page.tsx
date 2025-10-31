@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -6,9 +7,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
   Book,
-  Download,
+  Archive,
   FileText,
-  FileZip,
   Loader2,
   Sparkles,
   Wand2,
@@ -104,7 +104,7 @@ ${product.callToAction}
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header />
+      
       <main className="flex-1 p-4 sm:p-6 lg:p-8">
         <div className="container mx-auto max-w-5xl space-y-8">
           <header className="text-center">
@@ -188,7 +188,7 @@ ${product.callToAction}
                            <FileText /> Markdown
                         </Button>
                          <Button variant="outline" onClick={() => handleDownload('zip')} disabled>
-                           <FileZip /> ZIP
+                           <Archive /> ZIP
                         </Button>
                          <Button variant="outline" onClick={() => handleDownload('pdf')} disabled>
                            <Book /> PDF

@@ -4,6 +4,7 @@
 import AppSidebar from '@/components/boss-os/app-sidebar';
 import Header from '@/components/boss-os/header';
 import { SidebarProvider, useSidebar } from '@/contexts/sidebar-provider';
+import { SubscriptionProvider } from '@/contexts/subscription-provider';
 import { cn } from '@/lib/utils';
 import React from 'react';
 import { usePathname } from 'next/navigation';
@@ -43,9 +44,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   // We wrap the content in SidebarProvider here, so both AppSidebar and AppContent can use it.
   return (
     <FirebaseClientProvider>
-      <SidebarProvider>
-        <AppContent>{children}</AppContent>
-      </SidebarProvider>
+      <SubscriptionProvider>
+        <SidebarProvider>
+          <AppContent>{children}</AppContent>
+        </SidebarProvider>
+      </SubscriptionProvider>
     </FirebaseClientProvider>
   );
 }
