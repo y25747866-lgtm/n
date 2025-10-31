@@ -12,10 +12,8 @@ import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { EbookContentSchema, EbookGenerationConfigSchema } from '@/lib/types';
 import type { EbookContent, GenerationConfig } from '@/lib/types';
-import { initializeFirebase } from '@/firebase';
 import { doc, runTransaction, serverTimestamp } from 'firebase/firestore';
-
-const { firestore } = initializeFirebase();
+import { firestore } from '@/firebase/server-init';
 
 const contentGenerationPrompt = ai.definePrompt({
   name: 'generateEbookPrompt',
