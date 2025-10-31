@@ -8,7 +8,7 @@ export const GenerationConfigSchema = z.object({
   productType: z.enum(['ebook', 'course', 'template']),
   tone: z.enum(['professional', 'casual', 'persuasive']),
   length: z.number(),
-  coverStyle: z.enum(['gradient', 'photorealistic', '3d', 'minimalist']),
+  coverStyle: z.enum(['gradient', 'minimalist']),
   suggestPrice: z.boolean(),
   imageModel: z.string(),
 });
@@ -64,4 +64,5 @@ export type CoverImageResult = z.infer<typeof CoverImageResultSchema>;
 // UI State
 export type JobStatus = 'pending' | 'running' | 'completed' | 'error';
 
+    
     

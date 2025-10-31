@@ -52,7 +52,7 @@ const formSchema = z.object({
   productType: z.enum(['ebook', 'course', 'template']).default('ebook'),
   tone: z.enum(['professional', 'casual', 'persuasive']).default('professional'),
   length: z.number().min(20).max(100).default(40),
-  coverStyle: z.enum(['gradient', 'photorealistic', '3d', 'minimalist']).default('gradient'),
+  coverStyle: z.enum(['gradient', 'minimalist']).default('gradient'),
   suggestPrice: z.boolean().default(true),
 });
 
@@ -272,18 +272,6 @@ export default function GeneratePage() {
                                           Premium Gradient
                                       </div>
                                   </SelectItem>
-                                  <SelectItem value="photorealistic">
-                                      <div className="flex items-center gap-3">
-                                          <Image src={coverStyleImage('photorealistic')} width={24} height={24} alt="Realistic" className="rounded-sm object-cover" />
-                                          Realistic
-                                      </div>
-                                  </SelectItem>
-                                  <SelectItem value="3d">
-                                      <div className="flex items-center gap-3">
-                                          <Image src={coverStyleImage('3d')} width={24} height={24} alt="3D" className="rounded-sm object-cover" />
-                                          3D
-                                      </div>
-                                  </SelectItem>
                                   <SelectItem value="minimalist">
                                       <div className="flex items-center gap-3">
                                           <Image src={coverStyleImage('minimalist')} width={24} height={24} alt="Minimal" className="rounded-sm object-cover" />
@@ -383,4 +371,5 @@ export default function GeneratePage() {
   );
 }
 
+    
     
