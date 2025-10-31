@@ -15,7 +15,6 @@ import {
   collection,
   query,
   orderBy,
-  limit,
 } from 'firebase/firestore';
 import { useFirestore, useMemoFirebase } from '@/firebase/provider';
 import { Button } from '@/components/ui/button';
@@ -35,8 +34,7 @@ function ProductSearchPage() {
       firestore
         ? query(
             collection(firestore, 'trending_topics'),
-            orderBy('usage_count', 'desc'),
-            limit(10)
+            orderBy('usage_count', 'desc')
           )
         : null,
     [firestore]
