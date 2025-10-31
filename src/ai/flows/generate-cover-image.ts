@@ -46,5 +46,3 @@ ai.defineFlow(
   },
   generateCoverImage
 );
-
-    
