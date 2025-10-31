@@ -9,7 +9,7 @@ import {
   CardDescription,
   CardHeader,
 } from '@/components/ui/card';
-import { ArrowRight, Book, Flame, Loader2, Search } from 'lucide-react';
+import { ArrowRight, Book, Flame, Loader2, Search, Sparkles } from 'lucide-react';
 import { useCollection } from '@/firebase';
 import {
   collection,
@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
+import Link from 'next/link';
 
 interface TrendingTopic {
   id: string;
@@ -120,17 +121,23 @@ function ProductSearchPage() {
               ))}
             </div>
           ) : (
-             <div className="text-center py-16 border-2 border-dashed rounded-lg">
-                <h3 className="text-xl font-semibold">No Topics Found</h3>
-                <p className="text-muted-foreground mt-2">
-                  {trendingTopics?.length === 0 
-                    ? "It looks like no products have been generated yet. Be the first!"
-                    : "Your search didn't match any topics. Try a different keyword."
+             <div className="text-center py-16 border-2 border-dashed rounded-lg flex flex-col items-center justify-center space-y-4">
+                <Sparkles className="h-12 w-12 text-muted-foreground/50" />
+                <h3 className="text-xl font-semibold">
+                  {trendingTopics && trendingTopics.length > 0 ? 'No Topics Found' : 'Your Trend Dashboard Awaits'}
+                </h3>
+                <p className="text-muted-foreground mt-2 max-w-md">
+                  {trendingTopics && trendingTopics.length > 0
+                    ? "Your search didn't match any topics. Try a different keyword."
+                    : "The magic happens when you create! Generate your first e-book, and this page will light up with trending topics."
                   }
                 </p>
                 {trendingTopics?.length === 0 && (
-                   <Button variant="default" className="mt-4" asChild>
-                    <a href="/generate">Generate a Product</a>
+                   <Button variant="default" className="mt-4 text-lg" asChild>
+                    <Link href="/generate">
+                      <Sparkles className="mr-2 h-5 w-5" />
+                      Generate Your First Product
+                    </Link>
                   </Button>
                 )}
             </div>
