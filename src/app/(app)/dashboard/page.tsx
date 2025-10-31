@@ -1,159 +1,91 @@
-
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
-import { ArrowRight, Lightbulb, StepForward } from 'lucide-react';
+import {
+  Book,
+  FileText,
+  Lightbulb,
+  TrendingUp,
+} from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { useSidebar } from '@/contexts/sidebar-provider';
-import { useEffect } from 'react';
 
-const features = [
-  {
-    image: PlaceHolderImages.find(p => p.id === 'cover-minimal'),
-    title: 'Content Generation',
-    description: 'Instantly generate high-quality ebooks, course scripts, and more.',
-  },
-  {
-    image: PlaceHolderImages.find(p => p.id === 'cover-photo'),
-    title: 'Cover Creation',
-    description: 'Concurrently design stunning, professional covers for your digital products.',
-  },
-  {
-    image: PlaceHolderImages.find(p => p.id === 'cover-illustrated'),
-    title: 'Trend Analysis',
-    description: 'Discover viral product ideas and niches before they take off.',
-  },
-];
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
-const howItWorks = [
+const quickActions = [
   {
+    title: 'Generate a New Product',
+    description: 'Create a new e-book or course from scratch.',
+    icon: Book,
+    href: '/generate',
+  },
+  {
+    title: 'Explore Trending Products',
+    description: 'See what digital products are currently popular.',
+    icon: TrendingUp,
+    href: '/downloads',
+  },
+  {
+    title: 'Browse Templates',
+    description: 'Find a new look for your next landing page or site.',
+    icon: FileText,
+    href: '/trending',
+  },
+  {
+    title: 'Get Inspired',
+    description: 'Discover new ideas and niches for digital products.',
     icon: Lightbulb,
-    step: 'Step 1',
-    title: 'Choose Topic',
-    description: 'Select a niche or use our AI to find trending ideas.',
-  },
-  {
-    icon: 'GEN_ICON',
-    step: 'Step 2',
-    title: 'Generate',
-    description: 'AI crafts your content and cover simultaneously.',
-  },
-  {
-    icon: StepForward,
-    step: 'Step 3',
-    title: 'Launch',
-    description: 'Download, sell, and build your digital empire.',
+    href: '/trending',
   },
 ];
 
 export default function DashboardPage() {
-  const router = useRouter();
-  const { setIsOpen, isDesktop, setIsNavVisible, isNavVisible } = useSidebar();
-
-  useEffect(() => {
-    // When this page loads, ensure the nav is hidden until the user acts.
-    if (!isNavVisible) {
-      setIsNavVisible(false);
-    }
-  }, [isNavVisible, setIsNavVisible]);
-
-
-  const handlePrimaryAction = () => {
-    setIsNavVisible(true);
-    // After revealing nav, if on desktop, open the sidebar. Then navigate.
-    if (isDesktop) {
-        setIsOpen(true);
-    }
-    router.push('/generate');
-  };
-
   return (
-    <div className="flex flex-col items-center text-center space-y-16 lg:space-y-24">
-      <section className="mt-8 md:mt-16 max-w-4xl mx-auto">
-        <h1 className="text-4xl md:text-6xl font-black tracking-tighter">
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end">Boss OS</span>: AI Digital Product Factory
+    <div className="container mx-auto p-4 sm:p-6 lg:p-8 max-w-5xl space-y-8">
+      <header>
+        <h1 className="text-4xl md:text-5xl font-black tracking-tighter">
+          Welcome, <span className="bg-clip-text text-transparent bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end">Boss</span>
         </h1>
-        <p className="mt-4 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-          Generate ebooks, courses, covers, and trending digital assets instantly. Turn ideas into income streams with the power of AI.
+        <p className="mt-2 text-lg text-muted-foreground">
+          This is your command center for creating and managing your digital empire.
         </p>
-        <div className="mt-8 flex justify-center gap-4">
-          <Button
-            size="lg"
-            className="text-lg px-8 py-6 bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end text-white hover:opacity-90 transition-opacity animate-pulse"
-            onClick={handlePrimaryAction}
-          >
-            Start Generating
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
-        </div>
-      </section>
+      </header>
 
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-6xl">
-        {features.map((feature, index) => (
-          <Card key={index} className="glass-card text-left relative overflow-hidden flex flex-col">
-            {feature.image && (
-              <div className="aspect-[3/4] relative">
-                <Image
-                    src={feature.image.imageUrl}
-                    alt={feature.title}
-                    fill
-                    className="object-cover"
-                    data-ai-hint={feature.image.imageHint}
-                />
-              </div>
-            )}
-            <CardHeader>
-              <CardTitle>{feature.title}</CardTitle>
-            </CardHeader>
-            <CardContent className="flex-grow">
-              <p className="text-muted-foreground">{feature.description}</p>
-            </CardContent>
-          </Card>
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {quickActions.map((action) => (
+          <Link href={action.href} key={action.title}>
+            <Card className="glass-card h-full transform transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl">
+              <CardHeader>
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <action.icon className="h-6 w-6" />
+                </div>
+                <CardTitle>{action.title}</CardTitle>
+                <CardDescription>{action.description}</CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
         ))}
-      </section>
+      </div>
 
-      <section className="w-full max-w-5xl">
-        <h2 className="text-3xl md:text-4xl font-bold tracking-tight">How It Works</h2>
-        <p className="mt-2 text-muted-foreground">Three simple steps to your next bestseller.</p>
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-4 relative">
-            <div className="absolute top-1/2 left-0 w-full h-px bg-border -translate-y-1/2 hidden md:block"></div>
-            <div className="absolute top-1/2 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary to-transparent -translate-y-1/2 hidden md:block"></div>
-          {howItWorks.map((step, index) => (
-            <div key={index} className="flex flex-col items-center text-center z-10">
-              <div className="flex items-center justify-center w-16 h-16 rounded-full glass-card border-primary/50 border-2 bg-background mb-4">
-                {step.icon === 'GEN_ICON' ? (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end"></div>
-                ) : (
-                  <step.icon className="w-8 h-8 text-primary" />
-                )}
-              </div>
-              <h3 className="text-xl font-semibold">{step.title}</h3>
-              <p className="text-sm text-muted-foreground">{step.step}</p>
-              <p className="mt-2 text-sm text-muted-foreground max-w-xs">{step.description}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-      
-      <section className="w-full max-w-4xl">
-        <Card className="glass-card">
-           <div className="p-8 flex flex-col md:flex-row items-center justify-between gap-6 text-left">
-              <div>
-                <h3 className="text-2xl font-bold">Ready to Build Your Empire?</h3>
-                <p className="text-muted-foreground mt-2">Don't wait for inspiration. Generate it.</p>
-              </div>
-              <Button size="lg" variant="secondary" className="px-6 py-5" onClick={handlePrimaryAction}>
-                Start Generating Now
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-           </div>
-        </Card>
-      </section>
+      <Card className="glass-card">
+        <CardHeader>
+          <CardTitle>Ready to Create?</CardTitle>
+          <CardDescription>
+            Start your journey by generating a new digital product. Let our AI do the heavy lifting.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Link href="/generate">
+            <Button size="lg" className="text-lg px-8 bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end text-white hover:opacity-90 transition-opacity">
+              Generate Your First Product
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
     </div>
   );
 }

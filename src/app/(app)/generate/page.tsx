@@ -1,15 +1,27 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { useSearchParams } from 'next/navigation';
-import React from 'react';
-
-
+import { z } from 'zod';
+import {
+  Check,
+  ChevronDown,
+  ChevronRight,
+  HelpCircle,
+  Loader2,
+  Sparkles,
+  Wand2,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import {
   Form,
   FormControl,
@@ -29,143 +41,112 @@ import {
 } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
-import { Card, CardContent } from '@/components/ui/card';
-import { Wand2 } from 'lucide-react';
-import { SubscriptionGate } from '@/components/boss-os/subscription-gate';
-import { useSubscription } from '@/contexts/subscription-provider';
+import { cn } from '@/lib/utils';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import {
-  UnifiedProgressModal,
-  GenerationParams,
-} from '@/components/boss-os/unified-progress-modal';
+import UnifiedProgressModal from '@/components/boss-os/unified-progress-modal';
+import { type GenerationConfig, type EbookContent } from '@/lib/types';
+import Image from 'next/image';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const formSchema = z.object({
-  topic: z.string().min(5, 'Topic must be at least 5 characters.'),
-  authorName: z.string().min(2, "Author's name must be at least 2 characters."),
-  productType: z.enum([
-    'Ebook',
-    'Course',
-    'Template',
-  ]),
-  tone: z.enum(['Casual', 'Professional', 'Persuasive']),
-  length: z.enum(['Short', 'Medium', 'Long']),
-  coverStyle: z.enum([
-    'Realistic',
-    '3D',
-    'Minimal',
-    'Premium Gradient',
-  ]),
-  optionalPriceSuggestion: z.boolean(),
+  topic: z.string().min(10, 'Please enter a topic with at least 10 characters.'),
+  authorName: z.string().optional(),
+  productType: z.enum(['ebook', 'course', 'template']).default('ebook'),
+  tone: z.enum(['professional', 'casual', 'persuasive']).default('professional'),
+  length: z.number().min(20).max(100).default(40),
+  coverStyle: z.enum(['gradient', 'photorealistic', '3d', 'minimalist']).default('gradient'),
+  suggestPrice: z.boolean().default(true),
 });
 
-type FormData = z.infer<typeof formSchema>;
+export default function GeneratePage() {
+  const [generationConfig, setGenerationConfig] = useState<GenerationConfig | null>(null);
+  const [generatedContent, setGeneratedContent] = useState<EbookContent | null>(null);
 
-const productTypes: FormData['productType'][] = [
-  'Ebook',
-  'Course',
-  'Template',
-];
-const tones: FormData['tone'][] = ['Casual', 'Professional', 'Persuasive'];
-const coverStyles: FormData['coverStyle'][] = [
-  'Realistic',
-  '3D',
-  'Minimal',
-  'Premium Gradient',
-];
-
-const lengthValueMap: Record<FormData['length'], number> = {
-  Short: 0,
-  Medium: 50,
-  Long: 100,
-};
-
-const numberToLength = (value: number): FormData['length'] => {
-  if (value < 25) return 'Short';
-  if (value < 75) return 'Medium';
-  return 'Long';
-};
-
-const lengthDisplayMap: Record<FormData['length'], string> = {
-  Short: 'Short (5-10p)',
-  Medium: 'Medium (20-40p)',
-  Long: 'Long (40-100p)',
-};
-
-function GeneratePageContent() {
-  const { subscription } = useSubscription();
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generationData, setGenerationData] = useState<Omit<GenerationParams, 'imageModel'> | null>(
-    null
-  );
-  const searchParams = useSearchParams();
-  const topicFromUrl = searchParams.get('topic');
-
-  const isSubscribed = subscription.status === 'active';
-
-  const form = useForm<FormData>({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      topic: topicFromUrl || '',
+      topic: '',
       authorName: 'Boss User',
-      productType: 'Ebook',
-      tone: 'Professional',
-      length: 'Medium',
-      coverStyle: 'Premium Gradient',
-      optionalPriceSuggestion: false,
+      productType: 'ebook',
+      tone: 'professional',
+      length: 40,
+      coverStyle: 'gradient',
+      suggestPrice: true,
     },
   });
 
-  useEffect(() => {
-    if (topicFromUrl) {
-      form.setValue('topic', topicFromUrl);
-    }
-  }, [topicFromUrl, form]);
+  const { isSubmitting } = form.formState;
 
-  function onSubmit(values: FormData) {
-    if (!isSubscribed) return;
-    setGenerationData(values);
-    setIsGenerating(true);
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    setGeneratedContent(null);
+    setGenerationConfig({ ...values, imageModel: 'dall-e-3' });
   }
 
-  const watchedLength = form.watch('length');
+  const lengthLabels: { [key: number]: string } = {
+    20: 'Very Short (≈20p)',
+    40: 'Medium (≈20-40p)',
+    60: 'Long (≈40-60p)',
+    80: 'Very Long (≈60-80p)',
+    100: 'Book (80-100p+)',
+  };
+
+  const coverStyleImage = (style: string) =>
+    PlaceHolderImages.find(
+      (p) => p.id === `cover-${style.replace('photorealistic', 'photo')}`
+    )?.imageUrl || '/placeholder.png';
 
   return (
     <>
-      <div className="space-y-8">
-        {!isSubscribed && <SubscriptionGate />}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">
-              Generate Product
-            </h1>
-            <p className="text-muted-foreground">
-              Fill in the details to create your next digital asset.
-            </p>
-          </div>
-        </div>
+      {generationConfig && (
+        <UnifiedProgressModal
+          config={generationConfig}
+          onComplete={(content) => {
+            setGeneratedContent(content);
+            setGenerationConfig(null);
+          }}
+          onClose={() => setGenerationConfig(null)}
+        />
+      )}
 
-        <Card className="glass-card">
-          <CardContent className="p-6">
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-8"
-              >
+      <div className="container mx-auto p-4 sm:p-6 lg:p-8 max-w-4xl space-y-8">
+        <header>
+          <h1 className="text-4xl md:text-5xl font-black tracking-tighter flex items-center gap-3">
+            <Wand2 className="h-10 w-10 text-primary" />
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end">
+              Digital Product Generator
+            </span>
+          </h1>
+          <p className="mt-4 text-lg text-muted-foreground">
+            Fill out the details below to generate a unique digital product with AI.
+          </p>
+        </header>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <Card className="glass-card">
+              <CardHeader>
+                <CardTitle>Generation Parameters</CardTitle>
+                <CardDescription>
+                  Provide the AI with the details it needs to create your product.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
                   name="topic"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="md:col-span-2">
                       <FormLabel>Topic / Niche</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="e.g., 'Beginner's Guide to Sourdough Baking'"
+                          placeholder="e.g., 'A beginner's guide to investing in cryptocurrency'"
                           {...field}
+                          className="h-12 text-base"
                         />
                       </FormControl>
                       <FormDescription>
@@ -175,6 +156,7 @@ function GeneratePageContent() {
                     </FormItem>
                   )}
                 />
+
                 <FormField
                   control={form.control}
                   name="authorName"
@@ -182,7 +164,7 @@ function GeneratePageContent() {
                     <FormItem>
                       <FormLabel>Author Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., 'Jane Doe'" {...field} />
+                        <Input placeholder="e.g., 'John Doe'" {...field} />
                       </FormControl>
                       <FormDescription>
                         The name that will appear on the cover and title page.
@@ -192,62 +174,51 @@ function GeneratePageContent() {
                   )}
                 />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <FormField
-                    control={form.control}
-                    name="productType"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Product Type</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a product type" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {productTypes.map((type) => (
-                              <SelectItem key={type} value={type}>
-                                {type}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="tone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Tone</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a tone" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {tones.map((tone) => (
-                              <SelectItem key={tone} value={tone}>
-                                {tone}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                <FormField
+                  control={form.control}
+                  name="productType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Product Type</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a product type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="ebook">Ebook</SelectItem>
+                          <SelectItem value="course">Course</SelectItem>
+                          <SelectItem value="template">Template</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="tone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tone</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a tone" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="professional">Professional</SelectItem>
+                          <SelectItem value="casual">Casual</SelectItem>
+                          <SelectItem value="persuasive">Persuasive</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <FormField
                   control={form.control}
@@ -255,59 +226,76 @@ function GeneratePageContent() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        Length: {lengthDisplayMap[watchedLength]}
+                        Length: {lengthLabels[field.value]}
                       </FormLabel>
                       <FormControl>
                         <Slider
-                          value={[lengthValueMap[field.value]]}
-                          onValueChange={(vals) =>
-                            field.onChange(numberToLength(vals[0]))
-                          }
-                          step={50}
+                          min={20}
                           max={100}
+                          step={20}
+                          onValueChange={(value) => field.onChange(value[0])}
+                          defaultValue={[field.value]}
                         />
                       </FormControl>
                     </FormItem>
                   )}
                 />
 
-                <div className="grid grid-cols-1 md:grid-cols-1 gap-8">
-                  <FormField
-                    control={form.control}
-                    name="coverStyle"
-                    render={({ field }) => (
+                <FormField
+                  control={form.control}
+                  name="coverStyle"
+                  render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Cover Style</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a cover style" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {coverStyles.map((style) => (
-                              <SelectItem key={style} value={style}>
-                                {style}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
+                          <FormLabel>Cover Style</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                  <SelectTrigger className="h-14">
+                                      <div className="flex items-center gap-3">
+                                          <Image src={coverStyleImage(field.value)} width={40} height={40} alt={field.value} className="rounded-sm object-cover" />
+                                          <SelectValue placeholder="Select a cover style" />
+                                      </div>
+                                  </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                  <SelectItem value="gradient">
+                                      <div className="flex items-center gap-3">
+                                          <Image src={coverStyleImage('gradient')} width={24} height={24} alt="Premium Gradient" className="rounded-sm object-cover" />
+                                          Premium Gradient
+                                      </div>
+                                  </SelectItem>
+                                  <SelectItem value="photorealistic">
+                                      <div className="flex items-center gap-3">
+                                          <Image src={coverStyleImage('photorealistic')} width={24} height={24} alt="Realistic" className="rounded-sm object-cover" />
+                                          Realistic
+                                      </div>
+                                  </SelectItem>
+                                  <SelectItem value="3d">
+                                      <div className="flex items-center gap-3">
+                                          <Image src={coverStyleImage('3d')} width={24} height={24} alt="3D" className="rounded-sm object-cover" />
+                                          3D
+                                      </div>
+                                  </SelectItem>
+                                  <SelectItem value="minimalist">
+                                      <div className="flex items-center gap-3">
+                                          <Image src={coverStyleImage('minimalist')} width={24} height={24} alt="Minimal" className="rounded-sm object-cover" />
+                                          Minimal
+                                      </div>
+                                  </SelectItem>
+                              </SelectContent>
+                          </Select>
+                          <FormMessage />
                       </FormItem>
-                    )}
-                  />
-                </div>
+                  )}
+                />
+
 
                 <FormField
                   control={form.control}
-                  name="optionalPriceSuggestion"
+                  name="suggestPrice"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 md:col-span-2">
                       <div className="space-y-0.5">
-                        <FormLabel>Price Suggestion</FormLabel>
+                        <FormLabel className="text-base">Price Suggestion</FormLabel>
                         <FormDescription>
                           Let AI suggest a market price for your product.
                         </FormDescription>
@@ -322,52 +310,31 @@ function GeneratePageContent() {
                   )}
                 />
 
-                <div className="flex justify-end">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="inline-block">
-                          <Button
-                            type="submit"
-                            size="lg"
-                            className="bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end text-white"
-                            disabled={
-                              !isSubscribed || form.formState.isSubmitting
-                            }
-                          >
-                            <Wand2 className="mr-2 h-5 w-5" />
-                            Generate
-                          </Button>
-                        </div>
-                      </TooltipTrigger>
-                      {!isSubscribed && (
-                        <TooltipContent>
-                          <p>Subscribe to a plan to enable generation.</p>
-                        </TooltipContent>
-                      )}
-                    </Tooltip>
-                  </TooltipProvider>
+                <div className="md:col-span-2">
+                  <Button
+                    size="lg"
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full h-12 text-lg px-8 bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end text-white hover:opacity-90 transition-opacity"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="mr-2 h-5 w-5" />
+                        Generate
+                      </>
+                    )}
+                  </Button>
                 </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </form>
+        </Form>
       </div>
-      {isGenerating && generationData && (
-        <UnifiedProgressModal
-          isOpen={isGenerating}
-          onClose={() => setIsGenerating(false)}
-          generationParams={{...generationData, imageModel: "googleai/imagen-4.0-fast-generate-001"}}
-        />
-      )}
     </>
-  );
-}
-
-export default function GeneratePage() {
-  return (
-    <React.Suspense fallback={<div>Loading...</div>}>
-      <GeneratePageContent />
-    </React.Suspense>
   );
 }

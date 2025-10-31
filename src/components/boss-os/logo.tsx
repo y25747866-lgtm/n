@@ -5,7 +5,6 @@ import { useSidebar } from '@/contexts/sidebar-provider';
 export function Logo({ className, ...props }: { className?: string; [key: string]: any }) {
   const { isOpen, isMobile } = useSidebar();
 
-  // Show text if sidebar is open, unless we are on mobile where it's always in the sheet header (without text).
   const showText = isOpen && !isMobile;
 
   return (
@@ -20,7 +19,8 @@ export function Logo({ className, ...props }: { className?: string; [key: string
         <defs>
             <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="hsl(var(--primary))"/>
-              <stop offset="100%" stopColor="#06B6D4"/>
+              <stop offset="50%" stopColor="#7C3AED" />
+              <stop offset="100%" stopColor="#3B82F6"/>
             </linearGradient>
         </defs>
 

@@ -1,7 +1,7 @@
 import { config } from 'dotenv';
 config();
 
-import '@/ai/flows/generate-cover-image.ts';
-import '@/ai/flows/generate-ebook-content.ts';
-import '@/ai/flows/suggest-trending-ideas.ts';
-import '@/ai/flows/regenerate-cover-image.ts';
+import '@/ai/flows/create-digital-product-flow.ts';
+import '@/ai/flows/generate-ebook-content';
+import '@/ai/flows/generate-cover-image';
+import '@/ai/flows/regenerate-cover-image';

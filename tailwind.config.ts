@@ -14,9 +14,9 @@ export default {
         headline: ['Inter', 'sans-serif'],
       },
       colors: {
-        'accent-1-start': '#3B82F6',
-        'accent-1-mid': '#7C3AED',
-        'accent-1-end': '#06B6D4',
+        'accent-1-start': '#8B5CF6', // violet-500
+        'accent-1-mid': '#EC4899', // pink-500
+        'accent-1-end': '#F59E0B', // amber-500
         'accent-2-start': '#2563EB',
         'accent-2-mid': '#06B6D4',
         'accent-2-end': '#34D399',
@@ -76,12 +76,17 @@ export default {
             height: '0',
           },
         },
+        'fade-in': {
+          from: { opacity: '0' },
+          to: { opacity: '1' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'fade-in': 'fade-in 0.5s ease-in-out',
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],
 } satisfies Config;

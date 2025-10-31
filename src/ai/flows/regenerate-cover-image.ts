@@ -1,64 +1,48 @@
 
 'use server';
 /**
- * @fileOverview Regenerates a cover image for a product.
+ * @fileOverview A flow for regenerating a cover image from a given prompt.
  *
- * - regenerateCoverImage - A function that handles the cover image regeneration process.
- * - RegenerateCoverImageInput - The input type for the regenerateCoverImage function.
- * - RegenerateCoverImageOutput - The return type for the regenerateCoverImage function.
+ * - regenerateCoverImage - Generates a new image URL from an existing prompt.
+ * - CoverRegenerationConfigSchema - Input schema for the flow.
+ * - CoverImageResultSchema - Output schema for the flow.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from '@/ai/genkit';
+import { z } from 'zod';
+import {
+  CoverImageResultSchema,
+  CoverRegenerationConfigSchema,
+} from '@/lib/types';
+import type {
+  CoverImageResult,
+  CoverRegenerationConfig,
+} from '@/lib/types';
 
-const RegenerateCoverImageInputSchema = z.object({
-  topic: z.string().describe('The topic or niche of the product.'),
-  title: z.string().describe('The title of the ebook.'),
-  authorName: z.string().describe("The author's name."),
-  coverStyle: z.enum([
-    'Realistic',
-    '3D',
-    'Minimal',
-    'Premium Gradient',
-  ]).describe('The desired style of the cover image (e.g., Minimal, Photo, Illustrated).'),
-  imageModel: z.string().describe('The image generation model to use.').default('googleai/imagen-4.0-fast-generate-001'),
-});
-export type RegenerateCoverImageInput = z.infer<typeof RegenerateCoverImageInputSchema>;
+export async function regenerateCoverImage(
+  input: CoverRegenerationConfig
+): Promise<CoverImageResult> {
+  const { media } = await ai.generate({
+    model: 'googleai/imagen-4.0-fast-generate-001',
+    prompt: input.prompt,
+    config: {
+        aspectRatio: '9:16'
+    }
+  });
 
-const RegenerateCoverImageOutputSchema = z.object({
-  coverImageUrl: z.string().describe('The URL of the newly generated cover image.'),
-});
-export type RegenerateCoverImageOutput = z.infer<typeof RegenerateCoverImageOutputSchema>;
+  const imageUrl = media.url;
+  if (!imageUrl) {
+    throw new Error('Failed to regenerate cover image.');
+  }
 
-export async function regenerateCoverImage(input: RegenerateCoverImageInput): Promise<RegenerateCoverImageOutput> {
-  return regenerateCoverImageFlow(input);
+  return { imageUrl, prompt: input.prompt };
 }
 
-const regenerateCoverImageFlow = ai.defineFlow(
+ai.defineFlow(
   {
     name: 'regenerateCoverImageFlow',
-    inputSchema: RegenerateCoverImageInputSchema,
-    outputSchema: RegenerateCoverImageOutputSchema,
+    inputSchema: CoverRegenerationConfigSchema,
+    outputSchema: CoverImageResultSchema,
   },
-  async (input) => {
-     const { media } = await ai.generate({
-      model: input.imageModel,
-      prompt: `Generate a new, different version of a professional and visually appealing ebook cover. It must be visually distinct from any previous version.
-
-**Instructions:**
-1.  **Theme:** The cover's design should be based on the topic: **"${input.topic}"**.
-2.  **Style:** The visual style must be **"${input.coverStyle}"**.
-3.  **Text Elements:** The following text must be clearly legible and beautifully integrated into the design:
-    *   **Title:** "${input.title}"
-    *   **Author:** "${input.authorName}"
-4.  **Composition:** This is for a book cover, so the layout and composition should be professional. Do not just generate a background image. The text and design must work together as a cohesive cover. Ensure all text is spelled correctly and is fully visible on the cover.
-5.  **Output:** The final output must be only the complete cover image. Do not include any extra text or descriptions outside of the image itself.`,
-    });
-    
-    if (!media.url) {
-      throw new Error('Image regeneration failed to return a URL.');
-    }
-
-    return { coverImageUrl: media.url };
-  }
+  regenerateCoverImage
 );

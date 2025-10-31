@@ -10,7 +10,7 @@
     --card-foreground: 210 40% 98%;
     --popover: 222 39% 8%;
     --popover-foreground: 210 40% 98%;
-    --primary: 221.2 83.2% 53.3%; /* Fallback for Accent-Gradient-1 */
+    --primary: 260 85% 66%; /* Violet */
     --primary-foreground: 210 40% 98%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
@@ -22,7 +22,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 221.2 83.2% 53.3%;
+    --ring: 260 85% 66%;
     --radius: 0.8rem;
     --card-border: 255 255 255 / 0.04;
   }
@@ -34,7 +34,7 @@
     --card-foreground: 224 71.4% 4.1%;
     --popover: 0 0% 100%;
     --popover-foreground: 224 71.4% 4.1%;
-    --primary: 221.2 83.2% 53.3%;
+    --primary: 260 85% 60%; /* Violet */
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -46,7 +46,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --ring: 260 85% 60%;
     --card-border: 0 0 0 / 0.06;
   }
 }
@@ -57,6 +57,7 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 

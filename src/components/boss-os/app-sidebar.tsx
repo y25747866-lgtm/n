@@ -3,13 +3,13 @@
 
 import {
   LayoutDashboard,
-  PenSquare,
-  Flame,
-  Download,
+  LayoutTemplate,
+  Book,
   CreditCard,
   Settings,
   LogOut,
   ArrowRight,
+  Wand2,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -36,10 +36,10 @@ import { Logo } from './logo';
 import { VisuallyHidden } from '@/components/ui/visually-hidden';
 
 const menuItems = [
-  { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
-  { href: '/generate', label: 'Generate Product', icon: PenSquare },
-  { href: '/trending', label: 'Trending Ideas', icon: Flame },
-  { href: '/downloads', label: 'My Downloads', icon: Download },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/generate', label: 'Generator', icon: Wand2 },
+  { href: '/trending', label: 'Template Search', icon: LayoutTemplate },
+  { href: '/downloads', label: 'Product Search', icon: Book },
   { href: '/subscription', label: 'Subscription', icon: CreditCard },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
@@ -180,7 +180,7 @@ export default function AppSidebar() {
                  <VisuallyHidden>
                     <SheetTitle>Main Navigation</SheetTitle>
                     <SheetDescription>
-                        Navigate through the main sections of Boss OS, including the dashboard, generator, trending ideas, and settings.
+                        Navigate through the main sections of the app.
                     </SheetDescription>
                 </VisuallyHidden>
             </SheetHeader>

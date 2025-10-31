@@ -3,7 +3,6 @@
 
 import { useIsMobile } from "@/hooks/use-mobile";
 import React, { createContext, useContext, useState, useMemo, useEffect } from "react";
-import { usePathname } from "next/navigation";
 
 type SidebarContextType = {
   isOpen: boolean;
@@ -20,22 +19,13 @@ const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const isMobile = useIsMobile();
   const isDesktop = !isMobile;
-  const pathname = usePathname();
 
-  // On desktop, sidebar is open. On mobile, it's closed.
   const [isOpen, setIsOpen] = useState(isDesktop);
-  
-  // Nav is hidden by default only on the dashboard page.
-  const [isNavVisible, setIsNavVisible] = useState(pathname !== '/dashboard');
+  const [isNavVisible, setIsNavVisible] = useState(true);
 
-  // When switching between mobile/desktop, adjust sidebar state
   useEffect(() => {
-    if (isNavVisible) {
-      setIsOpen(isDesktop);
-    } else {
-      setIsOpen(false);
-    }
-  }, [isDesktop, isNavVisible]);
+    setIsOpen(isDesktop);
+  }, [isDesktop]);
 
   const toggleSidebar = () => {
     setIsOpen(prev => !prev);

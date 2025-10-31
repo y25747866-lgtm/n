@@ -1,173 +1,220 @@
 
-"use client";
+'use client';
 
-import { useEffect, useState, useRef, useCallback } from "react";
-import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
-import { Progress } from "@/components/ui/progress";
-import { Button } from "../ui/button";
-import { ProductPackagePreview } from "./product-package-preview";
-import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
-import { Terminal } from "lucide-react";
-import { generateEbookContent, GenerateEbookContentInput, GenerateEbookContentOutput } from "@/ai/flows/generate-ebook-content";
-import { generateCoverImage, GenerateCoverImageInput, GenerateCoverImageOutput } from "@/ai/flows/generate-cover-image";
-import { DialogHeader, DialogTitle, DialogDescription } from "../ui/dialog";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Progress } from '@/components/ui/progress';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Book, Image as ImageIcon, Sparkles, Check, AlertTriangle, X } from 'lucide-react';
+import {
+  type GenerationConfig,
+  type EbookContent,
+  type JobStatus,
+} from '@/lib/types';
+import { generateEbookContent } from '@/ai/flows/generate-ebook-content';
+import { generateCoverImage } from '@/ai/flows/generate-cover-image';
 
-export type GenerationParams = Omit<GenerateEbookContentInput, 'authorName'> & Omit<GenerateCoverImageInput, 'title' | 'authorName'> & { authorName: string };
+type Job = {
+  id: 'content' | 'cover';
+  name: string;
+  Icon: React.ElementType;
+  status: JobStatus;
+  progress: number;
+  result: any | null;
+  error?: string;
+  action: (config: GenerationConfig) => Promise<any>;
+};
 
-type JobStatus = "pending" | "running" | "completed" | "error";
+export default function UnifiedProgressModal({
+  config,
+  onComplete,
+  onClose,
+}: {
+  config: GenerationConfig;
+  onComplete: (result: EbookContent) => void;
+  onClose: () => void;
+}) {
+  const [jobs, setJobs] = useState<Job[]>([
+    {
+      id: 'content',
+      name: 'Content Generation',
+      Icon: Book,
+      status: 'pending',
+      progress: 0,
+      result: null,
+      action: generateEbookContent,
+    },
+    {
+      id: 'cover',
+      name: 'Cover Generation',
+      Icon: ImageIcon,
+      status: 'pending',
+      progress: 0,
+      result: null,
+      action: (config) =>
+        generateCoverImage({
+          topic: config.topic,
+          style: config.coverStyle,
+          title: 'Untitled',
+          author: config.authorName || 'Boss OS',
+        }),
+    },
+  ]);
+  const [isDialogOpen, setIsDialogOpen] = useState(true);
 
-interface ProductResult {
-    content: GenerateEbookContentOutput | null;
-    cover: GenerateCoverImageOutput | null;
-    params: GenerationParams | null;
-}
+  const hasStartedRef = useRef(false);
 
-export function UnifiedProgressModal({ isOpen, onClose, generationParams }: { isOpen: boolean, onClose: () => void, generationParams: GenerationParams }) {
-  const [contentProgress, setContentProgress] = useState(0);
-  const [coverProgress, setCoverProgress] = useState(0);
-  const [contentStatus, setContentStatus] = useState<JobStatus>("pending");
-  const [coverStatus, setCoverStatus] = useState<JobStatus>("pending");
-  const [productResult, setProductResult] = useState<ProductResult>({ content: null, cover: null, params: null });
-  const [error, setError] = useState<string | null>(null);
-
-  const hasRun = useRef(false);
-
-  const isComplete = contentStatus === "completed" && coverStatus === "completed";
-  const hasError = contentStatus === "error" || coverStatus === "error";
-
-  const resetState = useCallback(() => {
-    setContentProgress(0);
-    setCoverProgress(0);
-    setContentStatus("pending");
-    setCoverStatus("pending");
-    setError(null);
-    setProductResult({ content: null, cover: null, params: null });
-    hasRun.current = false;
-  }, []);
-  
-  useEffect(() => {
-    if (isOpen && !hasRun.current) {
-        hasRun.current = true;
-        
-        const runJobs = async () => {
-            setContentStatus("running");
-            setCoverStatus("pending");
-            setError(null);
-            setProductResult({ content: null, cover: null, params: generationParams });
-
-            let contentInterval: NodeJS.Timeout | null = null;
-            let coverInterval: NodeJS.Timeout | null = null;
-            
-            try {
-                contentInterval = setInterval(() => {
-                    setContentProgress(prev => Math.min(prev + Math.random() * 5, 95));
-                }, 800);
-
-                const contentResult = await generateEbookContent(generationParams);
-                
-                if (contentInterval) clearInterval(contentInterval);
-                setContentProgress(100);
-                setContentStatus("completed");
-
-                setCoverStatus("running");
-                coverInterval = setInterval(() => {
-                    setCoverProgress(prev => Math.min(prev + Math.random() * 10, 95));
-                }, 200);
-
-                const coverResult = await generateCoverImage({
-                    ...generationParams,
-                    title: contentResult.title,
-                });
-
-                if (coverInterval) clearInterval(coverInterval);
-                setCoverProgress(100);
-                setCoverStatus("completed");
-                setProductResult({ content: contentResult, cover: coverResult, params: generationParams });
-
-            } catch (e: any) {
-                console.error("A generation job failed:", e);
-                setError("Generation failed. Check server API key or quota.");
-                if (contentInterval) clearInterval(contentInterval);
-                if (coverInterval) clearInterval(coverInterval);
-
-                if (contentStatus !== 'completed') {
-                    setContentStatus("error");
-                    setContentProgress(100); 
-                } else {
-                    setCoverStatus("error");
-                    setCoverProgress(100);
-                }
-            }
-        };
-        
-        runJobs();
-    }
-  }, [isOpen, generationParams, contentStatus]);
-
-
-  const handleClose = () => {
-    onClose();
-    // Delay reset to allow for closing animation
-    setTimeout(() => {
-      resetState();
-    }, 300);
-  };
-  
-  const getDialogContent = () => {
-    if (isComplete && productResult.content && productResult.cover && productResult.params) {
-      return <ProductPackagePreview productResult={productResult as {content: GenerateEbookContentOutput, cover: GenerateCoverImageOutput, params: GenerationParams}} />;
-    }
-
-    return (
-        <>
-            <DialogHeader className="text-center pt-8">
-                <DialogTitle className="text-2xl font-bold">Your Product is Brewing</DialogTitle>
-                <DialogDescription className="text-muted-foreground">
-                    Our AI is crafting your content and cover. Feel free to monitor the progress.
-                </DialogDescription>
-            </DialogHeader>
-
-            <div className="flex-1 space-y-8 py-6">
-                {hasError && (
-                    <Alert variant="destructive">
-                      <Terminal className="h-4 w-4" />
-                      <AlertTitle>Generation Error</AlertTitle>
-                      <AlertDescription>
-                        {error || "An unknown error occurred."}
-                      </AlertDescription>
-                    </Alert>
-                )}
-                <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                        <label>Content Generation</label>
-                        <span className="text-sm font-medium capitalize">{contentStatus === 'completed' ? 'Complete' : contentStatus} {contentStatus === 'running' && `(${Math.round(contentProgress)}%)`}</span>
-                    </div>
-                    <Progress value={contentProgress} data-status={contentStatus} className="data-[status=error]:[&>*]:bg-destructive" />
-                </div>
-                <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                        <label>Cover Generation</label>
-                        <span className="text-sm font-medium capitalize">{coverStatus === 'completed' ? 'Complete' : coverStatus} {coverStatus === 'running' && `(${Math.round(coverProgress)}%)`}</span>
-                    </div>
-                    <Progress value={coverProgress} data-status={coverStatus} className="[&>*]:bg-gradient-to-r [&>*]:from-accent-1-start [&>*]:to-accent-1-end data-[status=error]:-bg-destructive" />
-                </div>
-            </div>
-
-            <DialogFooter>
-                {isComplete || hasError ? (
-                  <Button onClick={handleClose}>Close</Button>
-                ) : (
-                  <Button variant="ghost" onClick={handleClose}>Cancel</Button>
-                )}
-            </DialogFooter>
-        </>
+  const updateJob = (id: 'content' | 'cover', updates: Partial<Job>) => {
+    setJobs((prev) =>
+      prev.map((job) => (job.id === id ? { ...job, ...updates } : job))
     );
-  }
+  };
+
+  const runJobs = useCallback(async () => {
+    const contentJob = jobs.find((j) => j.id === 'content')!;
+    const coverJob = jobs.find((j) => j.id === 'cover')!;
+
+    // Run content job with progress simulation
+    updateJob('content', { status: 'running', progress: 10 });
+    const progressInterval = setInterval(() => {
+      setJobs(prev => prev.map(j => {
+        if (j.id === 'content' && j.status === 'running' && j.progress < 90) {
+          return { ...j, progress: j.progress + 5 };
+        }
+        return j;
+      }));
+    }, 500);
+
+    const contentPromise = contentJob
+      .action(config)
+      .then((result) => {
+        clearInterval(progressInterval);
+        updateJob('content', { status: 'completed', progress: 100, result });
+        return result;
+      })
+      .catch((e) => {
+        clearInterval(progressInterval);
+        updateJob('content', { status: 'error', error: e.message });
+        throw e;
+      });
+
+    // Run cover job in parallel
+    updateJob('cover', { status: 'running', progress: 10 });
+    const coverPromise = coverJob
+      .action(config)
+      .then((result) => {
+        updateJob('cover', { status: 'completed', progress: 100, result });
+        return result;
+      })
+      .catch((e) => {
+        updateJob('cover', { status: 'error', error: e.message });
+        throw e;
+      });
+
+    try {
+      const [contentResult, coverResult] = await Promise.all([contentPromise, coverPromise]);
+      onComplete({
+        ...contentResult,
+        coverImageUrl: coverResult.imageUrl,
+        coverImagePrompt: coverResult.prompt,
+      });
+    } catch (error) {
+      console.error('A job failed during generation:', error);
+    }
+  }, [config, onComplete, jobs]);
+
+  useEffect(() => {
+    if (config && !hasStartedRef.current) {
+      hasStartedRef.current = true;
+      runJobs();
+    }
+  }, [config, runJobs]);
+
+
+  const allComplete = jobs.every((job) => job.status === 'completed');
+  const anyError = jobs.some((job) => job.status === 'error');
+  const overallProgress = jobs.reduce((acc, job) => acc + job.progress, 0) / jobs.length;
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
-      <DialogContent className="max-w-4xl min-h-[500px] flex flex-col">
-        {getDialogContent()}
+    <Dialog open={isDialogOpen} onOpenChange={(open) => { if (!open) onClose(); setIsDialogOpen(open); }}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Sparkles className="text-primary" />
+            Generating Your Product
+          </DialogTitle>
+          <DialogDescription>
+            The AI is crafting your content and cover. Please wait a few moments.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          <AnimatePresence>
+            {jobs.map((job) => (
+              <motion.div
+                key={job.id}
+                layout
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-2"
+              >
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2 font-medium">
+                    <job.Icon className="h-4 w-4 text-muted-foreground" />
+                    <span>{job.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {job.status === 'pending' && <span className="text-muted-foreground">Waiting...</span>}
+                    {job.status === 'running' && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
+                    {job.status === 'completed' && <Check className="h-4 w-4 text-green-500" />}
+                    {job.status === 'error' && <AlertTriangle className="h-4 w-4 text-destructive" />}
+                    <span className="font-mono text-xs w-10 text-right">{job.progress}%</span>
+                  </div>
+                </div>
+                <Progress value={job.progress} />
+                {job.status === 'error' && (
+                  <p className="text-xs text-destructive">{job.error}</p>
+                )}
+              </motion.div>
+            ))}
+          </AnimatePresence>
+
+          {anyError && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Generation Failed</AlertTitle>
+              <AlertDescription>
+                One or more steps failed. Check server API key or quota, and please try again.
+              </AlertDescription>
+            </Alert>
+          )}
+        </div>
+        
+        {allComplete && (
+            <div className="flex justify-end pt-4">
+                <Button onClick={onClose} >
+                    <Check className="mr-2 h-4 w-4" />
+                    Done
+                </Button>
+            </div>
+        )}
+        {anyError && (
+             <div className="flex justify-end pt-4">
+                <Button variant="outline" onClick={onClose}>
+                    <X className="mr-2 h-4 w-4" />
+                    Close
+                </Button>
+            </div>
+        )}
       </DialogContent>
     </Dialog>
   );
