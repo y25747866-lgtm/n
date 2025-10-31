@@ -54,6 +54,9 @@ function ProductSearchPage() {
     topic.topic.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const hasTopics = trendingTopics && trendingTopics.length > 0;
+  const hasFilteredTopics = filteredTopics && filteredTopics.length > 0;
+
   return (
     <div className="space-y-8">
       <div>
@@ -93,9 +96,9 @@ function ProductSearchPage() {
         </Alert>
       )}
 
-      {!isLoading && !error && filteredTopics && (
+      {!isLoading && !error && (
         <>
-          {filteredTopics.length > 0 ? (
+          {hasFilteredTopics ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredTopics.map((product) => (
                 <Card key={product.id} className="glass-card flex flex-col">
@@ -124,15 +127,15 @@ function ProductSearchPage() {
              <div className="text-center py-16 border-2 border-dashed rounded-lg flex flex-col items-center justify-center space-y-4">
                 <Sparkles className="h-12 w-12 text-muted-foreground/50" />
                 <h3 className="text-xl font-semibold">
-                  {trendingTopics && trendingTopics.length > 0 ? 'No Topics Found' : 'Your Trend Dashboard Awaits'}
+                  {hasTopics ? 'No Topics Found' : 'Your Trend Dashboard Awaits'}
                 </h3>
                 <p className="text-muted-foreground mt-2 max-w-md">
-                  {trendingTopics && trendingTopics.length > 0
+                  {hasTopics
                     ? "Your search didn't match any topics. Try a different keyword."
                     : "The magic happens when you create! Generate your first e-book, and this page will light up with trending topics."
                   }
                 </p>
-                {trendingTopics?.length === 0 && (
+                {!hasTopics && (
                    <Button variant="default" className="mt-4 text-lg" asChild>
                     <Link href="/generate">
                       <Sparkles className="mr-2 h-5 w-5" />
