@@ -1,65 +1,67 @@
 'use server';
 
 /**
- * @fileOverview This file is deprecated. Use generate-ebook-content and generate-cover-image flows instead.
+ * @fileOverview This flow generates a complete digital product (e-book content and SVG cover)
+ * in a single API call based on a user-provided topic.
  */
 
+import { z } from 'zod';
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
-
-export const CreateDigitalProductInputSchema = z.object({
-  topic: z.string().min(5).describe('The central topic for the e-book.'),
-  style: z.string().optional().describe('An optional style preference for the cover (e.g., neon, luxury).'),
-});
-
-export const CreateDigitalProductOutputSchema = z.object({
-  bookTitle: z.string().describe('The generated title of the e-book.'),
-  bookContent: z.string().describe('The full content of the e-book, formatted in markdown.'),
-  coverImagePrompt: z.string().describe('The generated prompt for creating the e-book cover image.'),
-});
-
-export type CreateDigitalProductInput = z.infer<typeof CreateDigitalProductInputSchema>;
-export type CreateDigitalProductOutput = z.infer<typeof CreateDigitalProductOutputSchema>;
+import { DigitalProductSchema, TopicSchema } from '@/lib/types';
+import type { DigitalProduct, Topic } from '@/lib/types';
 
 const productCreationPrompt = ai.definePrompt({
-  name: 'createDigitalProductPrompt',
-  input: { schema: CreateDigitalProductInputSchema },
-  output: { schema: CreateDigitalProductOutputSchema },
+  name: 'digitalProductGenerator',
+  input: { schema: TopicSchema },
+  output: { schema: DigitalProductSchema },
   prompt: `
-You are an AI system that helps users create complete digital products.
-Your tasks are to write a full e-book based on the user's topic and generate a matching, professional cover image prompt.
+You are an expert author and designer, tasked with creating a complete digital product in a single step.
+Based on the user's topic, you must generate a full e-book and a corresponding SVG cover design.
 
---- E-BOOK CONTENT ---
-The e-book must include:
-- A strong title
-- A subtitle or tagline
-- An engaging introduction
-- 4 to 8 detailed chapters
-- A short conclusion and call to action
+**User Topic:**
+"{{topic}}"
 
-Use clear, professional language. Focus on practical advice, examples, and steps.
-Format the entire e-book content as a single markdown string with headings, subheadings, and bullet points.
+---
 
-USER TOPIC: "{{topic}}"
+**E-BOOK REQUIREMENTS:**
+- **Tone:** Modern, motivational, clear, and engaging.
+- **Structure:**
+  - **Title:** A catchy, marketable title.
+  - **Introduction:** An engaging intro explaining why this topic is important right now.
+  - **Chapters:** 8 to 12 detailed, easy-to-read chapters. Each chapter must have a title and comprehensive content.
+  - **Conclusion:** A summary of key takeaways.
+  - **Call to Action:** A final, compelling call to action for the reader.
+- **Formatting:** All e-book content (intro, chapters, conclusion, etc.) should be formatted in markdown.
 
---- COVER IMAGE PROMPT ---
-Generate a clean, modern e-book cover concept using the generated book title.
-The base prompt structure is:
-“Create a premium e-book cover titled ‘{book_title}’. Use a smooth gradient background, bold typography, and an abstract or minimalist icon that reflects the topic. The design should feel high quality and digital-age inspired, suitable for online courses, business guides, or digital hustles.”
+---
 
-{{#if style}}
-Incorporate the user's preferred style: "{{style}}".
-{{/if}}
+**SVG COVER REQUIREMENTS:**
+- **Format:** A single, complete, valid SVG string.
+- **Dimensions:** 1200x1600 pixels.
+- **Style:** A "glassmorphic" gradient design. It should feel modern, clean, and premium.
+- **Content:**
+  - **Title:** The exact title of the e-book you generated.
+  - **Subtitle:** A 1-2 sentence summary of the introduction you wrote.
+  - **Footer:** A small text element at the bottom that reads exactly: "Boss OS AI • 2025".
+- **Rules:**
+  - Do NOT use any external images or raster graphics (e.g., <image> tags with hrefs).
+  - Use web-safe fonts available in SVG, like 'Inter', 'Helvetica', 'Arial', sans-serif.
+  - The entire design must be vector-based, using shapes, gradients, and text elements.
+  - Use linear gradients and semi-transparent shapes to achieve the glassmorphism effect.
 
---- OUTPUT ---
-Provide your response as a single JSON object that strictly follows the output schema, with 'bookTitle', 'bookContent', and 'coverImagePrompt' fields.
+---
+
+**Final Output:**
+Respond with a single, valid JSON object that strictly adheres to the output schema. Ensure the 'coverSvg' field contains the complete SVG code as a string.
 `,
 });
 
-export async function createDigitalProduct(input: CreateDigitalProductInput): Promise<CreateDigitalProductOutput> {
+export async function createDigitalProduct(
+  input: Topic
+): Promise<DigitalProduct> {
   const { output } = await productCreationPrompt(input);
   if (!output) {
-    throw new Error('Failed to generate digital product.');
+    throw new Error('Failed to generate the digital product. The AI model did not return a valid output.');
   }
   return output;
 }
@@ -67,10 +69,8 @@ export async function createDigitalProduct(input: CreateDigitalProductInput): Pr
 ai.defineFlow(
   {
     name: 'createDigitalProductFlow',
-    inputSchema: CreateDigitalProductInputSchema,
-    outputSchema: CreateDigitalProductOutputSchema,
+    inputSchema: TopicSchema,
+    outputSchema: DigitalProductSchema,
   },
-  async (input) => {
-    return await createDigitalProduct(input);
-  }
+  createDigitalProduct
 );

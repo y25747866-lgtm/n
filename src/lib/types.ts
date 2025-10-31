@@ -1,65 +1,21 @@
-
 import { z } from 'zod';
 
-// Form & Generation Config
-export const GenerationConfigSchema = z.object({
-  topic: z.string().min(1),
-  authorName: z.string().optional(),
-  productType: z.enum(['ebook', 'course', 'template']),
-  tone: z.enum(['professional', 'casual', 'persuasive']),
-  length: z.number(),
-  coverStyle: z.enum(['gradient', 'minimalist', 'modern']),
-  suggestPrice: z.boolean(),
-  imageModel: z.string(),
+export const DigitalProductSchema = z.object({
+  title: z.string().describe('The catchy, marketable title of the e-book.'),
+  introduction: z.string().describe('An engaging introduction that explains why the topic matters.'),
+  chapters: z.array(z.object({
+    title: z.string().describe('The title of this chapter.'),
+    content: z.string().describe('The detailed content of this chapter, formatted in markdown.'),
+  })).describe('An array of 8 to 12 chapters, each with a title and detailed content.'),
+  conclusion: z.string().describe('A final summary of the key takeaways from the e-book.'),
+  callToAction: z.string().describe('A compelling call to action for the reader.'),
+  coverSvg: z.string().describe("A complete, valid SVG string for the book cover. The SVG should be 1200x1600 pixels and feature a glassmorphic gradient design. It must include the book title, a 1-2 sentence subtitle derived from the introduction, and a footer that says 'Boss OS AI • 2025'. The design must not use external images or fonts."),
 });
-export type GenerationConfig = z.infer<typeof GenerationConfigSchema>;
 
+export type DigitalProduct = z.infer<typeof DigitalProductSchema>;
 
-// E-book Content Generation
-export const EbookGenerationConfigSchema = GenerationConfigSchema.pick({
-    topic: true,
-    authorName: true,
-    productType: true,
-    tone: true,
-    length: true,
+export const TopicSchema = z.object({
+  topic: z.string().min(5, { message: "Topic must be at least 5 characters long." }),
 });
-export const EbookContentSchema = z.object({
-  bookTitle: z.string(),
-  bookContent: z.string(),
-  suggestedPrice: z.string().optional(),
-});
-export type EbookContent = z.infer<typeof EbookContentSchema> & {
-    coverImageUrl?: string;
-    coverImagePrompt?: string;
-};
 
-
-// Cover Image Generation
-export const CoverGenerationConfigSchema = z.object({
-  topic: z.string(),
-  style: z.string(),
-  title: z.string(),
-  author: z.string(),
-  imageModel: z.string(),
-});
-export type CoverGenerationConfig = z.infer<typeof CoverGenerationConfigSchema>;
-
-
-// Cover Image Regeneration
-export const CoverRegenerationConfigSchema = z.object({
-  prompt: z.string(),
-  imageModel: z.string(),
-});
-export type CoverRegenerationConfig = z.infer<typeof CoverRegenerationConfigSchema>;
-
-
-// Result Schemas
-export const CoverImageResultSchema = z.object({
-  imageUrl: z.string(),
-  prompt: z.string(),
-});
-export type CoverImageResult = z.infer<typeof CoverImageResultSchema>;
-
-
-// UI State
-export type JobStatus = 'pending' | 'running' | 'completed' | 'error';
+export type Topic = z.infer<typeof TopicSchema>;

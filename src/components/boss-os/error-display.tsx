@@ -1,4 +1,3 @@
-
 import { AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
@@ -11,5 +10,3 @@ export function ErrorDisplay({ message }: { message: string }) {
     </Alert>
   );
 }
-
-    
