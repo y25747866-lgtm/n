@@ -6,10 +6,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
-  Check,
   ChevronDown,
-  ChevronRight,
-  HelpCircle,
+  Download,
   Loader2,
   Sparkles,
   Wand2,
@@ -41,17 +39,12 @@ import {
 } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
-import { cn } from '@/lib/utils';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 import UnifiedProgressModal from '@/components/boss-os/unified-progress-modal';
 import { type GenerationConfig, type EbookContent } from '@/lib/types';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { ErrorDisplay } from '@/components/boss-os/error-display';
+import { downloadFile } from '@/lib/download';
 
 const formSchema = z.object({
   topic: z.string().min(10, 'Please enter a topic with at least 10 characters.'),
@@ -66,6 +59,7 @@ const formSchema = z.object({
 export default function GeneratePage() {
   const [generationConfig, setGenerationConfig] = useState<GenerationConfig | null>(null);
   const [generatedContent, setGeneratedContent] = useState<EbookContent | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -83,9 +77,18 @@ export default function GeneratePage() {
   const { isSubmitting } = form.formState;
 
   function onSubmit(values: z.infer<typeof formSchema>) {
+    setError(null);
     setGeneratedContent(null);
-    setGenerationConfig({ ...values, imageModel: 'dall-e-3' });
+    setGenerationConfig({ ...values, imageModel: 'googleai/imagen-4.0-fast-generate-001' });
   }
+  
+  const handleDownload = () => {
+    if (generatedContent) {
+      const fileName = `${generatedContent.bookTitle.replace(/\s+/g, '_')}_by_AI.md`;
+      downloadFile(generatedContent.bookContent, fileName, 'text/markdown');
+    }
+  };
+
 
   const lengthLabels: { [key: number]: string } = {
     20: 'Very Short (≈20p)',
@@ -109,6 +112,10 @@ export default function GeneratePage() {
             setGeneratedContent(content);
             setGenerationConfig(null);
           }}
+          onError={(errorMessage) => {
+            setError(errorMessage);
+            setGenerationConfig(null);
+          }}
           onClose={() => setGenerationConfig(null)}
         />
       )}
@@ -125,6 +132,8 @@ export default function GeneratePage() {
             Fill out the details below to generate a unique digital product with AI.
           </p>
         </header>
+
+        {error && <ErrorDisplay message={error} />}
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -334,7 +343,44 @@ export default function GeneratePage() {
             </Card>
           </form>
         </Form>
+        
+        {generatedContent && (
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle>Your Generated Product</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="md:col-span-1">
+                  {generatedContent.coverImageUrl && (
+                    <Image
+                      src={generatedContent.coverImageUrl}
+                      alt={generatedContent.bookTitle}
+                      width={400}
+                      height={533}
+                      className="rounded-lg shadow-lg"
+                    />
+                  )}
+                </div>
+                <div className="md:col-span-2 space-y-4">
+                  <h2 className="text-2xl font-bold">{generatedContent.bookTitle}</h2>
+                  {generatedContent.suggestedPrice && (
+                     <p className="text-lg font-semibold">Suggested Price: {generatedContent.suggestedPrice}</p>
+                  )}
+                  <div className="prose prose-sm prose-invert max-h-60 overflow-auto" dangerouslySetInnerHTML={{ __html: generatedContent.bookContent.substring(0, 500) + '...' }} />
+                   <Button onClick={handleDownload}>
+                      <Download className="mr-2 h-4 w-4" />
+                     Download Book
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
       </div>
     </>
   );
 }
+
+    

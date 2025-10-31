@@ -35,8 +35,9 @@ You must generate the following components:
 The book content must include:
 - A strong title, subtitle, and author name on the first page.
 - An engaging introduction that hooks the reader.
-- 4 to 8 detailed chapters, each with clear headings. Use subheadings, bullet points, and bold text to structure the content logically.
-- A concise conclusion that summarizes the key takeaways and provides a call to action.
+- 5 to 8 detailed chapters, each with clear headings. Use subheadings, bullet points, and bold text to structure the content logically.
+- A "Key Takeaways" section that summarizes the most important points.
+- A concise summary and conclusion that provides a call to action.
 
 --- WRITING STYLE ---
 - Language: Use clear, professional language appropriate for the specified '{{tone}}' tone.
@@ -65,3 +66,5 @@ ai.defineFlow(
   },
   generateEbookContent
 );
+
+    

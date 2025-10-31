@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Book, Image as ImageIcon, Sparkles, Check, AlertTriangle, X } from 'lucide-react';
+import { Book, Image as ImageIcon, Sparkles, Check, AlertTriangle, X, Loader2 } from 'lucide-react';
 import {
   type GenerationConfig,
   type EbookContent,
@@ -30,16 +30,18 @@ type Job = {
   progress: number;
   result: any | null;
   error?: string;
-  action: (config: GenerationConfig) => Promise<any>;
+  action: (config: any) => Promise<any>;
 };
 
 export default function UnifiedProgressModal({
   config,
   onComplete,
+  onError,
   onClose,
 }: {
   config: GenerationConfig;
   onComplete: (result: EbookContent) => void;
+  onError: (error: string) => void;
   onClose: () => void;
 }) {
   const [jobs, setJobs] = useState<Job[]>([
@@ -63,7 +65,7 @@ export default function UnifiedProgressModal({
         generateCoverImage({
           topic: config.topic,
           style: config.coverStyle,
-          title: 'Untitled',
+          title: 'Untitled', // Will be updated after content generation
           author: config.authorName || 'Boss OS',
         }),
     },
@@ -80,9 +82,8 @@ export default function UnifiedProgressModal({
 
   const runJobs = useCallback(async () => {
     const contentJob = jobs.find((j) => j.id === 'content')!;
-    const coverJob = jobs.find((j) => j.id === 'cover')!;
 
-    // Run content job with progress simulation
+    // Start content generation
     updateJob('content', { status: 'running', progress: 10 });
     const progressInterval = setInterval(() => {
       setJobs(prev => prev.map(j => {
@@ -93,43 +94,43 @@ export default function UnifiedProgressModal({
       }));
     }, 500);
 
-    const contentPromise = contentJob
-      .action(config)
-      .then((result) => {
-        clearInterval(progressInterval);
-        updateJob('content', { status: 'completed', progress: 100, result });
-        return result;
-      })
-      .catch((e) => {
-        clearInterval(progressInterval);
-        updateJob('content', { status: 'error', error: e.message });
-        throw e;
-      });
+    let contentResult: EbookContent;
+    try {
+      contentResult = await contentJob.action(config);
+      clearInterval(progressInterval);
+      updateJob('content', { status: 'completed', progress: 100, result: contentResult });
+    } catch (e: any) {
+      clearInterval(progressInterval);
+      const errorMessage = e.message || "An unknown error occurred during content generation.";
+      updateJob('content', { status: 'error', error: errorMessage });
+      onError(errorMessage.includes('API key') ? "🚧 Our AI engine is currently upgrading. Please check back soon." : "Our system is temporarily busy. Please try again in a few minutes.");
+      return;
+    }
 
-    // Run cover job in parallel
+    // Now start cover generation with the real title
+    const coverJob = jobs.find((j) => j.id === 'cover')!;
     updateJob('cover', { status: 'running', progress: 10 });
-    const coverPromise = coverJob
-      .action(config)
-      .then((result) => {
-        updateJob('cover', { status: 'completed', progress: 100, result });
-        return result;
-      })
-      .catch((e) => {
-        updateJob('cover', { status: 'error', error: e.message });
-        throw e;
-      });
+    const coverConfig = {
+        ...config,
+        title: contentResult.bookTitle
+    };
 
     try {
-      const [contentResult, coverResult] = await Promise.all([contentPromise, coverPromise]);
+      const coverResult = await coverJob.action(coverConfig);
+      updateJob('cover', { status: 'completed', progress: 100, result: coverResult });
+      
       onComplete({
         ...contentResult,
         coverImageUrl: coverResult.imageUrl,
         coverImagePrompt: coverResult.prompt,
       });
-    } catch (error) {
-      console.error('A job failed during generation:', error);
+
+    } catch (e: any) {
+        const errorMessage = e.message || "An unknown error occurred during cover generation.";
+        updateJob('cover', { status: 'error', error: errorMessage });
+        onError(errorMessage.includes('API key') ? "🚧 Our AI engine is currently upgrading. Please check back soon." : "Our system is temporarily busy. Please try again in a few minutes.");
     }
-  }, [config, onComplete, jobs]);
+  }, [config, onComplete, onError, jobs]);
 
   useEffect(() => {
     if (config && !hasStartedRef.current) {
@@ -141,8 +142,7 @@ export default function UnifiedProgressModal({
 
   const allComplete = jobs.every((job) => job.status === 'completed');
   const anyError = jobs.some((job) => job.status === 'error');
-  const overallProgress = jobs.reduce((acc, job) => acc + job.progress, 0) / jobs.length;
-
+  
   return (
     <Dialog open={isDialogOpen} onOpenChange={(open) => { if (!open) onClose(); setIsDialogOpen(open); }}>
       <DialogContent className="max-w-md">
@@ -193,7 +193,7 @@ export default function UnifiedProgressModal({
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Generation Failed</AlertTitle>
               <AlertDescription>
-                One or more steps failed. Check server API key or quota, and please try again.
+                One or more steps failed. Please try again later.
               </AlertDescription>
             </Alert>
           )}
@@ -219,3 +219,5 @@ export default function UnifiedProgressModal({
     </Dialog>
   );
 }
+
+    

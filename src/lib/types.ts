@@ -40,6 +40,7 @@ export const CoverGenerationConfigSchema = z.object({
   style: z.string(),
   title: z.string(),
   author: z.string(),
+  imageModel: z.string(),
 });
 export type CoverGenerationConfig = z.infer<typeof CoverGenerationConfigSchema>;
 
@@ -62,3 +63,5 @@ export type CoverImageResult = z.infer<typeof CoverImageResultSchema>;
 
 // UI State
 export type JobStatus = 'pending' | 'running' | 'completed' | 'error';
+
+    
