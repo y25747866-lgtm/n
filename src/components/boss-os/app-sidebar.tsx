@@ -194,7 +194,7 @@ export default function AppSidebar() {
   return (
     <Sidebar>
         <SidebarHeader>
-            <Logo className={cn(!isOpen && "hidden")} />
+            <Logo />
             <Button variant="ghost" size="icon" onClick={toggleSidebar} className="ml-auto">
                 <PanelLeft />
                 <VisuallyHidden>Toggle Sidebar</VisuallyHidden>
