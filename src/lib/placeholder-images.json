@@ -3,43 +3,43 @@
     {
       "id": "hero-background",
       "description": "Abstract gradient background for the hero section.",
-      "imageUrl": "https://images.unsplash.com/photo-1579548122080-c35fd6820ecb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxhYnN0cmFjdCUyMGdyYWRpZW50fGVufDB8fHx8MTc2MTI1NDY3NXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1604079628040-94301bb21b91?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxhYnN0cmFjdCUyMGdyYWRpZW50fGVufDB8fHx8MTc2MTg3OTY3OXww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "abstract gradient"
     },
     {
       "id": "feature-ebook",
       "description": "Icon representing ebook generation feature.",
-      "imageUrl": "https://images.unsplash.com/photo-1761143975038-60d58e429841?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxib29rJTIwaWNvbnxlbnwwfHx8fDE3NjEzMTA3NTB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1689768021353-fa069fe82840?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxib29rJTIwaWNvbnxlbnwwfHx8fDE3NjE5NTcxNzJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "book icon"
     },
     {
       "id": "feature-cover",
       "description": "Icon representing cover generation feature.",
-      "imageUrl": "https://images.unsplash.com/photo-1672332147106-80905f538ab8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxwYWxldHRlJTIwaWNvbnxlbnwwfHx8fDE3NjEyMzk4ODB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1615714365623-e703a1c66c88?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxwYWxldHRlJTIwaWNvbnxlbnwwfHx8fDE3NjE5NTcxNzN8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "palette icon"
     },
     {
       "id": "feature-trends",
       "description": "Icon representing trending ideas feature.",
-      "imageUrl": "https://images.unsplash.com/photo-1694133366181-b32a0fd387ed?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxjaGFydCUyMGljb258ZW58MHx8fHwxNzYxMzQxNTAyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1668903678362-0fbcb9108d53?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxjaGFydCUyMGljb258ZW58MHx8fHwxNzYxOTU3MTcyfDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "chart icon"
     },
     {
       "id": "avatar-1",
       "description": "User avatar placeholder.",
-      "imageUrl": "https://images.unsplash.com/photo-1535643302794-19c3804b874b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjEzMjQyNDB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjE4ODIwMzV8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "person portrait"
     },
     {
       "id": "cover-gradient",
       "description": "Premium gradient style ebook cover.",
-      "imageUrl": "https://images.unsplash.com/photo-1557682250-33bd709cbe85?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxibHVlJTIwcHVycGxlJTIwZ3JhZGllbnR8ZW58MHx8fHwxNzY0NTYxMTEyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1673526759322-2b43a11d75fe?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxibHVlJTIwcHVycGxlJTIwZ3JhZGllbnR8ZW58MHx8fHwxNzYxOTU3MTcyfDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "blue purple gradient"
     },
     {
       "id": "cover-minimalist",
       "description": "Minimal style ebook cover.",
-      "imageUrl": "https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxhYnN0cmFjdCUyMGRhcmslMjBnZW9tZXRyaWN8ZW58MHx8fHwxNzY1ODk1ODc3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1685967522689-462becdc3614?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8YWJzdHJhY3QlMjBkYXJrJTIwZ2VvbWV0cmljfGVufDB8fHx8MTc2MTk1NzE3Mnww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "abstract dark geometric"
     }
   ]
