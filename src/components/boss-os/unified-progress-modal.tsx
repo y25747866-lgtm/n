@@ -66,6 +66,7 @@ export default function UnifiedProgressModal({
           topic: config.topic,
           style: config.coverStyle,
           title: 'Untitled', // Will be updated after content generation
+          subtitle: '...',
           author: config.authorName || 'Boss OS',
         }),
     },
@@ -101,9 +102,9 @@ export default function UnifiedProgressModal({
       updateJob('content', { status: 'completed', progress: 100, result: contentResult });
     } catch (e: any) {
       clearInterval(progressInterval);
-      const errorMessage = e.message || "An unknown error occurred during content generation.";
+      const errorMessage = "Generation paused — our image/text engine is temporarily limited. Your draft was saved and will resume automatically when capacity returns.";
       updateJob('content', { status: 'error', error: errorMessage });
-      onError(errorMessage.includes('API key') ? "🚧 Our AI engine is currently upgrading. Please check back soon." : "Our system is temporarily busy. Please try again in a few minutes.");
+      onError(errorMessage);
       return;
     }
 
@@ -112,7 +113,8 @@ export default function UnifiedProgressModal({
     updateJob('cover', { status: 'running', progress: 10 });
     const coverConfig = {
         ...config,
-        title: contentResult.bookTitle
+        title: contentResult.title,
+        subtitle: contentResult.subtitle,
     };
 
     try {
@@ -123,14 +125,15 @@ export default function UnifiedProgressModal({
         ...contentResult,
         coverImageUrl: coverResult.imageUrl,
         coverImagePrompt: coverResult.prompt,
+        cover_status: coverResult.status,
       });
 
     } catch (e: any) {
-        const errorMessage = e.message || "An unknown error occurred during cover generation.";
+        const errorMessage = "Generation paused — our image/text engine is temporarily limited. Your draft was saved and will resume automatically when capacity returns.";
         updateJob('cover', { status: 'error', error: errorMessage });
-        onError(errorMessage.includes('API key') ? "🚧 Our AI engine is currently upgrading. Please check back soon." : "Our system is temporarily busy. Please try again in a few minutes.");
+        onError(errorMessage);
     }
-  }, [config, onComplete, onError, jobs]);
+  }, [config, onComplete, onError]);
 
   useEffect(() => {
     if (config && !hasStartedRef.current) {
@@ -191,9 +194,9 @@ export default function UnifiedProgressModal({
           {anyError && (
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Generation Failed</AlertTitle>
+              <AlertTitle>Generation Paused</AlertTitle>
               <AlertDescription>
-                One or more steps failed. Please try again later.
+                Our image/text engine is temporarily limited. Your draft was saved and will resume automatically when capacity returns.
               </AlertDescription>
             </Alert>
           )}
@@ -219,5 +222,3 @@ export default function UnifiedProgressModal({
     </Dialog>
   );
 }
-
-    

@@ -37,6 +37,7 @@ import {
   type EbookContent,
 } from '@/lib/types';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { marked } from 'marked';
 
 export default function GeneratePage() {
   const [generationConfig, setGenerationConfig] =
@@ -189,9 +190,9 @@ export default function GeneratePage() {
         {product && (
           <Card className="glass-card animate-fade-in">
             <CardHeader>
-              <CardTitle>Your Digital Product is Ready</CardTitle>
+              <CardTitle>{product.title}</CardTitle>
               <CardDescription>
-                Review your generated e-book and cover below.
+                {product.subtitle}
               </CardDescription>
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -199,7 +200,7 @@ export default function GeneratePage() {
                 <h3 className="text-lg font-semibold">Cover Preview</h3>
                 {product.coverImageUrl && (
                     <div className="aspect-[3/4] w-full rounded-lg shadow-lg overflow-hidden">
-                        <img src={product.coverImageUrl} alt={product.bookTitle} className="w-full h-full object-cover" />
+                        <img src={product.coverImageUrl} alt={product.title} className="w-full h-full object-cover" />
                     </div>
                 )}
                 <div className="space-y-2">
@@ -236,26 +237,21 @@ export default function GeneratePage() {
                 </div>
               </div>
               <div className="md:col-span-2">
-                <h3 className="text-lg font-semibold mb-4">E-book Content</h3>
-                 <Accordion type="single" collapsible className="w-full" defaultValue="item-0">
-                     <AccordionItem value="item-0">
-                        <AccordionTrigger>Introduction</AccordionTrigger>
+                <h3 className="text-lg font-semibold mb-4">E-book Content ({product.estimated_pages} pages)</h3>
+                 <Accordion type="single" collapsible className="w-full" defaultValue="chapter-0">
+                    {product.chapters.map((chapter, index) => (
+                      <AccordionItem key={index} value={`chapter-${index}`}>
+                        <AccordionTrigger>{chapter.chapter_title}</AccordionTrigger>
                         <AccordionContent>
-                           <div className="prose prose-sm prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: product.bookContent }} />
+                          {chapter.sections.map((section, sIndex) => (
+                            <div key={sIndex} className="prose prose-sm prose-invert max-w-none mb-4">
+                              <h4 className="font-semibold">{section.heading}</h4>
+                              <div dangerouslySetInnerHTML={{ __html: marked(section.content) }} />
+                            </div>
+                          ))}
                         </AccordionContent>
-                     </AccordionItem>
-                    {/* Placeholder for chapters */}
-                     <AccordionItem value={`item-99`}>
-                        <AccordionTrigger>Conclusion & Call to Action</AccordionTrigger>
-                        <AccordionContent>
-                           <div className="prose prose-sm prose-invert max-w-none">
-                              <h4>Conclusion</h4>
-                              <p>Conclusion content will appear here.</p>
-                              <h4 className="mt-4">Call to Action</h4>
-                               <p>Call to action will appear here.</p>
-                           </div>
-                        </AccordionContent>
-                     </AccordionItem>
+                      </AccordionItem>
+                    ))}
                   </Accordion>
               </div>
             </CardContent>

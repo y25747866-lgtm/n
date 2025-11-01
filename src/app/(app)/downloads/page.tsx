@@ -18,7 +18,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { useCollection } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy, limit } from 'firebase/firestore';
 import { useFirestore, useMemoFirebase } from '@/firebase/provider';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -81,7 +81,9 @@ function DigitalProductSearch() {
       firestore
         ? query(
             collection(firestore, 'trending_topics'),
-            orderBy('usage_count', 'desc')
+            orderBy('usage_count', 'desc'),
+            orderBy('lastUpdated', 'desc'),
+            limit(12)
           )
         : null,
     [firestore]
@@ -126,7 +128,7 @@ function DigitalProductSearch() {
       <div className="text-center py-16 border-2 border-dashed rounded-lg flex flex-col items-center justify-center space-y-4">
         <Sparkles className="h-12 w-12 text-muted-foreground/50" />
         <h3 className="text-xl font-semibold">
-          No current trends available.
+          No trends yet — create the first product!
         </h3>
         <p className="text-muted-foreground mt-2 max-w-md">
           Create your first product to activate your trend dashboard.
@@ -162,7 +164,7 @@ function DigitalProductSearch() {
               <CardFooter className="z-10 flex items-center justify-between bg-black/20 p-3 backdrop-blur-sm">
                 <div className="flex items-center gap-2 text-sm font-semibold">
                   <Flame className="h-4 w-4" />
-                  <span>{topic.usage_count.toLocaleString()} creators</span>
+                  <span>{topic.usage_count.toLocaleString()} creators used this</span>
                 </div>
               </CardFooter>
             </Card>

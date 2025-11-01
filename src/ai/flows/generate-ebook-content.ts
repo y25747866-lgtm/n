@@ -9,7 +9,6 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'zod';
 import { EbookContentSchema, GenerationConfigSchema } from '@/lib/types';
 import type { EbookContent, GenerationConfig } from '@/lib/types';
 import { doc, runTransaction, serverTimestamp } from 'firebase/firestore';
@@ -20,34 +19,40 @@ const contentGenerationPrompt = ai.definePrompt({
   input: { schema: GenerationConfigSchema },
   output: { schema: EbookContentSchema },
   prompt: `
-You are an expert author and digital product creator. Your task is to write a complete e-book based on the user's detailed specifications.
+You are an expert author tasked with writing a comprehensive and practical e-book.
 
 --- USER REQUIREMENTS ---
 Topic: "{{topic}}"
 Author: "{{authorName}}"
 Product Type: "{{productType}}"
 Tone: "{{tone}}"
-Target Length: Approximately {{length}} pages.
+Target Length: Approximately 40-50 pages.
 
---- E-BOOK STRUCTURE ---
-You must generate the following components:
-1.  **Book Title:** A compelling and marketable title for the e-book.
-2.  **Book Content:** The full body of the e-book, formatted in markdown.
+--- E-BOOK STRUCTURE (JSON) ---
+You must generate a complete JSON object adhering strictly to the output schema.
+The e-book needs to be structured as follows:
+1.  **title**: A compelling and marketable title for the e-book.
+2.  **subtitle**: A brief, catchy subtitle that expands on the title.
+3.  **author**: The author's name as provided.
+4.  **table_of_contents**: An array of strings, where each string is a chapter title. Must contain 10-12 chapters.
+5.  **chapters**: An array of chapter objects. Each chapter object must contain:
+    - **chapter_title**: The title of the chapter.
+    - **sections**: An array of 2-3 section objects. Each section object must contain:
+      - **heading**: A clear heading for the section.
+      - **content**: The detailed, well-written content for that section in markdown format.
+6.  **estimated_pages**: An integer representing the estimated page count (between 40 and 50).
 
-The book content must include:
-- A strong title, subtitle, and author name on the first page.
-- An engaging introduction that hooks the reader.
-- 5 to 8 detailed chapters, each with clear headings. Use subheadings, bullet points, and bold text to structure the content logically.
-- A "Key Takeaways" section that summarizes the most important points.
-- A concise summary and conclusion that provides a call to action.
-
---- WRITING STYLE ---
-- Language: Use clear, professional language appropriate for the specified '{{tone}}' tone.
-- Content: Focus on providing practical, actionable advice, real-world examples, and step-by-step instructions.
-- Formatting: Ensure the entire output is a single, valid JSON object that strictly adheres to the output schema. The 'bookContent' field must be a well-formatted markdown string.
+--- WRITING STYLE & RULES ---
+- **Tone**: The writing must be practical and actionable. Avoid fluff, filler content, and AI disclaimers (e.g., "As an AI...").
+- **Content**: Provide in-depth, valuable information. Use real-world examples, step-by-step instructions, and logical structuring.
+- **Uniqueness**: Ensure the content is unique and original.
+- **Formatting**: All content within the 'sections' must be valid markdown.
 
 Begin generation now.
 `,
+  config: {
+    temperature: 0.8,
+  }
 });
 
 async function trackTopicTrend(topic: string) {
