@@ -3,7 +3,6 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { useCollection } from "react-firebase-hooks/firestore";
 import {
   collection,
   query,
@@ -11,7 +10,7 @@ import {
   limit,
 } from "firebase/firestore";
 import { signInAnonymously } from "firebase/auth";
-import { useAuth, useFirestore } from "@/firebase";
+import { useAuth, useFirestore, useCollection } from "@/firebase";
 import { Loader2 } from "lucide-react";
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Flame } from "lucide-react";
@@ -107,7 +106,7 @@ export default function DownloadsPage() {
             </Card>
           );
         })}
-      </ul>
+      </div>
     </div>
   );
 }
