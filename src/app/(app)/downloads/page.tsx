@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { useCollection } from '@/firebase';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
-import { useFirestore, useMemoFirebase } from '@/firebase/provider';
+import { useFirestore, useMemoFirebase, useUser } from '@/firebase/provider';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useState } from 'react';
@@ -74,11 +74,12 @@ const gradientStops = [
 
 function DigitalProductSearch() {
   const firestore = useFirestore();
+  const { isUserLoading } = useUser();
   const [searchTerm, setSearchTerm] = useState('');
 
   const trendingTopicsQuery = useMemoFirebase(
     () =>
-      firestore
+      firestore && !isUserLoading // Do not query if user is loading
         ? query(
             collection(firestore, 'trending_topics'),
             orderBy('usage_count', 'desc'),
@@ -86,12 +87,12 @@ function DigitalProductSearch() {
             limit(12)
           )
         : null,
-    [firestore]
+    [firestore, isUserLoading]
   );
 
   const {
     data: trendingTopics,
-    isLoading,
+    isLoading: isTopicsLoading,
     error,
   } = useCollection<TrendingTopic>(trendingTopicsQuery);
 
@@ -102,7 +103,7 @@ function DigitalProductSearch() {
   const hasTopics = trendingTopics && trendingTopics.length > 0;
   const hasFilteredTopics = filteredTopics && filteredTopics.length > 0;
 
-  if (isLoading) {
+  if (isUserLoading || (isTopicsLoading && !trendingTopics)) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
