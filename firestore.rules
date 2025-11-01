@@ -150,22 +150,31 @@ service cloud.firestore {
       allow create: if isAdmin();
       allow get: if isLoggedIn();
       allow list: if false; // Prevent listing of admin roles
-      allow update: if false;
+      update: if false;
       allow delete: if isAdmin() && resource != null;
     }
 
-     /**
+    /**
      * @description Controls access to topic usage counts.
      * @path /trending_topics/{topicId}
      * @allow (read) - Public read access for all users.
      * @allow (write) - Authenticated users can create or update usage counts.
      * @principle Allows community-driven trend tracking.
      */
-    match /trending_topics/{topicId} {
-        allow get: if true;
-        allow list: if true; // This rule allows querying the collection.
-        allow write: if request.auth != null;
-        allow delete: if false; // To prevent tampering
+     match /trending_topics/{topicId} {
+      allow get: if true;
+      allow write: if request.auth != null;
+      allow delete: if false; // To prevent tampering
+    }
+
+    /**
+     * @description Allows public querying of the trending_topics collection.
+     * @path /trending_topics
+     * @allow (list) - Public list access for all users.
+     * @principle Allows for querying the entire collection to find trends.
+     */
+    match /trending_topics {
+      allow list: if true;
     }
   }
 }
