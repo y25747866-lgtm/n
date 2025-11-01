@@ -9,6 +9,7 @@ import {
   ArrowRight,
   Wand2,
   Search,
+  PanelLeft,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -20,6 +21,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
+  SidebarHeader,
 } from '@/components/ui/sidebar';
 import { useSubscription } from '@/contexts/subscription-provider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,6 +34,7 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Separator } from '../ui/separator';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { VisuallyHidden } from '@/components/ui/visually-hidden';
+import { Logo } from './logo';
 
 const menuItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -92,10 +95,22 @@ function ProfileSection() {
 function SidebarInnerContent() {
     const pathname = usePathname();
     const { subscription } = useSubscription();
-    const { isOpen } = useSidebar();
+    const { isOpen, toggleSidebar } = useSidebar();
 
     return (
         <>
+            <SidebarHeader>
+                <Logo />
+                 <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={toggleSidebar}
+                    className="ml-auto"
+                >
+                    <PanelLeft />
+                    <VisuallyHidden>Toggle Menu</VisuallyHidden>
+                </Button>
+            </SidebarHeader>
             <SidebarContent>
                 <TooltipProvider delayDuration={0}>
                     <SidebarMenu>
@@ -172,14 +187,6 @@ export default function AppSidebar() {
     return (
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetContent side="left" className="w-72 bg-card p-0 flex flex-col">
-            <SheetHeader className="p-4 border-b">
-                 <VisuallyHidden>
-                    <SheetTitle>Main Navigation</SheetTitle>
-                    <SheetDescription>
-                        Navigate through the main sections of the app.
-                    </SheetDescription>
-                </VisuallyHidden>
-            </SheetHeader>
             <SidebarInnerContent />
         </SheetContent>
       </Sheet>
