@@ -12,6 +12,7 @@ type SidebarContextType = {
   isDesktop: boolean;
   isNavVisible: boolean;
   setIsNavVisible: (visible: boolean) => void;
+  isClient: boolean;
 };
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
@@ -27,17 +28,23 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const isMobile = isClient ? isMobileQuery : false;
   const isDesktop = isClient ? !isMobileQuery : true;
 
-  const [isOpen, setIsOpen] = useState(true);
-  const [isNavVisible, setIsNavVisible] = useState(true);
+  const [isOpen, setIsOpen] = useState(isDesktop);
+  const [isNavVisible, setIsNavVisible] = useState(isDesktop);
 
   useEffect(() => {
     if (isClient) {
       setIsOpen(isDesktop);
+      setIsNavVisible(isDesktop);
     }
   }, [isDesktop, isClient]);
 
   const toggleSidebar = () => {
-    setIsOpen(prev => !prev);
+    if (isDesktop) {
+        setIsOpen(prev => !prev);
+    } else {
+        setIsOpen(true); // Always open the sheet on mobile
+        setIsNavVisible(true);
+    }
   };
   
   const value = useMemo(
@@ -48,9 +55,10 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
       isMobile,
       isDesktop,
       isNavVisible,
-      setIsNavVisible
+      setIsNavVisible,
+      isClient,
     }),
-    [isOpen, isMobile, isDesktop, isNavVisible]
+    [isOpen, isMobile, isDesktop, isNavVisible, isClient]
   );
 
   return (

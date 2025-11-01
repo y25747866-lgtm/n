@@ -177,9 +177,9 @@ function SidebarInnerContent() {
 }
 
 export default function AppSidebar() {
-  const { isMobile, isOpen, setIsOpen, isNavVisible } = useSidebar();
+  const { isMobile, isOpen, setIsOpen, isNavVisible, isClient } = useSidebar();
 
-  if (!isNavVisible) {
+  if (!isClient || !isNavVisible) {
       return null;
   }
 
