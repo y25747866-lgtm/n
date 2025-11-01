@@ -10,7 +10,7 @@ export function Logo({ className, ...props }: { className?: string; [key: string
         className={cn("flex items-center gap-2 text-lg font-bold tracking-tighter", className)}
         {...props}
       >
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="28" height="28" role="img" aria-labelledby="title desc">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="36" height="36" role="img" aria-labelledby="title desc">
           <title id="title">Boss OS Neural Circuit Logo</title>
           <desc id="desc">Stylized brain-shaped circuit logo with adaptable colors for light and dark themes.</desc>
 

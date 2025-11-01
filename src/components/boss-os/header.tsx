@@ -10,12 +10,21 @@ import { cn } from '@/lib/utils';
 import { VisuallyHidden } from '@/components/ui/visually-hidden';
 
 export default function Header() {
-    const { isNavVisible, toggleSidebar, isDesktop } = useSidebar();
+    const { isNavVisible, toggleSidebar } = useSidebar();
 
   return (
     <header className={cn("sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-md sm:px-6")}>
         <div className="flex items-center gap-4">
             {!isNavVisible && <Logo />}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleSidebar}
+              className={cn(!isNavVisible ? "block" : "hidden")}
+            >
+              <PanelLeft />
+              <VisuallyHidden>Toggle Menu</VisuallyHidden>
+            </Button>
         </div>
       <div className="flex items-center gap-4">
         <ThemeToggle />
