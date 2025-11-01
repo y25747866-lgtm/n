@@ -79,7 +79,7 @@ function DigitalProductSearch() {
 
   const trendingTopicsQuery = useMemoFirebase(
     () =>
-      firestore && !isUserLoading
+      firestore && !isUserLoading // <-- CRITICAL FIX: Do not create query if auth is loading
         ? query(
             collection(firestore, 'trending_topics'),
             orderBy('usage_count', 'desc'),
@@ -87,7 +87,7 @@ function DigitalProductSearch() {
             limit(12)
           )
         : null,
-    [firestore, isUserLoading]
+    [firestore, isUserLoading] // <-- CRITICAL FIX: Depend on isUserLoading
   );
 
   const {
@@ -100,10 +100,11 @@ function DigitalProductSearch() {
     topic.topic.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const isLoading = isTopicsLoading || isUserLoading;
   const hasTopics = trendingTopics && trendingTopics.length > 0;
   const hasFilteredTopics = filteredTopics && filteredTopics.length > 0;
 
-  if (isTopicsLoading || isUserLoading) {
+  if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
