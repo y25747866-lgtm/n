@@ -95,21 +95,12 @@ function ProfileSection() {
 function SidebarInnerContent() {
     const pathname = usePathname();
     const { subscription } = useSubscription();
-    const { isOpen, toggleSidebar } = useSidebar();
+    const { isOpen } = useSidebar();
 
     return (
         <>
             <SidebarHeader>
                 <Logo />
-                 <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={toggleSidebar}
-                    className="ml-auto"
-                >
-                    <X />
-                    <VisuallyHidden>Close Menu</VisuallyHidden>
-                </Button>
             </SidebarHeader>
             <SidebarContent>
                 <TooltipProvider delayDuration={0}>
