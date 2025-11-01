@@ -157,19 +157,17 @@ service cloud.firestore {
      /**
      * @description Controls access to topic usage counts.
      * @path /trending_topics/{topicId}
-     * @allow (get, list) - Public read access for all users.
-     * @allow (create, update) - Authenticated users can create or update usage counts.
+     * @allow (read) - Public read access for all users.
+     * @allow (write) - Authenticated users can create or update usage counts.
      * @principle Allows community-driven trend tracking.
      */
     match /trending_topics/{topicId} {
-        function isLoggedIn() {
+        function isAuthenticated() {
             return request.auth != null;
         }
 
-        allow get: if true;
-        allow list: if true;
-        allow create: if isLoggedIn();
-        allow update: if isLoggedIn();
+        allow read: if true;
+        allow write: if isAuthenticated();
         allow delete: if false; // To prevent tampering
     }
   }
