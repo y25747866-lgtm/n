@@ -7,23 +7,14 @@ import { SidebarProvider, useSidebar } from '@/contexts/sidebar-provider';
 import { SubscriptionProvider } from '@/contexts/subscription-provider';
 import { cn } from '@/lib/utils';
 import React from 'react';
-import { usePathname } from 'next/navigation';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 function AppContent({ children }: { children: React.ReactNode }) {
-  const { isOpen, isDesktop, isNavVisible, setIsNavVisible } = useSidebar();
-  const pathname = usePathname();
-
-  // On initial load of any page other than dashboard, ensure nav is visible.
-  React.useEffect(() => {
-    if (pathname !== '/dashboard') {
-      setIsNavVisible(true);
-    }
-  }, [pathname, setIsNavVisible]);
+  const { isOpen, isDesktop, isNavVisible } = useSidebar();
 
   return (
     <div className="flex min-h-screen bg-background">
-      <AppSidebar />
+      {isNavVisible && <AppSidebar />}
       <div
         className={cn(
           "flex flex-1 flex-col transition-all duration-300 ease-in-out",
@@ -39,9 +30,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
   );
 }
 
-
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  // We wrap the content in SidebarProvider here, so both AppSidebar and AppContent can use it.
   return (
     <FirebaseClientProvider>
       <SubscriptionProvider>

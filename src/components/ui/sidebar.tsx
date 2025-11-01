@@ -15,7 +15,7 @@ const Sidebar = React.forwardRef<
     <aside
       ref={ref}
       className={cn(
-        "fixed top-0 left-0 h-full z-20 flex flex-col border-r bg-card transition-all duration-300 ease-in-out",
+        "fixed top-0 left-0 h-full z-40 flex flex-col border-r bg-card transition-all duration-300 ease-in-out",
         isOpen ? "w-72" : "w-20", 
         className
       )}
@@ -39,7 +39,6 @@ const SidebarHeader = React.forwardRef<
       ref={ref}
       className={cn(
         "flex h-14 items-center border-b px-4 transition-all duration-300 ease-in-out",
-        !isOpen && "px-0 justify-center",
         className
       )}
       {...props}
@@ -55,7 +54,7 @@ const SidebarContent = React.forwardRef<
   return (
     <div
       ref={ref}
-      className={cn("flex-1 overflow-y-auto pt-14", className)}
+      className={cn("flex-1 overflow-y-auto overflow-x-hidden", className)}
       {...props}
     />
   )

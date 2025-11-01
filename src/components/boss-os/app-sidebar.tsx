@@ -9,6 +9,7 @@ import {
   ArrowRight,
   Wand2,
   Search,
+  PanelLeft,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -20,6 +21,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
+  SidebarHeader,
 } from '@/components/ui/sidebar';
 import { useSubscription } from '@/contexts/subscription-provider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -33,6 +35,7 @@ import { Separator } from '../ui/separator';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Logo } from './logo';
 import { VisuallyHidden } from '@/components/ui/visually-hidden';
+import { cn } from '@/lib/utils';
 
 const menuItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -163,7 +166,7 @@ function SidebarInnerContent() {
 }
 
 export default function AppSidebar() {
-  const { isMobile, isOpen, setIsOpen, isNavVisible } = useSidebar();
+  const { isMobile, isOpen, setIsOpen, isNavVisible, toggleSidebar } = useSidebar();
 
   if (!isNavVisible) {
       return null;
@@ -190,9 +193,13 @@ export default function AppSidebar() {
 
   return (
     <Sidebar>
-        <div className="flex h-14 items-center border-b px-4 lg:px-6">
-            <Logo />
-        </div>
+        <SidebarHeader>
+            <Logo className={cn(!isOpen && "hidden")} />
+            <Button variant="ghost" size="icon" onClick={toggleSidebar} className="ml-auto">
+                <PanelLeft />
+                <VisuallyHidden>Toggle Sidebar</VisuallyHidden>
+            </Button>
+        </SidebarHeader>
       <SidebarInnerContent />
     </Sidebar>
   );
