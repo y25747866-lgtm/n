@@ -17,15 +17,24 @@ type SidebarContextType = {
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
-  const isMobile = useIsMobile();
-  const isDesktop = !isMobile;
+  const isMobileQuery = useIsMobile();
+  const [isClient, setIsClient] = useState(false);
 
-  const [isOpen, setIsOpen] = useState(isDesktop);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const isMobile = isClient ? isMobileQuery : false;
+  const isDesktop = isClient ? !isMobileQuery : true;
+
+  const [isOpen, setIsOpen] = useState(true);
   const [isNavVisible, setIsNavVisible] = useState(true);
 
   useEffect(() => {
-    setIsOpen(isDesktop);
-  }, [isDesktop]);
+    if (isClient) {
+      setIsOpen(isDesktop);
+    }
+  }, [isDesktop, isClient]);
 
   const toggleSidebar = () => {
     setIsOpen(prev => !prev);
