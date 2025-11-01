@@ -74,12 +74,11 @@ const gradientStops = [
 
 function DigitalProductSearch() {
   const firestore = useFirestore();
-  const { isUserLoading } = useUser();
   const [searchTerm, setSearchTerm] = useState('');
 
   const trendingTopicsQuery = useMemoFirebase(
     () =>
-      firestore && !isUserLoading // Do not query if user is loading
+      firestore
         ? query(
             collection(firestore, 'trending_topics'),
             orderBy('usage_count', 'desc'),
@@ -87,7 +86,7 @@ function DigitalProductSearch() {
             limit(12)
           )
         : null,
-    [firestore, isUserLoading]
+    [firestore]
   );
 
   const {
@@ -103,7 +102,7 @@ function DigitalProductSearch() {
   const hasTopics = trendingTopics && trendingTopics.length > 0;
   const hasFilteredTopics = filteredTopics && filteredTopics.length > 0;
 
-  if (isUserLoading || (isTopicsLoading && !trendingTopics)) {
+  if (isTopicsLoading && !trendingTopics) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
