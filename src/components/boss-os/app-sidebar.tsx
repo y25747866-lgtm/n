@@ -9,7 +9,7 @@ import {
   ArrowRight,
   Wand2,
   Search,
-  PanelLeft,
+  X,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -107,8 +107,8 @@ function SidebarInnerContent() {
                     onClick={toggleSidebar}
                     className="ml-auto"
                 >
-                    <PanelLeft />
-                    <VisuallyHidden>Toggle Menu</VisuallyHidden>
+                    <X />
+                    <VisuallyHidden>Close Menu</VisuallyHidden>
                 </Button>
             </SidebarHeader>
             <SidebarContent>
