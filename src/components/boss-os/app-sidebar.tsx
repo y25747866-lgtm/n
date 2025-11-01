@@ -187,6 +187,14 @@ export default function AppSidebar() {
     return (
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetContent side="left" className="w-72 bg-card p-0 flex flex-col">
+            <VisuallyHidden>
+              <SheetHeader>
+                <SheetTitle>Main Menu</SheetTitle>
+                <SheetDescription>
+                  This is the main navigation menu for the application.
+                </SheetDescription>
+              </SheetHeader>
+            </VisuallyHidden>
             <SidebarInnerContent />
         </SheetContent>
       </Sheet>
