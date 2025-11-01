@@ -27,7 +27,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
       <div
         className={cn(
           "flex flex-1 flex-col transition-all duration-300 ease-in-out",
-          isNavVisible && isDesktop && (isOpen ? "ml-72" : "ml-20")
+          (isNavVisible && isDesktop && (isOpen ? "ml-72" : "ml-20"))
         )}
       >
         <Header />
