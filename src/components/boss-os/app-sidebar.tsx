@@ -9,7 +9,6 @@ import {
   ArrowRight,
   Wand2,
   Search,
-  PanelLeft,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -21,7 +20,6 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
-  SidebarHeader,
 } from '@/components/ui/sidebar';
 import { useSubscription } from '@/contexts/subscription-provider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -33,9 +31,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Separator } from '../ui/separator';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
-import { Logo } from './logo';
 import { VisuallyHidden } from '@/components/ui/visually-hidden';
-import { cn } from '@/lib/utils';
 
 const menuItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -166,7 +162,7 @@ function SidebarInnerContent() {
 }
 
 export default function AppSidebar() {
-  const { isMobile, isOpen, setIsOpen, isNavVisible, toggleSidebar } = useSidebar();
+  const { isMobile, isOpen, setIsOpen, isNavVisible } = useSidebar();
 
   if (!isNavVisible) {
       return null;
@@ -177,7 +173,6 @@ export default function AppSidebar() {
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetContent side="left" className="w-72 bg-card p-0 flex flex-col">
             <SheetHeader className="p-4 border-b">
-                 <Logo />
                  <VisuallyHidden>
                     <SheetTitle>Main Navigation</SheetTitle>
                     <SheetDescription>
@@ -193,13 +188,6 @@ export default function AppSidebar() {
 
   return (
     <Sidebar>
-        <SidebarHeader>
-            <Logo />
-            <Button variant="ghost" size="icon" onClick={toggleSidebar} className="ml-auto">
-                <PanelLeft />
-                <VisuallyHidden>Toggle Sidebar</VisuallyHidden>
-            </Button>
-        </SidebarHeader>
       <SidebarInnerContent />
     </Sidebar>
   );
