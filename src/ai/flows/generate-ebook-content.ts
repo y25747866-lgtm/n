@@ -4,20 +4,20 @@
  * @fileOverview A flow for generating e-book content and tracking topic trends.
  *
  * - generateEbookContent - Generates title/content and updates the topic's usage count in Firestore.
- * - EbookGenerationConfigSchema - Input schema for the flow.
+ * - GenerationConfigSchema - Input schema for the flow.
  * - EbookContentSchema - Output schema for the flow.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import { EbookContentSchema, EbookGenerationConfigSchema } from '@/lib/types';
+import { EbookContentSchema, GenerationConfigSchema } from '@/lib/types';
 import type { EbookContent, GenerationConfig } from '@/lib/types';
 import { doc, runTransaction, serverTimestamp } from 'firebase/firestore';
 import { firestore } from '@/firebase/server-init';
 
 const contentGenerationPrompt = ai.definePrompt({
   name: 'generateEbookPrompt',
-  input: { schema: EbookGenerationConfigSchema },
+  input: { schema: GenerationConfigSchema },
   output: { schema: EbookContentSchema },
   prompt: `
 You are an expert author and digital product creator. Your task is to write a complete e-book based on the user's detailed specifications.
@@ -95,7 +95,7 @@ export async function generateEbookContent(
 ai.defineFlow(
   {
     name: 'generateEbookContentFlow',
-    inputSchema: EbookGenerationConfigSchema,
+    inputSchema: GenerationConfigSchema,
     outputSchema: EbookContentSchema,
   },
   generateEbookContent
