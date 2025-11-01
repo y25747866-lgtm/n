@@ -36,7 +36,7 @@ export const EbookContentSchema = z.object({
     .describe('An array of chapter objects, each containing a title and sections.'),
   estimated_pages: z
     .number()
-    describe('An estimated page count for the generated e-book, typically between 40 and 50.'),
+    .describe('An estimated page count for the generated e-book, typically between 40 and 50.'),
   coverImageUrl: z.string().optional().describe('URL for the generated cover image.'),
   coverImagePrompt: z.string().optional().describe('The prompt used to generate the cover image.'),
   cover_status: z.enum(['generated', 'placeholder']).optional().describe('The status of the cover image.'),
