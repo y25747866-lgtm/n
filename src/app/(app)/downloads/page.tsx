@@ -6,27 +6,36 @@ import { useRouter } from 'next/navigation';
 import {
   collection,
   onSnapshot,
+  query,
+  where,
+  Query,
+  DocumentData,
 } from 'firebase/firestore';
-import { useAuth, useFirestore, useUser } from '@/firebase';
+import { useAuth, useFirestore, useUser, useMemoFirebase } from '@/firebase';
 import { Flame, Loader2, Search, Sparkles } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
 type Topic = {
   id: string;
   topic: string;
+  category?: string;
   usage_count?: number;
 };
 
 const defaultTopics: Omit<Topic, 'id'>[] = [
-    { topic: "AI for Beginners" },
-    { topic: "Passive Income Hacks" },
-    { topic: "Digital Product Mastery" },
-    { topic: "Self-Discipline Blueprint" },
-    { topic: "Mindset Transformation" }
+    { topic: "AI for Beginners", category: "Tech" },
+    { topic: "Passive Income Hacks", category: "Business" },
+    { topic: "Digital Product Mastery", category: "Business" },
+    { topic: "Self-Discipline Blueprint", category: "Personal Development" },
+    { topic: "Mindset Transformation", category: "Personal Development" },
+    { topic: "Fitness Over 40", category: "Health" },
 ];
+
+const categories = ["All", "Tech", "Business", "Health", "Personal Development"];
 
 export default function DownloadsPage() {
   const firestore = useFirestore();
@@ -35,28 +44,26 @@ export default function DownloadsPage() {
 
   const [topics, setTopics] = useState<Topic[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!firestore || isUserLoading) return;
 
-    setIsLoading(true);
-    const trendingQuery = collection(firestore, 'trending_topics');
+    const topicsQuery = collection(firestore, 'trending_topics');
 
     const unsubscribe = onSnapshot(
-      trendingQuery,
+      topicsQuery,
       (snapshot) => {
         if (snapshot.empty) {
-            // If firestore is empty, use default topics
             const defaultData = defaultTopics.map((t, i) => ({ ...t, id: `default-${i}`}));
             setTopics(defaultData);
         } else {
             const fetchedTopics = snapshot.docs.map((doc) => ({
                 id: doc.id,
-                topic: doc.data().topic,
-                usage_count: doc.data().usage_count,
-            })) as Topic[];
+                ...(doc.data() as Omit<Topic, 'id'>),
+            }));
             setTopics(fetchedTopics);
         }
         setIsLoading(false);
@@ -72,11 +79,12 @@ export default function DownloadsPage() {
   }, [firestore, isUserLoading]);
 
   const filteredTopics = useMemo(() => {
-    if (!searchTerm) return topics;
-    return topics.filter((topic) =>
-      topic.topic.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [topics, searchTerm]);
+    return topics.filter(topic => {
+      const matchesCategory = selectedCategory === 'All' || topic.category === selectedCategory;
+      const matchesSearch = searchTerm === '' || topic.topic.toLowerCase().includes(searchTerm.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [topics, searchTerm, selectedCategory]);
 
   const handleSelectTopic = (topic: Topic) => {
     router.push(`/generate?topic=${encodeURIComponent(topic.topic)}`);
@@ -91,25 +99,43 @@ export default function DownloadsPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto py-10 px-4">
+    <div className="max-w-5xl mx-auto py-10 px-4">
       <div className="space-y-4 text-center mb-10">
         <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl bg-clip-text text-transparent bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end">
           Discover Hot Topics
         </h1>
-        <p className="text-lg text-muted-foreground md:text-xl max-w-2xl mx-auto">
-          Explore trending e-book topics to inspire your next creation. Click a topic to get started.
+        <p className="text-lg text-muted-foreground md:text-xl max-w-3xl mx-auto">
+          Explore trending e-book topics to inspire your next creation. Filter by category or search to find the perfect idea.
         </p>
       </div>
 
-      <div className="relative mb-8">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-        <Input
-          type="search"
-          placeholder="Search for a topic..."
-          className="w-full pl-10 h-12 text-base"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+      <div className="flex flex-col md:flex-row gap-4 mb-8">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Search for a topic..."
+            className="w-full pl-10 h-12 text-base"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+      </div>
+      
+      <div className="flex justify-center mb-8">
+        <ToggleGroup
+            type="single"
+            defaultValue="All"
+            value={selectedCategory}
+            onValueChange={(value) => value && setSelectedCategory(value)}
+            className="flex-wrap justify-center"
+        >
+            {categories.map(category => (
+                <ToggleGroupItem key={category} value={category} aria-label={`Toggle ${category}`}>
+                    {category}
+                </ToggleGroupItem>
+            ))}
+        </ToggleGroup>
       </div>
 
       {isLoading ? (
@@ -121,9 +147,7 @@ export default function DownloadsPage() {
       ) : filteredTopics.length === 0 ? (
         <div className="text-center py-16">
           <p className="text-muted-foreground text-lg">
-            {searchTerm
-              ? `No topics found for "${searchTerm}".`
-              : 'No trending topics yet. Create a product to see what\'s hot!'}
+            No topics found for the selected criteria. Try a different search or category!
           </p>
         </div>
       ) : (
@@ -140,7 +164,7 @@ export default function DownloadsPage() {
               <CardFooter className="flex items-center justify-between bg-black/10 p-3 backdrop-blur-sm mt-auto">
                  {topic.usage_count ? (
                     <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-                        <Flame className="h-4 w-4" />
+                        <Flame className="h-4 w-4 text-orange-400" />
                         <span>{topic.usage_count?.toLocaleString()} creators</span>
                     </div>
                 ) : <div />}
@@ -156,4 +180,3 @@ export default function DownloadsPage() {
     </div>
   );
 }
-
