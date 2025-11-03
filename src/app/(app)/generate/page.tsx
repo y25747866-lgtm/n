@@ -241,14 +241,9 @@ export default function GeneratePage() {
                  <Accordion type="single" collapsible className="w-full" defaultValue="chapter-0">
                     {product.chapters.map((chapter, index) => (
                       <AccordionItem key={index} value={`chapter-${index}`}>
-                        <AccordionTrigger>{chapter.chapter_title}</AccordionTrigger>
+                        <AccordionTrigger>{chapter.title}</AccordionTrigger>
                         <AccordionContent>
-                          {chapter.sections.map((section, sIndex) => (
-                            <div key={sIndex} className="prose prose-sm prose-invert max-w-none mb-4">
-                              <h4 className="font-semibold">{section.heading}</h4>
-                              <div dangerouslySetInnerHTML={{ __html: marked(section.content) }} />
-                            </div>
-                          ))}
+                            <div className="prose prose-sm prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: marked(chapter.content) }} />
                         </AccordionContent>
                       </AccordionItem>
                     ))}

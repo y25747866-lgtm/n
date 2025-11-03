@@ -13,40 +13,49 @@ import { EbookContentSchema, GenerationConfigSchema } from '@/lib/types';
 import type { EbookContent, GenerationConfig } from '@/lib/types';
 import { doc, runTransaction, serverTimestamp } from 'firebase/firestore';
 import { firestore } from '@/firebase/server-init';
+import { z } from 'zod';
+
+const EbookContentGenerationInputSchema = z.object({
+    topic: z.string(),
+});
 
 const contentGenerationPrompt = ai.definePrompt({
   name: 'generateEbookPrompt',
-  input: { schema: GenerationConfigSchema },
+  input: { schema: EbookContentGenerationInputSchema },
   output: { schema: EbookContentSchema },
   prompt: `
-You are an expert author tasked with writing a comprehensive and practical e-book.
+SYSTEM: You are an expert book-writer & editor. Produce a full, high-quality non-fiction ebook suitable for 40–50 printed pages on the requested topic. Do not include any "as an AI" text.
 
---- USER REQUIREMENTS ---
-Topic: "{{topic}}"
-Author: "{{authorName}}"
-Product Type: "{{productType}}"
-Tone: "{{tone}}"
-Target Length: Approximately 40-50 pages.
+INPUT:
+- TOPIC: "{topic}"
+- TARGET_LENGTH_PAGES: 40-50
+- CHAPTER_COUNT: 10-12
 
---- E-BOOK STRUCTURE (JSON) ---
-You must generate a complete JSON object adhering strictly to the output schema.
-The e-book needs to be structured as follows:
-1.  **title**: A compelling and marketable title for the e-book.
-2.  **subtitle**: A brief, catchy subtitle that expands on the title.
-3.  **author**: The author's name as provided.
-4.  **table_of_contents**: An array of strings, where each string is a chapter title. Must contain 10-12 chapters.
-5.  **chapters**: An array of chapter objects. Each chapter object must contain:
-    - **chapter_title**: The title of the chapter.
-    - **sections**: An array of 2-3 section objects. Each section object must contain:
-      - **heading**: A clear heading for the section.
-      - **content**: The detailed, well-written content for that section in markdown format.
-6.  **estimated_pages**: An integer representing the estimated page count (between 40 and 50).
+OUTPUT FORMAT (JSON):
+{
+  "title": "Book Title",
+  "subtitle": "1-line subtitle",
+  "author": "Boss OS AI",
+  "table_of_contents": [ "Chapter 1 Title", ... ],
+  "chapters": [
+    { "title": "Chapter 1 Title", "content": "Full text (approx 600-900 words per chapter), include examples, steps, bullet lists, and 1 short case study or actionable task." },
+    ...
+  ],
+  "conclusion": "Final summary and 3 action steps",
+  "estimated_pages": 45,                 // must be between 40 and 50
+  "cover_prompt": "One-line prompt describing a premium gradient glass cover for the book: ...",
+  "quality_check": {
+     "readability_score": "short note why this is easy-to-read",
+     "uniqueness_note": "short note ensuring unique content"
+  }
+}
 
---- WRITING STYLE & RULES ---
-- **Tone**: The writing must be practical and actionable. Avoid fluff, filler content, and AI disclaimers (e.g., "As an AI...").
-- **Content**: Provide in-depth, valuable information. Use real-world examples, step-by-step instructions, and logical structuring.
-- **Uniqueness**: Ensure the content is unique and original.
-- **Formatting**: All content within the 'sections' must be valid markdown.
+REQUIREMENTS:
+- Each chapter should be actionable. Use examples, numbered steps, and bullet lists.
+- Keep readable paragraphs (3–6 sentences). Use headings and subheadings.
+- Avoid repeating sentences. Use varied vocabulary.
+- Make tone: professional, motivational, practical.
+- Ensure total output approximates 40–50 pages (10–12 chapters * ~600–900 words each).
 
 Begin generation now.
 `,
@@ -86,7 +95,7 @@ async function trackTopicTrend(topic: string) {
 export async function generateEbookContent(
   input: GenerationConfig
 ): Promise<EbookContent> {
-  const { output } = await contentGenerationPrompt(input);
+  const { output } = await contentGenerationPrompt({ topic: input.topic });
   if (!output) {
     throw new Error('Failed to generate e-book content.');
   }

@@ -18,10 +18,13 @@ export const EbookChapterSectionSchema = z.object({
 });
 
 export const EbookChapterSchema = z.object({
-  chapter_title: z.string().describe('The title of the chapter.'),
-  sections: z
-    .array(EbookChapterSectionSchema)
-    .describe('An array of sections within the chapter.'),
+  title: z.string().describe('The title of the chapter.'),
+  content: z.string().describe("Full text (approx 600-900 words per chapter), include examples, steps, bullet lists, and 1 short case study or actionable task."),
+});
+
+const QualityCheckSchema = z.object({
+  readability_score: z.string().describe("short note why this is easy-to-read"),
+  uniqueness_note: z.string().describe("short note ensuring unique content"),
 });
 
 export const EbookContentSchema = z.object({
@@ -33,10 +36,13 @@ export const EbookContentSchema = z.object({
     .describe('An array of chapter titles, forming the table of contents.'),
   chapters: z
     .array(EbookChapterSchema)
-    .describe('An array of chapter objects, each containing a title and sections.'),
+    .describe('An array of chapter objects, each containing a title and content.'),
+  conclusion: z.string().describe("Final summary and 3 action steps"),
   estimated_pages: z
     .number()
-    .describe('An estimated page count for the generated e-book, typically between 40 and 50.'),
+    .describe('An estimated page count for the generated e-book, must be between 40 and 50.'),
+  cover_prompt: z.string().describe("One-line prompt describing a premium gradient glass cover for the book."),
+  quality_check: QualityCheckSchema,
   coverImageUrl: z.string().optional().describe('URL for the generated cover image.'),
   coverImagePrompt: z.string().optional().describe('The prompt used to generate the cover image.'),
   cover_status: z.enum(['generated', 'placeholder']).optional().describe('The status of the cover image.'),
