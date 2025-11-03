@@ -1,10 +1,10 @@
 
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { collection } from 'firebase/firestore';
-import { useUser, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
+import { collection, onSnapshot, Unsubscribe } from 'firebase/firestore';
+import { useUser, useFirestore } from '@/firebase';
 import { Flame, Search, Sparkles, LayoutTemplate } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -21,13 +21,14 @@ type Topic = {
 };
 
 const defaultTopics: Omit<Topic, 'id'>[] = [
-  { topic: 'AI for Beginners', category: 'Tech' },
-  { topic: 'Passive Income Hacks', category: 'Business' },
-  { topic: 'Digital Product Mastery', category: 'Business' },
-  { topic: 'Self-Discipline Blueprint', category: 'Personal Development' },
-  { topic: 'Mindset Transformation', category: 'Personal Development' },
-  { topic: 'Fitness Over 40', category: 'Health' },
+  { topic: 'AI for Beginners', category: 'Tech', usage_count: 1200 },
+  { topic: 'Passive Income Hacks', category: 'Business', usage_count: 2500 },
+  { topic: 'Digital Product Mastery', category: 'Business', usage_count: 1800 },
+  { topic: 'Self-Discipline Blueprint', category: 'Personal Development', usage_count: 950 },
+  { topic: 'Mindset Transformation', category: 'Personal Development', usage_count: 1500 },
+  { topic: 'Fitness Over 40', category: 'Health', usage_count: 800 },
 ];
+
 
 const categories = ['All', 'Tech', 'Business', 'Health', 'Personal Development'];
 
@@ -36,27 +37,44 @@ export default function DownloadsPage() {
   const { isUserLoading } = useUser();
   const router = useRouter();
 
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [templateSearchTerm, setTemplateSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-
-  const topicsQuery = useMemoFirebase(
-    () => (firestore ? collection(firestore, 'trending_topics') : null),
-    [firestore]
-  );
-  const { data: rawTopics, isLoading, error } = useCollection<Topic>(topicsQuery);
   
-  const topics = useMemo(() => {
-    if (!isLoading && (!rawTopics || rawTopics.length === 0)) {
-       return defaultTopics.map((t, i) => ({ ...t, id: `default-${i}` }));
-    }
-    return rawTopics || [];
-  }, [isLoading, rawTopics]);
+  useEffect(() => {
+    if (!firestore) return;
+    setIsLoading(true);
+    
+    const topicsCollection = collection(firestore, 'trending_topics');
+    const unsubscribe: Unsubscribe = onSnapshot(topicsCollection, (snapshot) => {
+        if (snapshot.empty) {
+             setTopics(defaultTopics.map((t, i) => ({ ...t, id: `default-${i}` })));
+        } else {
+            const fetchedTopics = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            } as Topic));
+            setTopics(fetchedTopics);
+        }
+        setIsLoading(false);
+    }, (err) => {
+        console.error("Firestore error:", err);
+        setError("Failed to load trending topics.");
+        setTopics(defaultTopics.map((t, i) => ({ ...t, id: `default-${i}` })));
+        setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [firestore]);
 
 
   const filteredTopics = useMemo(() => {
     return topics.filter((topic) => {
-      const matchesCategory = selectedCategory === 'All' || !topic.category || topic.category === selectedCategory;
+      const matchesCategory = selectedCategory === 'All' || topic.category === selectedCategory;
       const matchesSearch =
         searchTerm === '' || topic.topic.toLowerCase().includes(searchTerm.toLowerCase());
       return matchesCategory && matchesSearch;
@@ -70,7 +88,7 @@ export default function DownloadsPage() {
   if (error) {
     return (
       <div className="flex justify-center items-center min-h-[50vh]">
-        <p className="text-destructive text-lg">Failed to load trending topics. Please check your connection or permissions.</p>
+        <p className="text-destructive text-lg">{error}</p>
       </div>
     );
   }
