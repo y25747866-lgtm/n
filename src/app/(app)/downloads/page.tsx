@@ -1,9 +1,9 @@
 
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { collection, onSnapshot, query } from 'firebase/firestore';
+import { collection } from 'firebase/firestore';
 import { useUser, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { Flame, Search, Sparkles, LayoutTemplate } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -41,7 +41,7 @@ export default function DownloadsPage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
 
   const topicsQuery = useMemoFirebase(
-    () => (firestore ? query(collection(firestore, 'trending_topics')) : null),
+    () => (firestore ? collection(firestore, 'trending_topics') : null),
     [firestore]
   );
   const { data: rawTopics, isLoading, error } = useCollection<Topic>(topicsQuery);
@@ -63,14 +63,14 @@ export default function DownloadsPage() {
     });
   }, [topics, searchTerm, selectedCategory]);
 
-  const handleSelectTopic = (topic: Topic) => {
+  const handleSelectTopic = (topic: { topic: string }) => {
     router.push(`/generate?topic=${encodeURIComponent(topic.topic)}`);
   };
 
   if (error) {
     return (
       <div className="flex justify-center items-center min-h-[50vh]">
-        <p className="text-destructive text-lg">Failed to load trending topics.</p>
+        <p className="text-destructive text-lg">Failed to load trending topics. Please check your connection or permissions.</p>
       </div>
     );
   }
@@ -185,5 +185,4 @@ export default function DownloadsPage() {
       </div>
     </div>
   );
-
-    
+}
