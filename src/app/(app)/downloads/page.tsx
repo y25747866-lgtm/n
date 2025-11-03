@@ -39,13 +39,13 @@ export default function DownloadsPage() {
   }, [isUserLoading, user, auth]);
 
   const trendingQuery = useMemoFirebase(() => {
-    if (isUserLoading) return null;
+    if (isUserLoading || !user) return null;
     return query(
       collection(firestore, 'trending_topics'),
       orderBy('usage_count', 'desc'),
       limit(50)
     );
-  }, [isUserLoading, firestore]);
+  }, [isUserLoading, user, firestore]);
 
   const { data: trendingData, isLoading: trendingLoading, error: trendingError } = useCollection(trendingQuery);
 
