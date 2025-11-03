@@ -8,7 +8,6 @@ import {
   LogOut,
   ArrowRight,
   Wand2,
-  Search,
   X,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -39,7 +38,6 @@ import { Logo } from './logo';
 const menuItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/generate', label: 'Generator', icon: Wand2 },
-  { href: '/downloads', label: 'Search', icon: Search },
   { href: '/subscription', label: 'Subscription', icon: CreditCard },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
