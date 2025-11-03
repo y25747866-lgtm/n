@@ -2,7 +2,6 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from "react";
-import { useAuthState } from "react-firebase-hooks/auth";
 import {
   collection,
   query,
@@ -10,7 +9,7 @@ import {
   limit,
 } from "firebase/firestore";
 import { signInAnonymously } from "firebase/auth";
-import { useAuth, useFirestore, useCollection } from "@/firebase";
+import { useAuth, useFirestore, useCollection, useUser, useMemoFirebase } from "@/firebase";
 import { Loader2 } from "lucide-react";
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Flame } from "lucide-react";
@@ -29,8 +28,8 @@ const gradientStops = [
 export default function DownloadsPage() {
   const auth = useAuth();
   const firestore = useFirestore();
+  const { user, isUserLoading } = useUser();
 
-  const [user, isUserLoading] = useAuthState(auth);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -39,18 +38,20 @@ export default function DownloadsPage() {
     }
   }, [isUserLoading, user, auth]);
 
-  const trendingQuery = useMemo(() => {
-    if (isUserLoading || !user) return null;
+  const trendingQuery = useMemoFirebase(() => {
+    // Wait until authentication completes before creating the query
+    if (isUserLoading) return null;
     return query(
       collection(firestore, "trending_topics"),
       orderBy("usage_count", "desc"),
       limit(10)
     );
-  }, [isUserLoading, user, firestore]);
+  }, [isUserLoading, firestore]);
 
   const [trendingData, trendingLoading, trendingError] = useCollection(trendingQuery);
 
   useEffect(() => {
+    // The final loading state depends on both auth and data loading.
     if (!isUserLoading && !trendingLoading) {
       setIsLoading(false);
     }
@@ -85,8 +86,8 @@ export default function DownloadsPage() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {trendingData?.docs?.map((doc, index) => {
-          const topic = doc.data();
+        {trendingData?.map((doc, index) => {
+          const topic = doc;
           return (
             <Card
               key={doc.id}
