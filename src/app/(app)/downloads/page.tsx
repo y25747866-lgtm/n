@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import {
   collection,
   query,
@@ -48,7 +48,7 @@ export default function DownloadsPage() {
     );
   }, [isUserLoading, firestore]);
 
-  const [trendingData, trendingLoading, trendingError] = useCollection(trendingQuery);
+  const { data: trendingData, isLoading: trendingLoading, error: trendingError } = useCollection(trendingQuery);
 
   useEffect(() => {
     // The final loading state depends on both auth and data loading.
@@ -81,16 +81,15 @@ export default function DownloadsPage() {
     <div className="max-w-4xl mx-auto py-10 px-4">
       <h1 className="text-3xl font-bold text-center mb-6">🔥 Trending E-Book Topics</h1>
 
-      {trendingData?.docs?.length === 0 && (
+      {trendingData?.length === 0 && (
         <p className="text-center text-muted-foreground">No trending topics yet. Create a product to see what's hot!</p>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {trendingData?.map((doc, index) => {
-          const topic = doc;
+        {trendingData?.map((topic, index) => {
           return (
             <Card
-              key={doc.id}
+              key={topic.id}
               className={`relative flex flex-col overflow-hidden text-white bg-gradient-to-br ${gradientStops[index % gradientStops.length]}`}
             >
               <CardHeader className="flex-1">
