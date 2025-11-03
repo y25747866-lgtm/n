@@ -3,8 +3,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { collection, onSnapshot, query, where, Query, DocumentData } from 'firebase/firestore';
-import { useAuth, useFirestore, useUser, useMemoFirebase } from '@/firebase';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { useUser, useFirestore } from '@/firebase';
 import { Flame, Loader2, Search, Sparkles, LayoutTemplate } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
