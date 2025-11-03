@@ -7,13 +7,20 @@ import {
   query,
   orderBy,
   limit,
+  onSnapshot,
 } from 'firebase/firestore';
 import { signInAnonymously } from 'firebase/auth';
-import { useAuth, useFirestore, useCollection, useUser, useMemoFirebase } from '@/firebase';
+import { useAuth, useFirestore, useUser } from '@/firebase';
 import { Flame, Loader2, Search } from 'lucide-react';
 import { Card, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+
+type Topic = {
+    id: string;
+    topic: string;
+    usage_count: number;
+};
 
 const gradientStops = [
   'from-red-500 to-yellow-500',
@@ -31,41 +38,61 @@ export default function DownloadsPage() {
   const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
   const [searchTerm, setSearchTerm] = useState('');
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isUserLoading && !user) {
-      signInAnonymously(auth).catch((err) => console.error('Anon sign-in error:', err));
+      signInAnonymously(auth).catch((err) => {
+        console.error('Anonymous sign-in error:', err);
+        setError('Could not authenticate user.');
+      });
     }
   }, [isUserLoading, user, auth]);
 
-  const trendingQuery = useMemoFirebase(() => {
-    if (isUserLoading || !user) return null;
-    return query(
+  useEffect(() => {
+    if (!firestore || !user) return; // Wait for firestore and user
+
+    setIsLoading(true);
+    const trendingQuery = query(
       collection(firestore, 'trending_topics'),
       orderBy('usage_count', 'desc'),
       limit(50)
     );
-  }, [isUserLoading, user, firestore]);
 
-  const { data: trendingData, isLoading: trendingLoading, error: trendingError } = useCollection(trendingQuery);
+    const unsubscribe = onSnapshot(
+      trendingQuery,
+      (snapshot) => {
+        const fetchedTopics = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          topic: doc.data().topic,
+          usage_count: doc.data().usage_count,
+        })) as Topic[];
+        setTopics(fetchedTopics);
+        setIsLoading(false);
+      },
+      (err) => {
+        console.error('Firestore onSnapshot Error:', err);
+        setError('Failed to load trending topics.');
+        setIsLoading(false);
+      }
+    );
+
+    return () => unsubscribe(); // Cleanup listener on component unmount
+  }, [firestore, user]); // Rerun when firestore or user becomes available
 
   const filteredTopics = useMemo(() => {
-    if (!trendingData) return [];
-    if (!searchTerm) return trendingData;
-    return trendingData.filter(topic =>
+    if (!searchTerm) return topics;
+    return topics.filter((topic) =>
       topic.topic.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [trendingData, searchTerm]);
+  }, [topics, searchTerm]);
 
-  const isLoading = isUserLoading || trendingLoading;
-
-  if (trendingError) {
-    console.error('Firestore Error:', trendingError);
+  if (error) {
     return (
       <div className="flex justify-center items-center min-h-[50vh]">
-        <p className="text-destructive text-lg">
-          Failed to load trending topics. Please try again later.
-        </p>
+        <p className="text-destructive text-lg">{error}</p>
       </div>
     );
   }
@@ -95,17 +122,15 @@ export default function DownloadsPage() {
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: 9 }).map((_, index) => (
-            <div key={index} className="space-y-2">
-              <Skeleton className="h-32 w-full" />
-              <Skeleton className="h-6 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
-            </div>
+            <Skeleton key={index} className="h-40 w-full" />
           ))}
         </div>
       ) : filteredTopics.length === 0 ? (
         <div className="text-center py-16">
           <p className="text-muted-foreground text-lg">
-            {searchTerm ? `No topics found for "${searchTerm}".` : 'No trending topics yet. Create a product to see what\'s hot!'}
+            {searchTerm
+              ? `No topics found for "${searchTerm}".`
+              : 'No trending topics yet. Create a product to see what\'s hot!'}
           </p>
         </div>
       ) : (
@@ -113,12 +138,12 @@ export default function DownloadsPage() {
           {filteredTopics.map((topic, index) => (
             <Card
               key={topic.id}
-              className={`relative flex flex-col overflow-hidden text-white bg-gradient-to-br ${gradientStops[index % gradientStops.length]}`}
+              className={`relative flex flex-col overflow-hidden text-white bg-gradient-to-br ${
+                gradientStops[index % gradientStops.length]
+              }`}
             >
               <CardHeader className="flex-1">
-                <CardTitle className="text-2xl font-bold">
-                  {topic.topic}
-                </CardTitle>
+                <CardTitle className="text-2xl font-bold">{topic.topic}</CardTitle>
               </CardHeader>
               <CardFooter className="z-10 flex items-center justify-between bg-black/20 p-3 backdrop-blur-sm">
                 <div className="flex items-center gap-2 text-sm font-semibold">
