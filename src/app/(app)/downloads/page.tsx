@@ -2,74 +2,63 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   collection,
-  query,
-  orderBy,
-  limit,
   onSnapshot,
 } from 'firebase/firestore';
-import { signInAnonymously } from 'firebase/auth';
 import { useAuth, useFirestore, useUser } from '@/firebase';
-import { Flame, Loader2, Search } from 'lucide-react';
-import { Card, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Flame, Loader2, Search, Sparkles } from 'lucide-react';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 
 type Topic = {
-    id: string;
-    topic: string;
-    usage_count: number;
+  id: string;
+  topic: string;
+  usage_count?: number;
 };
 
-const gradientStops = [
-  'from-red-500 to-yellow-500',
-  'from-green-400 to-blue-500',
-  'from-purple-500 to-pink-500',
-  'from-blue-400 to-indigo-500',
-  'from-yellow-400 to-orange-500',
-  'from-teal-400 to-cyan-500',
-  'from-rose-400 to-red-500',
-  'from-lime-400 to-green-500',
+const defaultTopics: Omit<Topic, 'id'>[] = [
+    { topic: "AI for Beginners" },
+    { topic: "Passive Income Hacks" },
+    { topic: "Digital Product Mastery" },
+    { topic: "Self-Discipline Blueprint" },
+    { topic: "Mindset Transformation" }
 ];
 
 export default function DownloadsPage() {
-  const auth = useAuth();
   const firestore = useFirestore();
-  const { user, isUserLoading } = useUser();
-  const [searchTerm, setSearchTerm] = useState('');
+  const { isUserLoading } = useUser();
+  const router = useRouter();
+
   const [topics, setTopics] = useState<Topic[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isUserLoading && !user) {
-      signInAnonymously(auth).catch((err) => {
-        console.error('Anonymous sign-in error:', err);
-        setError('Could not authenticate user.');
-      });
-    }
-  }, [isUserLoading, user, auth]);
-
-  useEffect(() => {
-    if (!firestore || !user) return; // Wait for firestore and user
+    if (!firestore || isUserLoading) return;
 
     setIsLoading(true);
-    const trendingQuery = query(
-      collection(firestore, 'trending_topics'),
-      orderBy('usage_count', 'desc'),
-      limit(50)
-    );
+    const trendingQuery = collection(firestore, 'trending_topics');
 
     const unsubscribe = onSnapshot(
       trendingQuery,
       (snapshot) => {
-        const fetchedTopics = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          topic: doc.data().topic,
-          usage_count: doc.data().usage_count,
-        })) as Topic[];
-        setTopics(fetchedTopics);
+        if (snapshot.empty) {
+            // If firestore is empty, use default topics
+            const defaultData = defaultTopics.map((t, i) => ({ ...t, id: `default-${i}`}));
+            setTopics(defaultData);
+        } else {
+            const fetchedTopics = snapshot.docs.map((doc) => ({
+                id: doc.id,
+                topic: doc.data().topic,
+                usage_count: doc.data().usage_count,
+            })) as Topic[];
+            setTopics(fetchedTopics);
+        }
         setIsLoading(false);
       },
       (err) => {
@@ -79,8 +68,8 @@ export default function DownloadsPage() {
       }
     );
 
-    return () => unsubscribe(); // Cleanup listener on component unmount
-  }, [firestore, user]); // Rerun when firestore or user becomes available
+    return () => unsubscribe();
+  }, [firestore, isUserLoading]);
 
   const filteredTopics = useMemo(() => {
     if (!searchTerm) return topics;
@@ -88,6 +77,10 @@ export default function DownloadsPage() {
       topic.topic.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [topics, searchTerm]);
+
+  const handleSelectTopic = (topic: Topic) => {
+    router.push(`/generate?topic=${encodeURIComponent(topic.topic)}`);
+  }
 
   if (error) {
     return (
@@ -104,7 +97,7 @@ export default function DownloadsPage() {
           Discover Hot Topics
         </h1>
         <p className="text-lg text-muted-foreground md:text-xl max-w-2xl mx-auto">
-          Explore trending e-book topics to inspire your next creation.
+          Explore trending e-book topics to inspire your next creation. Click a topic to get started.
         </p>
       </div>
 
@@ -121,7 +114,7 @@ export default function DownloadsPage() {
 
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array.from({ length: 9 }).map((_, index) => (
+          {Array.from({ length: 6 }).map((_, index) => (
             <Skeleton key={index} className="h-40 w-full" />
           ))}
         </div>
@@ -135,21 +128,26 @@ export default function DownloadsPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredTopics.map((topic, index) => (
+          {filteredTopics.map((topic) => (
             <Card
               key={topic.id}
-              className={`relative flex flex-col overflow-hidden text-white bg-gradient-to-br ${
-                gradientStops[index % gradientStops.length]
-              }`}
+              className="glass-card flex flex-col justify-between cursor-pointer group hover:border-primary/50 transition-all"
+              onClick={() => handleSelectTopic(topic)}
             >
-              <CardHeader className="flex-1">
-                <CardTitle className="text-2xl font-bold">{topic.topic}</CardTitle>
+              <CardHeader>
+                <CardTitle className="text-xl font-bold group-hover:text-primary transition-colors">{topic.topic}</CardTitle>
               </CardHeader>
-              <CardFooter className="z-10 flex items-center justify-between bg-black/20 p-3 backdrop-blur-sm">
-                <div className="flex items-center gap-2 text-sm font-semibold">
-                  <Flame className="h-4 w-4" />
-                  <span>{topic.usage_count?.toLocaleString() || 0} creators</span>
-                </div>
+              <CardFooter className="flex items-center justify-between bg-black/10 p-3 backdrop-blur-sm mt-auto">
+                 {topic.usage_count ? (
+                    <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+                        <Flame className="h-4 w-4" />
+                        <span>{topic.usage_count?.toLocaleString()} creators</span>
+                    </div>
+                ) : <div />}
+                <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Create
+                </Button>
               </CardFooter>
             </Card>
           ))}
@@ -158,3 +156,4 @@ export default function DownloadsPage() {
     </div>
   );
 }
+
