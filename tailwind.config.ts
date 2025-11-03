@@ -14,12 +14,12 @@ export default {
         headline: ['Inter', 'sans-serif'],
       },
       colors: {
-        'accent-1-start': '#8B5CF6', // violet-500
-        'accent-1-mid': '#EC4899', // pink-500
-        'accent-1-end': '#F59E0B', // amber-500
-        'accent-2-start': '#2563EB',
-        'accent-2-mid': '#06B6D4',
-        'accent-2-end': '#34D399',
+        'accent-1-start': 'hsl(var(--accent-1-start))',
+        'accent-1-mid': 'hsl(var(--accent-1-mid))',
+        'accent-1-end': 'hsl(var(--accent-1-end))',
+        'accent-2-start': 'hsl(var(--accent-2-start))',
+        'accent-2-mid': 'hsl(var(--accent-2-mid))',
+        'accent-2-end': 'hsl(var(--accent-2-end))',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {

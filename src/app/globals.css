@@ -25,6 +25,12 @@
     --ring: 260 85% 66%;
     --radius: 0.8rem;
     --card-border: 255 255 255 / 0.04;
+    --accent-1-start: 221 83% 53%; /* #3B82F6 */
+    --accent-1-mid: 275 92% 70%;   /* #7C3AED */
+    --accent-1-end: 187 98% 41%;   /* #06B6D4 */
+    --accent-2-start: 224 76% 48%; /* #2563EB */
+    --accent-2-mid: 187 98% 41%;   /* #06B6D4 */
+    --accent-2-end: 158 59% 53%;   /* #34D399 */
   }
  
   .light {
@@ -48,6 +54,12 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 260 85% 60%;
     --card-border: 0 0 0 / 0.06;
+    --accent-1-start: 221 83% 53%;
+    --accent-1-mid: 275 92% 70%;
+    --accent-1-end: 187 98% 41%;
+    --accent-2-start: 224 76% 48%;
+    --accent-2-mid: 187 98% 41%;
+    --accent-2-end: 158 59% 53%;
   }
 }
  
