@@ -3,8 +3,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { collection, onSnapshot } from 'firebase/firestore';
-import { useUser, useFirestore } from '@/firebase';
+import { collection, onSnapshot, query } from 'firebase/firestore';
+import { useUser, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { Flame, Search, Sparkles, LayoutTemplate } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -36,46 +36,27 @@ export default function DownloadsPage() {
   const { isUserLoading } = useUser();
   const router = useRouter();
 
-  const [topics, setTopics] = useState<Topic[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [templateSearchTerm, setTemplateSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!firestore || isUserLoading) return;
+  const topicsQuery = useMemoFirebase(
+    () => (firestore ? query(collection(firestore, 'trending_topics')) : null),
+    [firestore]
+  );
+  const { data: rawTopics, isLoading, error } = useCollection<Topic>(topicsQuery);
+  
+  const topics = useMemo(() => {
+    if (!isLoading && (!rawTopics || rawTopics.length === 0)) {
+       return defaultTopics.map((t, i) => ({ ...t, id: `default-${i}` }));
+    }
+    return rawTopics || [];
+  }, [isLoading, rawTopics]);
 
-    const topicsQuery = collection(firestore, 'trending_topics');
-
-    const unsubscribe = onSnapshot(
-      topicsQuery,
-      (snapshot) => {
-        if (snapshot.empty) {
-          const defaultData = defaultTopics.map((t, i) => ({ ...t, id: `default-${i}` }));
-          setTopics(defaultData);
-        } else {
-          const fetchedTopics = snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...(doc.data() as Omit<Topic, 'id'>),
-          }));
-          setTopics(fetchedTopics);
-        }
-        setIsLoading(false);
-      },
-      (err) => {
-        console.error('Firestore onSnapshot Error:', err);
-        setError('Failed to load trending topics.');
-        setIsLoading(false);
-      }
-    );
-
-    return () => unsubscribe();
-  }, [firestore, isUserLoading]);
 
   const filteredTopics = useMemo(() => {
     return topics.filter((topic) => {
-      const matchesCategory = selectedCategory === 'All' || topic.category === selectedCategory;
+      const matchesCategory = selectedCategory === 'All' || !topic.category || topic.category === selectedCategory;
       const matchesSearch =
         searchTerm === '' || topic.topic.toLowerCase().includes(searchTerm.toLowerCase());
       return matchesCategory && matchesSearch;
@@ -89,7 +70,7 @@ export default function DownloadsPage() {
   if (error) {
     return (
       <div className="flex justify-center items-center min-h-[50vh]">
-        <p className="text-destructive text-lg">{error}</p>
+        <p className="text-destructive text-lg">Failed to load trending topics.</p>
       </div>
     );
   }
@@ -154,7 +135,7 @@ export default function DownloadsPage() {
           </ToggleGroup>
         </div>
 
-        {isLoading ? (
+        {(isLoading || isUserLoading) ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, index) => (
               <Skeleton key={index} className="h-40 w-full" />
@@ -204,4 +185,5 @@ export default function DownloadsPage() {
       </div>
     </div>
   );
-}
+
+    

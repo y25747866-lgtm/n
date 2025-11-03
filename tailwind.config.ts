@@ -9,6 +9,13 @@ export default {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
+    container: {
+      center: true,
+      padding: '2rem',
+      screens: {
+        '2xl': '1400px',
+      },
+    },
     extend: {
       fontFamily: {
         body: ['Inter', 'sans-serif'],
@@ -87,7 +94,13 @@ export default {
         'accordion-up': 'accordion-up 0.2s ease-out',
         'fade-in': 'fade-in 0.5s ease-in-out',
       },
+      backgroundImage: {
+        'accent-gradient-1': 'linear-gradient(135deg, hsl(var(--accent-1-start)), hsl(var(--accent-1-mid)), hsl(var(--accent-1-end)))',
+        'accent-gradient-2': 'linear-gradient(135deg, hsl(var(--accent-2-start)), hsl(var(--accent-2-mid)), hsl(var(--accent-2-end)))',
+      }
     },
   },
   plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],
 } satisfies Config;
+
+    
