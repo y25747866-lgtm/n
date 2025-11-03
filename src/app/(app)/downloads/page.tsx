@@ -1,18 +1,19 @@
 
 'use client';
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   collection,
   query,
   orderBy,
   limit,
-} from "firebase/firestore";
-import { signInAnonymously } from "firebase/auth";
-import { useAuth, useFirestore, useCollection, useUser, useMemoFirebase } from "@/firebase";
-import { Loader2 } from "lucide-react";
-import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Flame } from "lucide-react";
+} from 'firebase/firestore';
+import { signInAnonymously } from 'firebase/auth';
+import { useAuth, useFirestore, useCollection, useUser, useMemoFirebase } from '@/firebase';
+import { Flame, Loader2, Search } from 'lucide-react';
+import { Card, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const gradientStops = [
   'from-red-500 to-yellow-500',
@@ -29,47 +30,39 @@ export default function DownloadsPage() {
   const auth = useAuth();
   const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
-
-  const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     if (!isUserLoading && !user) {
-      signInAnonymously(auth).catch((err) => console.error("Anon sign-in error:", err));
+      signInAnonymously(auth).catch((err) => console.error('Anon sign-in error:', err));
     }
   }, [isUserLoading, user, auth]);
 
   const trendingQuery = useMemoFirebase(() => {
-    // Wait until authentication completes before creating the query
     if (isUserLoading) return null;
     return query(
-      collection(firestore, "trending_topics"),
-      orderBy("usage_count", "desc"),
-      limit(10)
+      collection(firestore, 'trending_topics'),
+      orderBy('usage_count', 'desc'),
+      limit(50)
     );
   }, [isUserLoading, firestore]);
 
   const { data: trendingData, isLoading: trendingLoading, error: trendingError } = useCollection(trendingQuery);
 
-  useEffect(() => {
-    // The final loading state depends on both auth and data loading.
-    if (!isUserLoading && !trendingLoading) {
-      setIsLoading(false);
-    }
-  }, [isUserLoading, trendingLoading]);
-
-  if (isUserLoading || isLoading) {
-    return (
-      <div className="flex flex-col justify-center items-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-muted-foreground text-lg mt-4">Loading trending topics...</p>
-      </div>
+  const filteredTopics = useMemo(() => {
+    if (!trendingData) return [];
+    if (!searchTerm) return trendingData;
+    return trendingData.filter(topic =>
+      topic.topic.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }
+  }, [trendingData, searchTerm]);
+
+  const isLoading = isUserLoading || trendingLoading;
 
   if (trendingError) {
-    console.error("Firestore Error:", trendingError);
+    console.error('Firestore Error:', trendingError);
     return (
-      <div className="flex justify-center items-center min-h-screen">
+      <div className="flex justify-center items-center min-h-[50vh]">
         <p className="text-destructive text-lg">
           Failed to load trending topics. Please try again later.
         </p>
@@ -79,15 +72,45 @@ export default function DownloadsPage() {
 
   return (
     <div className="max-w-4xl mx-auto py-10 px-4">
-      <h1 className="text-3xl font-bold text-center mb-6">🔥 Trending E-Book Topics</h1>
+      <div className="space-y-4 text-center mb-10">
+        <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl bg-clip-text text-transparent bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end">
+          Discover Hot Topics
+        </h1>
+        <p className="text-lg text-muted-foreground md:text-xl max-w-2xl mx-auto">
+          Explore trending e-book topics to inspire your next creation.
+        </p>
+      </div>
 
-      {trendingData?.length === 0 && (
-        <p className="text-center text-muted-foreground">No trending topics yet. Create a product to see what's hot!</p>
-      )}
+      <div className="relative mb-8">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+        <Input
+          type="search"
+          placeholder="Search for a topic..."
+          className="w-full pl-10 h-12 text-base"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {trendingData?.map((topic, index) => {
-          return (
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 9 }).map((_, index) => (
+            <div key={index} className="space-y-2">
+              <Skeleton className="h-32 w-full" />
+              <Skeleton className="h-6 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+            </div>
+          ))}
+        </div>
+      ) : filteredTopics.length === 0 ? (
+        <div className="text-center py-16">
+          <p className="text-muted-foreground text-lg">
+            {searchTerm ? `No topics found for "${searchTerm}".` : 'No trending topics yet. Create a product to see what\'s hot!'}
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredTopics.map((topic, index) => (
             <Card
               key={topic.id}
               className={`relative flex flex-col overflow-hidden text-white bg-gradient-to-br ${gradientStops[index % gradientStops.length]}`}
@@ -100,13 +123,13 @@ export default function DownloadsPage() {
               <CardFooter className="z-10 flex items-center justify-between bg-black/20 p-3 backdrop-blur-sm">
                 <div className="flex items-center gap-2 text-sm font-semibold">
                   <Flame className="h-4 w-4" />
-                  <span>{topic.usage_count?.toLocaleString() || 0} creators used this</span>
+                  <span>{topic.usage_count?.toLocaleString() || 0} creators</span>
                 </div>
               </CardFooter>
             </Card>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
