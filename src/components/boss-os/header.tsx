@@ -2,7 +2,6 @@
 'use client';
 
 import { Logo } from './logo';
-import { ThemeToggle } from './theme-toggle';
 import { useSidebar } from '@/contexts/sidebar-provider';
 import { Button } from '@/components/ui/button';
 import { PanelLeft } from 'lucide-react';
@@ -20,7 +19,7 @@ export default function Header() {
                <Logo />
             </div>
             <div className="flex items-center gap-4">
-                <ThemeToggle />
+                
             </div>
         </header>
     );
@@ -40,7 +39,7 @@ export default function Header() {
             </Button>
         </div>
       <div className="flex items-center gap-4">
-        <ThemeToggle />
+        
       </div>
     </header>
   );

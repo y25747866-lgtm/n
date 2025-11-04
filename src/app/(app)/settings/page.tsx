@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { ThemeToggle } from "@/components/boss-os/theme-toggle";
 import { useSubscription } from "@/contexts/subscription-provider";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
@@ -66,22 +65,6 @@ export default function SettingsPage() {
       </Card>
       
       <Separator />
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Appearance</CardTitle>
-          <CardDescription>Customize the look and feel of the application.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div>
-              <Label>Theme</Label>
-              <p className="text-sm text-muted-foreground">Select your preferred color scheme.</p>
-            </div>
-            <ThemeToggle />
-          </div>
-        </CardContent>
-      </Card>
 
     </div>
   );
