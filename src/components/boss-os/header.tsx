@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { PanelLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { VisuallyHidden } from '@/components/ui/visually-hidden';
+import { ThemeToggle } from './theme-toggle';
 
 export default function Header() {
     const { isNavVisible, toggleSidebar, isClient } = useSidebar();
@@ -39,6 +40,7 @@ export default function Header() {
             </Button>
         </div>
       <div className="flex items-center gap-4">
+        <ThemeToggle />
       </div>
     </header>
   );
