@@ -47,7 +47,8 @@ OUTPUT FORMAT (JSON):
   "quality_check": {
      "readability_score": "short note why this is easy-to-read",
      "uniqueness_note": "short note ensuring unique content"
-  }
+  },
+  "keywords": ["keyword1", "keyword2", "keyword3"] // Array of 3-5 relevant lowercase keywords for searching
 }
 
 REQUIREMENTS:
@@ -56,6 +57,7 @@ REQUIREMENTS:
 - Avoid repeating sentences. Use varied vocabulary.
 - Make tone: professional, motivational, practical.
 - Ensure total output approximates 40–50 pages (10–12 chapters * ~600–900 words each).
+- Generate an array of 3-5 relevant, lowercase keywords related to the topic for search indexing.
 
 Begin generation now.
 `,
@@ -64,7 +66,7 @@ Begin generation now.
   }
 });
 
-async function trackTopicTrend(topic: string) {
+async function trackTopicTrend(topic: string, keywords: string[]) {
   if (!firestore) return;
   const topicId = topic.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
   const topicRef = doc(firestore, 'trending_topics', topicId);
@@ -77,12 +79,14 @@ async function trackTopicTrend(topic: string) {
           topic: topic,
           usage_count: 1,
           lastUpdated: serverTimestamp(),
+          keywords: keywords,
         });
       } else {
         const newCount = (topicDoc.data().usage_count || 0) + 1;
         transaction.update(topicRef, {
           usage_count: newCount,
           lastUpdated: serverTimestamp(),
+          keywords: keywords, // Also update keywords in case they change
         });
       }
     });
@@ -101,7 +105,7 @@ export async function generateEbookContent(
   }
   
   // Track the trend in Firestore, but don't block the response
-  trackTopicTrend(input.topic);
+  trackTopicTrend(input.topic, output.keywords || []);
 
   return output;
 }
@@ -114,3 +118,5 @@ ai.defineFlow(
   },
   generateEbookContent
 );
+
+    

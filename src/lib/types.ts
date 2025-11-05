@@ -43,6 +43,7 @@ export const EbookContentSchema = z.object({
     .describe('An estimated page count for the generated e-book, must be between 40 and 50.'),
   cover_prompt: z.string().describe("One-line prompt describing a premium gradient glass cover for the book."),
   quality_check: QualityCheckSchema,
+  keywords: z.array(z.string()).optional().describe("An array of 3-5 relevant lowercase keywords for searching."),
   coverImageUrl: z.string().optional().describe('URL for the generated cover image.'),
   coverImagePrompt: z.string().optional().describe('The prompt used to generate the cover image.'),
   cover_status: z.enum(['generated', 'placeholder']).optional().describe('The status of the cover image.'),
@@ -84,3 +85,5 @@ export const JobStatusSchema = z.enum([
   'error',
 ]);
 export type JobStatus = z.infer<typeof JobStatusSchema>;
+
+    

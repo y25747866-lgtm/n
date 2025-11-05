@@ -15,6 +15,7 @@ type Topic = {
   id: string;
   topic: string;
   usage_count: number;
+  keywords?: string[];
 };
 
 const TopicCard = ({ topic, index }: { topic: Topic; index: number }) => (
@@ -55,10 +56,14 @@ export default function DiscoverPage() {
 
   const filteredTopics = useMemo(() => {
     if (!topics) return [];
-    return topics.filter(
-      (topic) =>
-        topic.topic.toLowerCase().includes(searchTerm.toLowerCase())
-    ).sort((a, b) => b.usage_count - a.usage_count);
+    const lowercasedFilter = searchTerm.toLowerCase();
+    
+    return topics.filter((topic) => {
+        const titleMatch = topic.topic.toLowerCase().includes(lowercasedFilter);
+        const keywordMatch = topic.keywords?.some(keyword => keyword.toLowerCase().includes(lowercasedFilter)) || false;
+        return titleMatch || keywordMatch;
+    }).sort((a, b) => b.usage_count - a.usage_count);
+
   }, [topics, searchTerm]);
 
   return (
@@ -104,7 +109,12 @@ export default function DiscoverPage() {
               <CardContent className="p-10 flex flex-col items-center text-center gap-4">
                     <Search className="h-12 w-12 text-muted-foreground" />
                     <h3 className="text-xl font-semibold">No Topics Found</h3>
-                    <p className="text-muted-foreground max-w-md">Your search for "{searchTerm}" did not return any results. Try a different keyword or create a new product to start a trend!</p>
+                    <p className="text-muted-foreground max-w-md">
+                        {searchTerm 
+                            ? `Your search for "${searchTerm}" did not return any results. Try a different keyword.`
+                            : "No trending topics found yet. Create a new product to start a trend!"
+                        }
+                    </p>
                     <Link href="/generate">
                         <Button>
                             <Sparkles className="mr-2 h-4 w-4" />
@@ -126,3 +136,5 @@ export default function DiscoverPage() {
     </div>
   );
 }
+
+    
