@@ -2,7 +2,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useCollection, useFirebase } from '@/firebase';
+import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -46,7 +46,7 @@ export default function DiscoverPage() {
   const { firestore } = useFirebase();
   const [searchTerm, setSearchTerm] = useState('');
 
-  const topicsQuery = useMemo(() => {
+  const topicsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return collection(firestore, 'trending_topics');
   }, [firestore]);
