@@ -1,11 +1,11 @@
 
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { collection, query, orderBy } from 'firebase/firestore';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Search, TrendingUp, Sparkles, AlertTriangle } from 'lucide-react';
@@ -18,7 +18,24 @@ type Topic = {
   keywords?: string[];
 };
 
-const TopicCard = ({ topic, index }: { topic: Topic; index: number }) => (
+// Debounce hook
+function useDebounce(value: string, delay: number) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
+const TopicCard = ({ topic }: { topic: Topic }) => (
   <Link href={`/generate?topic=${encodeURIComponent(topic.topic)}`}>
     <Card className="glass-card hover:border-primary/50 transition-all duration-300 transform hover:-translate-y-1">
       <CardHeader>
@@ -35,36 +52,43 @@ const TopicCard = ({ topic, index }: { topic: Topic; index: number }) => (
 );
 
 const TopicSkeleton = () => (
-  <div className="space-y-4 rounded-lg border bg-card p-4">
-    <div className="flex items-center justify-between">
-      <Skeleton className="h-5 w-2/3" />
-      <Skeleton className="h-5 w-1/6" />
-    </div>
-  </div>
+  <Card className="glass-card">
+    <CardHeader>
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-5 w-2/3" />
+        <Skeleton className="h-5 w-1/6" />
+      </div>
+    </CardHeader>
+  </Card>
 );
 
 export default function DiscoverPage() {
   const { firestore } = useFirebase();
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   const topicsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return collection(firestore, 'trending_topics');
+    return query(collection(firestore, 'trending_topics'), orderBy('usage_count', 'desc'));
   }, [firestore]);
 
   const { data: topics, isLoading, error } = useCollection<Topic>(topicsQuery);
 
   const filteredTopics = useMemo(() => {
     if (!topics) return [];
-    const lowercasedFilter = searchTerm.toLowerCase();
+    const lowercasedFilter = debouncedSearchTerm.toLowerCase();
+    
+    if (!lowercasedFilter) {
+      return topics;
+    }
     
     return topics.filter((topic) => {
         const titleMatch = topic.topic.toLowerCase().includes(lowercasedFilter);
         const keywordMatch = topic.keywords?.some(keyword => keyword.toLowerCase().includes(lowercasedFilter)) || false;
         return titleMatch || keywordMatch;
-    }).sort((a, b) => b.usage_count - a.usage_count);
+    });
 
-  }, [topics, searchTerm]);
+  }, [topics, debouncedSearchTerm]);
 
   return (
     <div className="space-y-8">
@@ -110,8 +134,8 @@ export default function DiscoverPage() {
                     <Search className="h-12 w-12 text-muted-foreground" />
                     <h3 className="text-xl font-semibold">No Topics Found</h3>
                     <p className="text-muted-foreground max-w-md">
-                        {searchTerm 
-                            ? `Your search for "${searchTerm}" did not return any results. Try a different keyword.`
+                        {debouncedSearchTerm 
+                            ? `Your search for "${debouncedSearchTerm}" did not return any results. Try a different keyword.`
                             : "No trending topics found yet. Create a new product to start a trend!"
                         }
                     </p>
@@ -127,8 +151,8 @@ export default function DiscoverPage() {
       
       {!isLoading && !error && filteredTopics.length > 0 && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredTopics.map((topic, index) => (
-                <TopicCard key={topic.id} topic={topic} index={index} />
+            {filteredTopics.map((topic) => (
+                <TopicCard key={topic.id} topic={topic} />
             ))}
         </div>
       )}
@@ -136,5 +160,3 @@ export default function DiscoverPage() {
     </div>
   );
 }
-
-    
