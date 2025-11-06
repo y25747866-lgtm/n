@@ -175,16 +175,21 @@ export default function DiscoverPage() {
 
   const filteredTopics = useMemo(() => {
     if (!topics) return [];
-    const lowercasedFilter = debouncedSearchTerm.toLowerCase();
-    
-    if (!lowercasedFilter) {
+    if (!debouncedSearchTerm) {
       return topics;
     }
-    
+
+    const searchWords = debouncedSearchTerm.toLowerCase().split(' ').filter(word => word.length > 0);
+
     return topics.filter((topic) => {
-        const titleMatch = topic.topic.toLowerCase().includes(lowercasedFilter);
-        const keywordMatch = topic.keywords?.some(keyword => keyword.toLowerCase().includes(lowercasedFilter)) || false;
-        return titleMatch || keywordMatch;
+        const topicText = topic.topic.toLowerCase();
+        const topicKeywords = topic.keywords?.map(k => k.toLowerCase()) || [];
+        
+        // Combine title and keywords into a single searchable string
+        const searchableContent = topicText + " " + topicKeywords.join(" ");
+
+        // Check if all search words are present in the searchable content
+        return searchWords.every(word => searchableContent.includes(word));
     });
 
   }, [topics, debouncedSearchTerm]);
