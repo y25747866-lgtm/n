@@ -2,8 +2,8 @@
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
-import { useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, limit } from 'firebase/firestore';
+import { useCollection, useMemoFirebase, useFirebase } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,6 @@ import { Search, TrendingUp, Sparkles, AlertTriangle, ArrowUp, ArrowDown, Flame 
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { useFirebase } from '@/firebase';
 
 type Topic = {
   id: string;
@@ -122,8 +121,8 @@ const TopicSkeleton = () => (
   </Card>
 );
 
-const EmptyState = ({ topics, searchTerm }: { topics: Topic[] | null, searchTerm: string }) => {
-    const top5Topics = useMemo(() => topics?.slice(0, 5) || [], [topics]);
+const EmptyState = ({ allTopics, searchTerm }: { allTopics: Topic[] | null, searchTerm: string }) => {
+    const top5Topics = useMemo(() => allTopics?.slice(0, 5) || [], [allTopics]);
 
     return (
         <Card className="glass-card col-span-1 md:col-span-2 lg:col-span-3">
@@ -175,23 +174,21 @@ export default function DiscoverPage() {
 
   const filteredTopics = useMemo(() => {
     if (!topics) return [];
-    if (!debouncedSearchTerm) {
+    if (!debouncedSearchTerm.trim()) {
       return topics;
     }
 
-    const searchWords = debouncedSearchTerm.toLowerCase().split(' ').filter(word => word.length > 0);
+    const searchWords = debouncedSearchTerm.toLowerCase().split(/\s+/).filter(Boolean);
 
-    return topics.filter((topic) => {
+    const results = topics.filter((topic) => {
         const topicText = topic.topic.toLowerCase();
-        const topicKeywords = topic.keywords?.map(k => k.toLowerCase()) || [];
+        const topicKeywords = (topic.keywords || []).join(' ').toLowerCase();
+        const searchableContent = `${topicText} ${topicKeywords}`;
         
-        // Combine title and keywords into a single searchable string
-        const searchableContent = topicText + " " + topicKeywords.join(" ");
-
-        // Check if all search words are present in the searchable content
         return searchWords.every(word => searchableContent.includes(word));
     });
 
+    return results;
   }, [topics, debouncedSearchTerm]);
 
   return (
@@ -243,7 +240,7 @@ export default function DiscoverPage() {
       </div>
 
       {!isLoading && !error && filteredTopics.length === 0 && (
-        <EmptyState topics={topics} searchTerm={debouncedSearchTerm} />
+        <EmptyState allTopics={topics} searchTerm={debouncedSearchTerm} />
       )}
 
     </div>
