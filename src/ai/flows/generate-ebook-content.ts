@@ -78,6 +78,7 @@ async function trackTopicTrend(topic: string, keywords: string[]) {
         transaction.set(topicRef, {
           topic: topic,
           usage_count: 1,
+          last_month_usage_count: 0, // New topics have no previous history
           lastUpdated: serverTimestamp(),
           keywords: keywords,
         });
@@ -87,6 +88,7 @@ async function trackTopicTrend(topic: string, keywords: string[]) {
           usage_count: newCount,
           lastUpdated: serverTimestamp(),
           keywords: keywords, // Also update keywords in case they change
+          last_month_usage_count: topicDoc.data().last_month_usage_count || 0, // Preserve existing last month count
         });
       }
     });

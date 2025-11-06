@@ -5,16 +5,19 @@ import { useMemo, useState, useEffect } from 'react';
 import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, TrendingUp, Sparkles, AlertTriangle } from 'lucide-react';
+import { Search, TrendingUp, Sparkles, AlertTriangle, ArrowUp, ArrowDown } from 'lucide-react';
 import Link from 'next/link';
+import { AnimatePresence, motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 type Topic = {
   id: string;
   topic: string;
   usage_count: number;
+  last_month_usage_count: number;
   keywords?: string[];
 };
 
@@ -35,30 +38,71 @@ function useDebounce(value: string, delay: number) {
   return debouncedValue;
 }
 
-const TopicCard = ({ topic }: { topic: Topic }) => (
-  <Link href={`/generate?topic=${encodeURIComponent(topic.topic)}`}>
-    <Card className="glass-card hover:border-primary/50 transition-all duration-300 transform hover:-translate-y-1">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">{topic.topic}</CardTitle>
-          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            <TrendingUp className="h-4 w-4" />
-            <span>{topic.usage_count}</span>
+const TrendIndicator = ({ current, previous }: { current: number; previous: number }) => {
+    if (previous === 0) {
+      if (current > 0) {
+        return (
+          <div className="flex items-center text-green-500">
+            <ArrowUp className="h-4 w-4" />
+            <span className="text-xs">New</span>
           </div>
-        </div>
-      </CardHeader>
-    </Card>
-  </Link>
+        );
+      }
+      return null; // No change if both are 0
+    }
+  
+    const percentageChange = ((current - previous) / previous) * 100;
+  
+    if (percentageChange === 0) {
+      return null;
+    }
+  
+    const isPositive = percentageChange > 0;
+  
+    return (
+      <div className={cn("flex items-center text-xs", isPositive ? "text-green-500" : "text-red-500")}>
+        {isPositive ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+        <span>{isPositive && '+'}{percentageChange.toFixed(0)}% this month</span>
+      </div>
+    );
+};
+
+const TopicCard = ({ topic, index }: { topic: Topic; index: number }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.3, delay: index * 0.05 }}
+  >
+    <Link href={`/generate?topic=${encodeURIComponent(topic.topic)}`}>
+      <Card className="glass-card hover:border-primary/50 transition-all duration-300 transform hover:-translate-y-1">
+        <CardContent className="p-4">
+          <div className="flex items-start justify-between gap-4">
+            <h3 className="font-bold">{topic.topic}</h3>
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground whitespace-nowrap">
+              <TrendingUp className="h-4 w-4" />
+              <span>{topic.usage_count} users</span>
+            </div>
+          </div>
+          <div className="mt-2 text-right">
+             <TrendIndicator current={topic.usage_count} previous={topic.last_month_usage_count} />
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
+  </motion.div>
 );
 
 const TopicSkeleton = () => (
   <Card className="glass-card">
-    <CardHeader>
-      <div className="flex items-center justify-between">
-        <Skeleton className="h-5 w-2/3" />
-        <Skeleton className="h-5 w-1/6" />
-      </div>
-    </CardHeader>
+    <CardContent className="p-4">
+        <div className="flex items-start justify-between gap-4">
+            <Skeleton className="h-5 w-2/3" />
+            <Skeleton className="h-5 w-1/4" />
+        </div>
+        <div className="mt-2 flex justify-end">
+            <Skeleton className="h-4 w-1/3" />
+        </div>
+    </CardContent>
   </Card>
 );
 
@@ -149,14 +193,18 @@ export default function DiscoverPage() {
           </Card>
       )}
       
-      {!isLoading && !error && filteredTopics.length > 0 && (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredTopics.map((topic) => (
-                <TopicCard key={topic.id} topic={topic} />
-            ))}
-        </div>
-      )}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <AnimatePresence>
+            {!isLoading && !error && filteredTopics.length > 0 && (
+                filteredTopics.map((topic, index) => (
+                    <TopicCard key={topic.id} topic={topic} index={index} />
+                ))
+            )}
+        </AnimatePresence>
+      </div>
 
     </div>
   );
 }
+
+    

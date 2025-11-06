@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "User": {
@@ -190,7 +191,11 @@
         },
         "usage_count": {
           "type": "number",
-          "description": "How many times this topic has been used to generate a product."
+          "description": "How many times this topic has been used to generate a product this month."
+        },
+        "last_month_usage_count": {
+            "type": "number",
+            "description": "How many times this topic was used in the previous month, for trend comparison."
         },
         "lastUpdated": {
           "type": "string",
@@ -208,6 +213,7 @@
       "required": [
         "topic",
         "usage_count",
+        "last_month_usage_count",
         "lastUpdated",
         "keywords"
       ]
@@ -329,4 +335,5 @@
     "reasoning": "The Firestore data structure is designed to ensure security, scalability, and ease of debugging, while adhering to the principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). It leverages denormalization to avoid hierarchical authorization dependencies and simplifies security rules by structurally segregating data based on access requirements.\n\n**Authorization Independence:**\nAuthorization Independence is achieved via denormalization of access control data. For example, the `products` subcollection under each `user` uses the `userId` field to determine ownership. This eliminates the need for security rules to perform `get()` operations on parent documents, which would violate atomic operations. The `Trend` collection is globally readable and writable only by admins (defined through the `/roles_admin/{uid}` collection), and the data integrity is upheld without relying on external data.\n\n**Clarity of Intent:**\nThe structure explicitly defines ownership using path-based access control (e.g., `/users/{userId}/products/{productId}`). This approach makes it straightforward to implement security rules based on user ownership.\n\n**DBAC (Database-Based Access Control):**\nGlobal roles (e.g., admin) are managed through the `/roles_admin/{uid}` collection. The existence of a document for a user ID in this collection grants admin privileges.\n\n**QAPs (Rules are not Filters):**\nThe structure supports secure `list` operations by ensuring that collections do not mix data with different access needs. For instance, user-generated products are stored under `/users/{userId}/products/{productId}`, ensuring that listing products under a user only returns the products owned by that user. Similarly, `/trends` can be read globally, as that entire collection has the same access requirements.\n\n**Invariants:**\nThe structure ensures the integrity of ownership, timestamps, and denormalized data. Ownership is explicitly modeled using the `userId` field in the `products` collection, creating a strict link to the user who owns the record."
   }
 }
+
     
