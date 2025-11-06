@@ -2,7 +2,7 @@
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
-import { useCollection, useFirebase } from '@/firebase';
+import { useCollection, useFirebase, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
@@ -19,7 +19,7 @@ export default function DiscoverPage() {
   const { firestore } = useFirebase();
   const [search, setSearch] = useState('');
   
-  const topicsQuery = useMemo(() => {
+  const topicsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'trending_topics'), orderBy('usage_count', 'desc'));
   }, [firestore]);
