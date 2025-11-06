@@ -40,13 +40,15 @@ export default function DiscoverPage() {
       return topics;
     }
 
-    const queryWords = debouncedSearch.toLowerCase().split(/\s+/).filter(Boolean);
+    const searchQuery = debouncedSearch.toLowerCase();
+    const words = searchQuery.split(' ').filter(Boolean);
 
     const results = topics.filter((topic) => {
-      const searchableText = `${(topic.topic || '').toLowerCase()} ${(
-        topic.keywords || []
-      ).join(' ')}`;
-      return queryWords.every((word) => searchableText.includes(word));
+        const title = (topic.topic || '').toLowerCase();
+        const keywords = (topic.keywords || []).join(' ').toLowerCase();
+        return words.every(
+          (word) => title.includes(word) || keywords.includes(word)
+        );
     });
 
     if (results.length > 0) {
@@ -138,10 +140,10 @@ export default function DiscoverPage() {
                   <span
                     className={cn(
                       'flex items-center font-semibold',
-                      trend > 0 ? 'text-green-500' : 'text-red-500'
+                      trend >= 0 ? 'text-green-500' : 'text-red-500'
                     )}
                   >
-                    {trend > 0 ? (
+                    {trend >= 0 ? (
                       <TrendingUp className="mr-1 h-4 w-4" />
                     ) : (
                       <TrendingDown className="mr-1 h-4 w-4" />
