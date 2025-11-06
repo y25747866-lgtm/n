@@ -86,4 +86,21 @@ export const JobStatusSchema = z.enum([
 ]);
 export type JobStatus = z.infer<typeof JobStatusSchema>;
 
-    
+export const MarketTrendSchema = z.object({
+  id: z.string().describe('A unique slug-like ID for the trend.'),
+  topic: z.string().describe('The trending topic or keyword.'),
+  rationale: z
+    .string()
+    .describe('A brief, compelling rationale for why this topic is trending.'),
+  trendScore: z
+    .number()
+    .min(1)
+    .max(100)
+    .describe(
+      'A score from 1-100 indicating the trend\'s potential, based on volume, competition, and growth.'
+    ),
+  source: z
+    .string()
+    .describe('The primary source of the trending information (e.g., Amazon, Etsy).'),
+});
+export type MarketTrend = z.infer<typeof MarketTrendSchema>;
