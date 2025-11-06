@@ -43,19 +43,12 @@ export default function DiscoverPage() {
     const searchQuery = debouncedSearch.toLowerCase();
     const words = searchQuery.split(' ').filter(Boolean);
 
-    const results = topics.filter((topic) => {
-        const searchableText = `${(topic.topic || '').toLowerCase()} ${(topic.keywords || []).join(' ').toLowerCase()}`;
-        return words.every((word) => searchableText.includes(word));
+    return topics.filter((topic) => {
+      const searchableText = `${(topic.topic || '').toLowerCase()} ${(
+        topic.keywords || []
+      ).join(' ')}`;
+      return words.every((word) => searchableText.includes(word));
     });
-    
-    // This is the fallback logic. If a search yields no results, we still want to show something.
-    // We will return the original, unfiltered list of topics, which is already sorted by popularity.
-    if (results.length === 0 && debouncedSearch.trim().length > 0) {
-        return []; // Intentionally return empty for the "No topics found" message to appear
-    }
-
-    return results;
-
   }, [debouncedSearch, topics]);
 
   const getTrend = (current: number, previous: number) => {
@@ -91,7 +84,7 @@ export default function DiscoverPage() {
     }
 
     if (filteredTopics.length === 0) {
-        const hasSearchTerm = search.trim().length > 0;
+        const hasSearchTerm = debouncedSearch.trim().length > 0;
         const top5Topics = topics?.slice(0, 5) || [];
 
         return (
@@ -199,5 +192,4 @@ export default function DiscoverPage() {
       {renderContent()}
     </div>
   );
-
-    
+}
