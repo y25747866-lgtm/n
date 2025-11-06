@@ -44,11 +44,8 @@ export default function DiscoverPage() {
     const words = searchQuery.split(' ').filter(Boolean);
 
     const results = topics.filter((topic) => {
-        const title = (topic.topic || '').toLowerCase();
-        const keywords = (topic.keywords || []).join(' ').toLowerCase();
-        return words.every(
-          (word) => title.includes(word) || keywords.includes(word)
-        );
+        const searchableText = `${(topic.topic || '').toLowerCase()} ${(topic.keywords || []).join(' ').toLowerCase()}`;
+        return words.every((word) => searchableText.includes(word));
     });
 
     if (results.length > 0) {
