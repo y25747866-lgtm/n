@@ -47,13 +47,14 @@ export default function DiscoverPage() {
         const searchableText = `${(topic.topic || '').toLowerCase()} ${(topic.keywords || []).join(' ').toLowerCase()}`;
         return words.every((word) => searchableText.includes(word));
     });
-
-    if (results.length > 0) {
-      return results;
+    
+    // This is the fallback logic. If a search yields no results, we still want to show something.
+    // We will return the original, unfiltered list of topics, which is already sorted by popularity.
+    if (results.length === 0 && debouncedSearch.trim().length > 0) {
+        return []; // Intentionally return empty for the "No topics found" message to appear
     }
 
-    // Fallback: suggest top 5 trending if no results found from search
-    return topics.slice(0, 5);
+    return results;
 
   }, [debouncedSearch, topics]);
 
@@ -90,16 +91,33 @@ export default function DiscoverPage() {
     }
 
     if (filteredTopics.length === 0) {
+        const hasSearchTerm = search.trim().length > 0;
+        const top5Topics = topics?.slice(0, 5) || [];
+
         return (
             <Card className="glass-card">
                 <CardContent className="p-10 flex flex-col items-center text-center gap-4">
                     <Search className="h-12 w-12 text-muted-foreground" />
-                    <h3 className="text-xl font-semibold">No Topics Found</h3>
+                    <h3 className="text-xl font-semibold">
+                        {hasSearchTerm ? 'No Topics Found' : 'No Trending Topics Yet'}
+                    </h3>
                     <p className="text-muted-foreground max-w-md">
-                        {search.trim().length > 0
+                        {hasSearchTerm
                         ? "Your search didn't return any results. Try a different keyword."
-                        : "There are no trending topics yet. Generate a product to start a trend!"}
+                        : "Generate a product to start a trend!"}
                     </p>
+                    {hasSearchTerm && top5Topics.length > 0 && (
+                        <div className="mt-6 w-full text-left">
+                            <h4 className="font-semibold text-center mb-4">Or check out what's currently popular:</h4>
+                            <div className="grid grid-cols-1 gap-2">
+                                {top5Topics.map(topic => (
+                                    <div key={topic.id} className="text-sm p-2 rounded-md bg-muted/50 text-center">
+                                        {topic.topic}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         );
@@ -181,4 +199,5 @@ export default function DiscoverPage() {
       {renderContent()}
     </div>
   );
-}
+
+    
