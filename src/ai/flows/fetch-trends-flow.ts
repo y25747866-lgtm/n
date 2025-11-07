@@ -10,6 +10,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { MarketTrend, MarketTrendSchema } from '@/lib/types';
+import { googleAI } from '@genkit-ai/google-genai';
 
 
 // Mock data simulating an external API call for trending topics
@@ -53,6 +54,7 @@ const getRawTrendsTool = ai.defineTool(
 
 const trendAnalysisPrompt = ai.definePrompt({
   name: 'trendAnalysisPrompt',
+  model: googleAI.model('gemini-1.5-flash'),
   tools: [getRawTrendsTool],
   output: {
     format: 'json',
