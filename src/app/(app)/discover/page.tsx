@@ -1,11 +1,11 @@
 
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { Input } from '@/components/ui/input';
-import { Search, TrendingUp, TrendingDown, Flame, BarChart, Clock, LineChart } from 'lucide-react';
+import { Search, TrendingUp, TrendingDown, Flame, Clock, LineChart } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDebounce } from '@/hooks/use-debounce';
 import { motion } from 'framer-motion';
@@ -24,6 +24,9 @@ type Topic = {
 
 export default function DiscoverPage() {
   const [search, setSearch] = useState('');
+  const [suggestions, setSuggestions] = useState<Topic[]>([]);
+  const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
+  
   const debouncedSearch = useDebounce(search, 300);
   const firestore = useFirestore();
 
@@ -33,19 +36,41 @@ export default function DiscoverPage() {
   );
   const { data: topics, isLoading, error } = useCollection<Topic>(topicsQuery);
 
-  const filteredTopics = useMemo(() => {
-    if (!topics) return [];
-    if (!debouncedSearch.trim()) {
-      return topics;
+  useEffect(() => {
+    if (search.trim() === "" || selectedTopic) {
+      setSuggestions([]);
+      return;
     }
-    const searchText = debouncedSearch.toLowerCase();
+
+    if (!topics) return;
+
+    const lowerSearch = search.toLowerCase();
+    const matched = topics.filter(
+      (topic) =>
+        topic.title.toLowerCase().includes(lowerSearch) ||
+        topic.keywords?.some((kw) => kw.toLowerCase().includes(lowerSearch))
+    );
+    setSuggestions(matched.slice(0, 5));
+  }, [search, topics, selectedTopic]);
+
+  const handleSelectSuggestion = (topic: Topic) => {
+    setSelectedTopic(topic);
+    setSearch(topic.title);
+    setSuggestions([]);
+  };
+
+  const filteredTopics = useMemo(() => {
+    if (selectedTopic) return [selectedTopic];
+    if (!topics) return [];
+    if (!debouncedSearch.trim()) return topics;
     
+    const searchText = debouncedSearch.toLowerCase();
     return topics.filter((topic) => {
       const titleMatch = topic.title.toLowerCase().includes(searchText);
       const keywordMatch = topic.keywords?.some((kw) => kw.toLowerCase().includes(searchText));
       return titleMatch || keywordMatch;
     });
-  }, [debouncedSearch, topics]);
+  }, [debouncedSearch, topics, selectedTopic]);
 
   const renderContent = () => {
     if (isLoading && !topics) {
@@ -112,7 +137,7 @@ export default function DiscoverPage() {
         {filteredTopics.map((topic, index) => {
           const growth = topic.last_month_usage_count
             ? ((topic.usage_count - topic.last_month_usage_count) / topic.last_month_usage_count) * 100
-            : topic.usage_count > 0 ? 100 : 0; // Assume 100% growth if it's new
+            : topic.usage_count > 0 ? 100 : 0;
           const growthText = growth >= 0 ? `+${growth.toFixed(0)}%` : `${growth.toFixed(0)}%`;
           const isHot = growth > 30;
 
@@ -177,10 +202,30 @@ export default function DiscoverPage() {
           type="search"
           placeholder="Search for a trend like 'AI', 'Passive Income', or 'Notion'..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setSelectedTopic(null); // Reset selection when user types
+          }}
           className="w-full pl-10 h-12 text-base"
           disabled={isLoading && !topics}
         />
+        {suggestions.length > 0 && (
+            <Card className="absolute top-full mt-2 w-full z-10 glass-card">
+                <CardContent className="p-2">
+                    <ul>
+                        {suggestions.map(topic => (
+                            <li
+                                key={topic.id}
+                                className="p-2 cursor-pointer rounded-md hover:bg-accent"
+                                onClick={() => handleSelectSuggestion(topic)}
+                            >
+                                <p className="font-semibold text-sm">💡 {topic.title}</p>
+                            </li>
+                        ))}
+                    </ul>
+                </CardContent>
+            </Card>
+        )}
       </div>
 
       {renderContent()}
