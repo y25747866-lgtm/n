@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Search, Loader2, AlertTriangle, Lightbulb } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useCollection } from '@/firebase/firestore/use-collection';
+import { useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
 import { useFirebase } from '@/firebase';
 import { Badge } from '@/components/ui/badge';
@@ -56,7 +56,7 @@ export default function DiscoverPage() {
   const [suggestions, setSuggestions] = useState<Topic[]>([]);
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
 
-  const topicsQuery = useMemo(() => {
+  const topicsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(
         collection(firestore, "trending_topics"),
@@ -212,4 +212,3 @@ export default function DiscoverPage() {
     </div>
   );
 }
-
