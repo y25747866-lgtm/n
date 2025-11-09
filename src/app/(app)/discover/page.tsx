@@ -2,12 +2,11 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { collection } from 'firebase/firestore';
+import { collection, query, orderBy } from 'firebase/firestore';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { Input } from '@/components/ui/input';
-import { Search, TrendingUp, TrendingDown, Flame, BarChart, Clock } from 'lucide-react';
+import { Search, TrendingUp, TrendingDown, Flame, BarChart, Clock, LineChart } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
 import { useDebounce } from '@/hooks/use-debounce';
 import { motion } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -18,9 +17,9 @@ type Topic = {
   id: string;
   title: string;
   keywords: string[];
-  trend_score: number;
-  last_updated: string;
-  source: string;
+  usage_count: number;
+  last_month_usage_count: number;
+  last_updated?: string;
 };
 
 export default function DiscoverPage() {
@@ -29,44 +28,33 @@ export default function DiscoverPage() {
   const firestore = useFirestore();
 
   const topicsQuery = useMemoFirebase(
-    () => collection(firestore, 'trending_topics'),
+    () => query(collection(firestore, 'trending_topics'), orderBy("usage_count", "desc")),
     [firestore]
   );
   const { data: topics, isLoading, error } = useCollection<Topic>(topicsQuery);
 
-  const sortedTopics = useMemo(() => {
-    if (!topics) return [];
-    // Sort by trend_score in descending order
-    return [...topics].sort((a, b) => b.trend_score - a.trend_score);
-  }, [topics]);
-
   const filteredTopics = useMemo(() => {
-    if (!sortedTopics) return [];
+    if (!topics) return [];
     if (!debouncedSearch.trim()) {
-      return sortedTopics;
+      return topics;
     }
-    const searchQuery = debouncedSearch.toLowerCase();
-    const searchWords = searchQuery.split(/\s+/).filter(Boolean);
+    const searchText = debouncedSearch.toLowerCase();
     
-    return sortedTopics.filter((topic) => {
-      const searchableText = [
-        topic.title,
-        ...(topic.keywords || [])
-      ].join(' ').toLowerCase();
-      
-      return searchWords.every((word) => searchableText.includes(word));
+    return topics.filter((topic) => {
+      const titleMatch = topic.title.toLowerCase().includes(searchText);
+      const keywordMatch = topic.keywords?.some((kw) => kw.toLowerCase().includes(searchText));
+      return titleMatch || keywordMatch;
     });
-  }, [debouncedSearch, sortedTopics]);
+  }, [debouncedSearch, topics]);
 
   const renderContent = () => {
-    if (isLoading) {
+    if (isLoading && !topics) {
       return (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {[...Array(9)].map((_, i) => (
+          {[...Array(6)].map((_, i) => (
             <div key={i} className="space-y-4 rounded-lg border bg-card/60 p-4">
               <Skeleton className="h-8 w-3/4" />
               <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-5/6" />
               <div className="flex justify-between">
                 <Skeleton className="h-6 w-1/4" />
                 <Skeleton className="h-6 w-1/3" />
@@ -91,7 +79,7 @@ export default function DiscoverPage() {
       );
     }
     
-    if (!topics || topics.length === 0 && !isLoading) {
+    if (!topics || topics.length === 0) {
         return (
           <Card className="glass-card">
             <CardContent className="p-10 flex flex-col items-center text-center gap-4">
@@ -122,8 +110,11 @@ export default function DiscoverPage() {
     return (
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {filteredTopics.map((topic, index) => {
-          const isHot = topic.trend_score > 85;
-          const lastUpdated = topic.last_updated ? new Date(topic.last_updated) : null;
+          const growth = topic.last_month_usage_count
+            ? ((topic.usage_count - topic.last_month_usage_count) / topic.last_month_usage_count) * 100
+            : topic.usage_count > 0 ? 100 : 0; // Assume 100% growth if it's new
+          const growthText = growth >= 0 ? `+${growth.toFixed(0)}%` : `${growth.toFixed(0)}%`;
+          const isHot = growth > 30;
 
           return (
             <motion.div
@@ -136,26 +127,28 @@ export default function DiscoverPage() {
                 <CardHeader className="flex-row items-start justify-between p-2">
                     <CardTitle className="text-lg font-bold">{topic.title}</CardTitle>
                     {isHot && (
-                        <div className="flex items-center gap-1 rounded-full bg-destructive/10 px-2 py-1 text-xs font-semibold text-destructive shrink-0">
-                        <Flame className="h-3 w-3" />
-                        <span>Hot</span>
-                        </div>
+                        <Badge variant="destructive" className="flex items-center gap-1 shrink-0">
+                          <Flame className="h-3 w-3" />
+                          <span>Hot</span>
+                        </Badge>
                     )}
                 </CardHeader>
                 <CardContent className="p-2 flex-1">
-                  <div className="flex flex-wrap gap-1">
-                    {topic.keywords?.slice(0, 3).map(kw => <Badge variant="secondary" key={kw}>{kw}</Badge>)}
-                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Used {topic.usage_count} times this month.
+                  </p>
                 </CardContent>
                 <div className="flex items-end justify-between text-xs p-2 mt-auto">
-                  <div className="flex items-center gap-2" title="Google Trends Score">
-                    <BarChart className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-semibold text-primary">{topic.trend_score} / 100</span>
+                  <div className="flex items-center gap-2" title="Monthly Growth">
+                    <LineChart className="h-4 w-4 text-muted-foreground" />
+                    <span className={growth >= 0 ? "font-semibold text-green-400" : "font-semibold text-red-400"}>
+                      {growth >= 0 ? "📈" : "📉"} {growthText}
+                    </span>
                   </div>
-                   {lastUpdated && (
-                     <div className="flex items-center gap-1 text-muted-foreground" title={`Last updated: ${lastUpdated.toLocaleString()}`}>
+                   {topic.last_updated && (
+                     <div className="flex items-center gap-1 text-muted-foreground" title={`Last updated`}>
                         <Clock className="h-3 w-3"/>
-                        <span>{formatDistanceToNow(lastUpdated, { addSuffix: true })}</span>
+                        <span>{formatDistanceToNow(new Date(topic.last_updated), { addSuffix: true })}</span>
                      </div>
                    )}
                 </div>
@@ -194,5 +187,3 @@ export default function DiscoverPage() {
     </div>
   );
 }
-
-    
