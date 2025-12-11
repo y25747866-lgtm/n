@@ -7,3 +7,4 @@ import '@/ai/flows/generate-ebook-content';
 import '@/ai/flows/generate-cover-image';
 import '@/ai/flows/regenerate-cover-image';
 import '@/ai/flows/fetch-trends-flow';
+import '@/ai/flows/test-api-key-flow';
