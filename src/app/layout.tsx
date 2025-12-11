@@ -4,7 +4,7 @@ import { ThemeProvider } from '@/contexts/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'Boss OS - AI Digital Product Factory',
+  title: 'Nexora OS - AI Digital Product Factory',
   description: 'Generate ebooks, courses, covers, and trending digital assets instantly.',
 };
 

@@ -67,7 +67,7 @@ export default function UnifiedProgressModal({
           style: config.coverStyle,
           title: 'Untitled', // Will be updated after content generation
           subtitle: '...',
-          author: config.authorName || 'Boss OS',
+          author: config.authorName || 'Nexora OS',
         }),
     },
   ]);

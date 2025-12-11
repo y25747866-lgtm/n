@@ -54,7 +54,7 @@ export default function GeneratePage() {
       tone: 'Casual',
       length: 'Short',
       coverStyle: 'Minimal',
-      authorName: "Boss User"
+      authorName: "User"
     },
   });
 

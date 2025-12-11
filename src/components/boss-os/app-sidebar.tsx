@@ -58,13 +58,13 @@ function ProfileSection() {
                              <Link href="/settings">
                                 <Avatar className="h-10 w-10">
                                     <AvatarImage src={avatarImage?.imageUrl} alt="User Avatar" data-ai-hint={avatarImage?.imageHint} />
-                                    <AvatarFallback>{getInitials("Boss User")}</AvatarFallback>
+                                    <AvatarFallback>{getInitials("User")}</AvatarFallback>
                                 </Avatar>
                             </Link>
                         </TooltipTrigger>
                         <TooltipContent side="right">
-                           <p>Boss User</p>
-                           <p className="text-xs text-muted-foreground">boss@example.com</p>
+                           <p>User</p>
+                           <p className="text-xs text-muted-foreground">user@example.com</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
@@ -77,11 +77,11 @@ function ProfileSection() {
             <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10">
                     <AvatarImage src={avatarImage?.imageUrl} alt="User Avatar" data-ai-hint={avatarImage?.imageHint} />
-                    <AvatarFallback>{getInitials("Boss User")}</AvatarFallback>
+                    <AvatarFallback>{getInitials("User")}</AvatarFallback>
                 </Avatar>
                 <div>
-                    <p className="text-sm font-semibold leading-none">Boss User</p>
-                    <p className="text-xs leading-none text-muted-foreground mt-1">boss@example.com</p>
+                    <p className="text-sm font-semibold leading-none">User</p>
+                    <p className="text-xs leading-none text-muted-foreground mt-1">user@example.com</p>
                 </div>
             </div>
             <Button variant="ghost" className="w-full justify-start mt-2">
