@@ -31,6 +31,12 @@
       "imageHint": "person portrait"
     },
     {
+      "id": "founder-yesh",
+      "description": "Founder Yesh Malik's placeholder portrait.",
+      "imageUrl": "https://images.unsplash.com/photo-1600486913747-55e5470d6f40?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxtYWxlJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzYxOTU3MTc0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "male portrait"
+    },
+    {
       "id": "cover-gradient",
       "description": "Premium gradient style ebook cover.",
       "imageUrl": "https://images.unsplash.com/photo-1673526759322-2b43a11d75fe?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxibHVlJTIwcHVycGxlJTIwZ3JhZGllbnR8ZW58MHx8fHwxNzYxOTU3MTcyfDA&ixlib=rb-4.1.0&q=80&w=1080",

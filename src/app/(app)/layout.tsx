@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import React from 'react';
 import { FirebaseClientProvider, useUser } from '@/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
+import { usePathname } from 'next/navigation';
 
 function AppSkeleton() {
   const { isOpen, isDesktop, isNavVisible } = useSidebar();
@@ -65,6 +66,12 @@ function AppSkeleton() {
 function AppContent({ children }: { children: React.ReactNode }) {
   const { isOpen, isDesktop, isNavVisible } = useSidebar();
   const { isUserLoading } = useUser();
+  const pathname = usePathname();
+
+  // The landing page should not show the main app layout
+  if (pathname === '/landing') {
+    return <>{children}</>;
+  }
 
   if (isUserLoading) {
     return <AppSkeleton />;
