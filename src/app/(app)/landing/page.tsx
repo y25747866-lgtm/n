@@ -5,7 +5,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { ArrowRight, Check, Instagram, Linkedin, Palette, Rocket, Sparkles, Twitter, Wand2, Zap } from "lucide-react";
+import { ArrowRight, Instagram, Linkedin, Palette, Rocket, Sparkles, Twitter, Wand2, Zap } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Logo } from "@/components/boss-os/logo";
