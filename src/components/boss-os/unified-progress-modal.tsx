@@ -81,6 +81,21 @@ export default function UnifiedProgressModal({
     );
   };
 
+  const getFriendlyErrorMessage = (error: any): string => {
+    let message = error.message || 'An unknown error occurred.';
+    if (message.includes('API key not valid')) {
+      return 'API key not valid. Please check your .env file and ensure GEMINI_API_KEY is correct.';
+    }
+     if (message.includes('429')) {
+      return 'API rate limit exceeded. Please wait a moment and try again.';
+    }
+    // Return a condensed version of a long error
+    if (message.length > 200) {
+        return message.substring(0, 200) + '...';
+    }
+    return message;
+  }
+
   const runJobs = useCallback(async () => {
     const contentJob = jobs.find((j) => j.id === 'content')!;
 
@@ -102,7 +117,7 @@ export default function UnifiedProgressModal({
       updateJob('content', { status: 'completed', progress: 100, result: contentResult });
     } catch (e: any) {
       clearInterval(progressInterval);
-      const errorMessage = "Generation paused — our image/text engine is temporarily limited. Your draft was saved and will resume automatically when capacity returns.";
+      const errorMessage = getFriendlyErrorMessage(e);
       updateJob('content', { status: 'error', error: errorMessage });
       onError(errorMessage);
       return;
@@ -129,7 +144,7 @@ export default function UnifiedProgressModal({
       });
 
     } catch (e: any) {
-        const errorMessage = "Generation paused — our image/text engine is temporarily limited. Your draft was saved and will resume automatically when capacity returns.";
+        const errorMessage = getFriendlyErrorMessage(e);
         updateJob('cover', { status: 'error', error: errorMessage });
         onError(errorMessage);
     }
@@ -145,6 +160,7 @@ export default function UnifiedProgressModal({
 
   const allComplete = jobs.every((job) => job.status === 'completed');
   const anyError = jobs.some((job) => job.status === 'error');
+  const firstError = jobs.find(job => job.error)?.error;
   
   return (
     <Dialog open={isDialogOpen} onOpenChange={(open) => { if (!open) onClose(); setIsDialogOpen(open); }}>
@@ -184,9 +200,6 @@ export default function UnifiedProgressModal({
                   </div>
                 </div>
                 <Progress value={job.progress} />
-                {job.status === 'error' && (
-                  <p className="text-xs text-destructive">{job.error}</p>
-                )}
               </motion.div>
             ))}
           </AnimatePresence>
@@ -194,9 +207,9 @@ export default function UnifiedProgressModal({
           {anyError && (
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Generation Paused</AlertTitle>
+              <AlertTitle>Generation Failed</AlertTitle>
               <AlertDescription>
-                Our image/text engine is temporarily limited. Your draft was saved and will resume automatically when capacity returns.
+                {firstError || "An unexpected error occurred during generation."}
               </AlertDescription>
             </Alert>
           )}
