@@ -221,9 +221,6 @@ export default function LandingPage() {
             <Link href="#" aria-label="Twitter">
               <Twitter className="h-6 w-6 text-muted-foreground transition-colors hover:text-foreground" />
             </Link>
-            <Link href="#" aria-label="LinkedIn">
-              <Linkedin className="h-6 w-6 text-muted-foreground transition-colors hover:text-foreground" />
-            </Link>
           </div>
         </div>
       </footer>
