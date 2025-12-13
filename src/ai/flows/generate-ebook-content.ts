@@ -14,6 +14,7 @@ import type { EbookContent, GenerationConfig } from '@/lib/types';
 import { doc, runTransaction, serverTimestamp } from 'firebase/firestore';
 import { firestore } from '@/firebase/server-init';
 import { z } from 'zod';
+import { googleAI } from '@genkit-ai/google-genai';
 
 const EbookContentGenerationInputSchema = z.object({
     topic: z.string(),
@@ -21,6 +22,7 @@ const EbookContentGenerationInputSchema = z.object({
 
 const contentGenerationPrompt = ai.definePrompt({
   name: 'generateEbookPrompt',
+  model: googleAI.model('gemini-1.5-flash'),
   input: { schema: EbookContentGenerationInputSchema },
   output: { schema: EbookContentSchema },
   prompt: `
