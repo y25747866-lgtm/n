@@ -215,7 +215,7 @@ export default function LandingPage() {
             </p>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="#" aria-label="Instagram">
+            <Link href="https://www.instagram.com/nexoraos?igsh=MTRwbGw4aDhwMjE2aw==" aria-label="Instagram">
               <Instagram className="h-6 w-6 text-muted-foreground transition-colors hover:text-foreground" />
             </Link>
             <Link href="#" aria-label="Twitter">
