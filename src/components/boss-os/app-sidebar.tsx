@@ -38,7 +38,6 @@ import { Logo } from './logo';
 
 const menuItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/discover', label: 'Discover', icon: Search },
   { href: '/generate', label: 'Generator', icon: Wand2 },
   { href: '/subscription', label: 'Subscription', icon: CreditCard },
   { href: '/settings', label: 'Settings', icon: Settings },
