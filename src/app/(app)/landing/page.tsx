@@ -218,7 +218,7 @@ export default function LandingPage() {
             <Link href="https://www.instagram.com/nexoraos?igsh=MTRwbGw4aDhwMjE2aw==" aria-label="Instagram">
               <Instagram className="h-6 w-6 text-muted-foreground transition-colors hover:text-foreground" />
             </Link>
-            <Link href="#" aria-label="Twitter">
+            <Link href="https://x.com/NexoraOS" aria-label="Twitter">
               <Twitter className="h-6 w-6 text-muted-foreground transition-colors hover:text-foreground" />
             </Link>
           </div>
