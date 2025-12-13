@@ -2,6 +2,12 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { ThemeProvider } from '@/contexts/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
+import { Inter } from 'next/font/google'
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'Nexora OS - AI Digital Product Factory',
@@ -14,14 +20,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
-      </head>
+    <html lang="en" suppressHydrationWarning className={inter.className}>
+      <head/>
       <body className="font-body antialiased">
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
             {children}
             <Toaster />
         </ThemeProvider>
