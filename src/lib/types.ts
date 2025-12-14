@@ -24,7 +24,7 @@ export const EbookContentSchema = z.object({
     .array(EbookChapterSchema)
     .describe('An array of chapter objects, each containing a title and content.'),
   conclusion: z.string().describe("Final summary and action steps"),
-  cover_prompt: z.string().describe("A short image prompt for a premium ebook cover."),
+  cover_image_prompt: z.string().describe("A short image prompt for a premium ebook cover."),
 });
 
 export type EbookContent = z.infer<typeof EbookContentSchema>;

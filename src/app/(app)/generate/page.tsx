@@ -30,23 +30,6 @@ import {
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { marked } from 'marked';
 
-const placeholderEbook: EbookContent = {
-    title: "Placeholder E-book Title",
-    subtitle: "A subtitle for your generated book.",
-    chapters: [
-        {
-            title: "Chapter 1: The Beginning",
-            content: "This is the content for the first chapter. It's generated as a placeholder because the real API is currently disabled."
-        },
-        {
-            title: "Chapter 2: The Middle",
-            content: "Here is some more placeholder content for the second chapter of the book."
-        }
-    ],
-    conclusion: "This is the conclusion of the placeholder e-book.",
-    cover_prompt: "A minimal cover with geometric shapes"
-};
-
 export default function GeneratePage() {
   const [product, setProduct] = useState<EbookContent | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -69,30 +52,30 @@ export default function GeneratePage() {
     setError(null);
     setProduct(null);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
     try {
-      // The original API call is commented out to prevent the error.
-      // We now use placeholder data instead.
-      // const response = await fetch('/api/generate-ebook', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ topic: values.topic }),
-      // });
+      const response = await fetch('/api/create-ebook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic: values.topic }),
+      });
 
-      // if (!response.ok) {
-      //   const errorText = await response.text();
-      //   throw new Error(`Failed to generate ebook: ${errorText}`);
-      // }
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to generate ebook: ${errorText}`);
+      }
 
-      // const data = await response.json();
-      // const ebookContent = JSON.parse(data.ebook);
+      const data = await response.json();
+      // The API returns the JSON as a string within the 'ebook' property
+      const ebookContent = JSON.parse(data.ebook);
       
-      setProduct(placeholderEbook);
+      setProduct(ebookContent);
 
     } catch (e: any) {
-      setError(e.message);
+      let errorMessage = e.message || 'An unexpected error occurred.';
+      if (errorMessage.includes('not valid JSON')) {
+          errorMessage = "The AI returned an invalid response. This can happen with complex topics. Please try simplifying your topic or try again later."
+      }
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -203,6 +186,10 @@ export default function GeneratePage() {
                       <FileText /> DOCX
                     </Button>
                   </div>
+                </div>
+                 <div className="space-y-2">
+                  <h3 className="text-lg font-semibold">Cover Prompt</h3>
+                  <p className="text-sm text-muted-foreground p-4 bg-muted/50 rounded-lg">{product.cover_image_prompt}</p>
                 </div>
               </div>
               <div className="md:col-span-2">
