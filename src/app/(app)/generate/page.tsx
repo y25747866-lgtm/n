@@ -30,6 +30,23 @@ import {
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { marked } from 'marked';
 
+const placeholderEbook: EbookContent = {
+    title: "Placeholder E-book Title",
+    subtitle: "A subtitle for your generated book.",
+    chapters: [
+        {
+            title: "Chapter 1: The Beginning",
+            content: "This is the content for the first chapter. It's generated as a placeholder because the real API is currently disabled."
+        },
+        {
+            title: "Chapter 2: The Middle",
+            content: "Here is some more placeholder content for the second chapter of the book."
+        }
+    ],
+    conclusion: "This is the conclusion of the placeholder e-book.",
+    cover_prompt: "A minimal cover with geometric shapes"
+};
+
 export default function GeneratePage() {
   const [product, setProduct] = useState<EbookContent | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -52,21 +69,27 @@ export default function GeneratePage() {
     setError(null);
     setProduct(null);
     
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
     try {
-      const response = await fetch('/api/generate-ebook', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic: values.topic }),
-      });
+      // The original API call is commented out to prevent the error.
+      // We now use placeholder data instead.
+      // const response = await fetch('/api/generate-ebook', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ topic: values.topic }),
+      // });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to generate ebook');
-      }
+      // if (!response.ok) {
+      //   const errorText = await response.text();
+      //   throw new Error(`Failed to generate ebook: ${errorText}`);
+      // }
 
-      const data = await response.json();
-      const ebookContent = JSON.parse(data.ebook);
-      setProduct(ebookContent);
+      // const data = await response.json();
+      // const ebookContent = JSON.parse(data.ebook);
+      
+      setProduct(placeholderEbook);
 
     } catch (e: any) {
       setError(e.message);
