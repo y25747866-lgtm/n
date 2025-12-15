@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -20,7 +19,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Sparkles, Wand2, Loader2, Book, Archive, FileText, Download } from 'lucide-react';
+import { Sparkles, Wand2, Loader2, Book, FileText, Download } from 'lucide-react';
 import { ErrorDisplay } from '@/components/boss-os/error-display';
 import {
   GenerationConfigSchema,
@@ -29,19 +28,28 @@ import {
 } from '@/lib/types';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { marked } from 'marked';
-import UnifiedProgressModal from '@/components/boss-os/unified-progress-modal';
 import Image from 'next/image';
 import { downloadFile } from '@/lib/download';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import { generateGradientSVG } from '@/lib/svg-utils';
+
+
+const placeholderProduct: EbookContent = {
+    title: "The Art of Digital Creation",
+    subtitle: "A guide to building your online empire.",
+    chapters: [
+        { title: "Chapter 1: Finding Your Niche", content: "This is the content for chapter 1. It's all about finding the perfect niche for your digital products." },
+        { title: "Chapter 2: Creating Your First Product", content: "This is the content for chapter 2. We'll walk you through creating something amazing." },
+        { title: "Chapter 3: Marketing and Sales", content: "This is the content for chapter 3. Learn how to get your product in front of the right people." },
+    ],
+    conclusion: "You now have the tools to succeed. Go out and create!",
+    cover_image_prompt: "A minimalist digital art cover with abstract shapes and a modern color palette.",
+};
+
 
 export default function GeneratePage() {
   const [product, setProduct] = useState<EbookContent | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showProgressModal, setShowProgressModal] = useState(false);
-  const [generationConfig, setGenerationConfig] = useState<GenerationConfig | null>(null);
-
 
   const form = useForm<GenerationConfig>({
     resolver: zodResolver(GenerationConfigSchema),
@@ -55,86 +63,26 @@ export default function GeneratePage() {
     },
   });
 
-  const onSubmit = (values: GenerationConfig) => {
+  const onSubmit = async (values: GenerationConfig) => {
     setError(null);
     setProduct(null);
-    setGenerationConfig(values);
-    setShowProgressModal(true);
-  };
-  
-   const handleGenerationComplete = (result: EbookContent) => {
-    setProduct(result);
-    setShowProgressModal(false);
-    setIsLoading(false);
-  };
-
-  const handleGenerationError = (error: string) => {
-    setError(error);
-    setShowProgressModal(false);
-    setIsLoading(false);
-  };
-  
-  const handleDownloadPDF = async () => {
-    if (!product) return;
     setIsLoading(true);
 
-    const doc = new jsPDF({
-      orientation: 'p',
-      unit: 'pt',
-      format: 'a4',
-    });
-
-    // Create a hidden element to render the book content for PDF generation
-    const printableArea = document.createElement('div');
-    printableArea.style.position = 'absolute';
-    printableArea.style.left = '-9999px';
-    printableArea.style.width = '595px'; // A4 width in points
-    printableArea.style.padding = '40px';
-    printableArea.className = 'prose prose-sm';
-
-    let contentHtml = `<h1>${product.title}</h1><h2>${product.subtitle}</h2>`;
-    product.chapters.forEach(chapter => {
-      contentHtml += `<h3>${chapter.title}</h3>${marked(chapter.content)}`;
-    });
-     if (product.conclusion) {
-      contentHtml += `<h3>Conclusion</h3>${marked(product.conclusion)}`;
-    }
-    printableArea.innerHTML = contentHtml;
-    document.body.appendChild(printableArea);
-
-    try {
-      const canvas = await html2canvas(printableArea, {
-        scale: 2,
-        useCORS: true,
-      });
-
-      const imgData = canvas.toDataURL('image/png');
-      const imgWidth = 595.28;
-      const pageHeight = 841.89;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      // Add first page
-      doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      // Add new pages if content is long
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        doc.addPage();
-        doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-      
-      doc.save(`${product.title.replace(/\s+/g, '_')}.pdf`);
-    } catch (e) {
-      console.error("Error generating PDF:", e);
-      setError("Could not generate PDF. Please try again.");
-    } finally {
-      document.body.removeChild(printableArea);
-      setIsLoading(false);
-    }
+    // Simulate API call
+    setTimeout(() => {
+        const generatedProduct = {
+            ...placeholderProduct,
+            coverImageUrl: generateGradientSVG(placeholderProduct.title, placeholderProduct.subtitle)
+        };
+        setProduct(generatedProduct);
+        setIsLoading(false);
+    }, 2000);
+  };
+  
+  
+  const handleDownloadPDF = async () => {
+    // PDF generation is temporarily disabled.
+    alert("PDF download functionality is coming soon!");
   };
   
   const handleDownloadMarkdown = () => {
@@ -152,14 +100,6 @@ export default function GeneratePage() {
 
   return (
     <>
-      {showProgressModal && generationConfig && (
-        <UnifiedProgressModal
-          config={generationConfig}
-          onComplete={handleGenerationComplete}
-          onError={handleGenerationError}
-          onClose={() => setShowProgressModal(false)}
-        />
-      )}
       <div className="container mx-auto max-w-5xl space-y-8">
         <header className="text-center">
           <h1 className="text-4xl md:text-5xl font-black tracking-tighter flex items-center justify-center gap-3">
