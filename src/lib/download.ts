@@ -14,4 +14,3 @@ export function downloadFile(content: string, fileName: string, mimeType: string
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
-    

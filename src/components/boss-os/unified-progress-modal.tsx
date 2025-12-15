@@ -139,14 +139,18 @@ export default function UnifiedProgressModal({
       onComplete({
         ...contentResult,
         coverImageUrl: coverResult.imageUrl,
-        coverImagePrompt: coverResult.prompt,
-        cover_status: coverResult.status,
+        cover_image_prompt: coverResult.prompt,
       });
 
     } catch (e: any) {
         const errorMessage = getFriendlyErrorMessage(e);
         updateJob('cover', { status: 'error', error: errorMessage });
-        onError(errorMessage);
+        // Even if cover fails, we can still complete with the content
+        onComplete({
+            ...contentResult,
+            coverImageUrl: '',
+            cover_image_prompt: 'Cover generation failed.',
+        });
     }
   }, [config, onComplete, onError]);
 
@@ -158,7 +162,7 @@ export default function UnifiedProgressModal({
   }, [config, runJobs]);
 
 
-  const allComplete = jobs.every((job) => job.status === 'completed');
+  const allComplete = jobs.every((job) => job.status === 'completed' || job.status === 'error');
   const anyError = jobs.some((job) => job.status === 'error');
   const firstError = jobs.find(job => job.error)?.error;
   
@@ -200,16 +204,19 @@ export default function UnifiedProgressModal({
                   </div>
                 </div>
                 <Progress value={job.progress} />
+                 {job.status === 'error' && job.error && (
+                    <p className="text-xs text-destructive">{job.error}</p>
+                )}
               </motion.div>
             ))}
           </AnimatePresence>
 
-          {anyError && (
+          {anyError && !firstError && (
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Generation Failed</AlertTitle>
               <AlertDescription>
-                {firstError || "An unexpected error occurred during generation."}
+                An unexpected error occurred during generation.
               </AlertDescription>
             </Alert>
           )}
@@ -219,15 +226,15 @@ export default function UnifiedProgressModal({
             <div className="flex justify-end pt-4">
                 <Button onClick={onClose} >
                     <Check className="mr-2 h-4 w-4" />
-                    Done
+                    View Product
                 </Button>
             </div>
         )}
-        {anyError && (
+        {!allComplete && !anyError && (
              <div className="flex justify-end pt-4">
                 <Button variant="outline" onClick={onClose}>
                     <X className="mr-2 h-4 w-4" />
-                    Close
+                    Cancel
                 </Button>
             </div>
         )}

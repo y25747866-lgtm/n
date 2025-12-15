@@ -25,6 +25,11 @@ export const EbookContentSchema = z.object({
     .describe('An array of chapter objects, each containing a title and content.'),
   conclusion: z.string().describe("Final summary and action steps"),
   cover_image_prompt: z.string().describe("A short image prompt for a premium ebook cover."),
+}).extend({
+    coverImageUrl: z.string().optional(),
+    cover_status: z.string().optional(),
 });
 
 export type EbookContent = z.infer<typeof EbookContentSchema>;
+
+export type JobStatus = 'pending' | 'running' | 'completed' | 'error';
