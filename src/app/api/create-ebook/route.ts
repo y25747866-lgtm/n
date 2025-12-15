@@ -1,3 +1,4 @@
+
 export async function POST(req: Request) {
   const { topic } = await req.json();
 
@@ -53,7 +54,7 @@ JSON FORMAT (MUST MATCH EXACTLY):
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "google/gemini-flash-1.5",
+        model: "google/gemini-pro-1.5",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: `Create a complete ebook about this topic: ${topic}` }
