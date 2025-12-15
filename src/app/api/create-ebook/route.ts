@@ -54,7 +54,7 @@ JSON FORMAT (MUST MATCH EXACTLY):
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "google/gemini-pro-1.5",
+        model: "nousresearch/hermes-2-pro-llama-3-8b",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: `Create a complete ebook about this topic: ${topic}` }
