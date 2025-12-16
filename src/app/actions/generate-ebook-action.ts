@@ -8,20 +8,13 @@ const mockEbook: EbookContent = {
   title: 'The Ultimate Guide to Mock Data',
   subtitle: 'How to use mock data for faster development',
   chapters: [
-    {
-      title: 'Introduction to Mock Data',
-      content: 'This is the full content for the introduction chapter. It explains what mock data is and why it is useful for developers, especially in the early stages of a project. It covers the benefits of decoupling frontend and backend development.',
-    },
-    {
-      title: 'Advanced Mocking Techniques',
-      content: 'This chapter delves into more advanced techniques for mocking data. It includes topics like dynamic mock data generation, using libraries like Faker.js, and creating mock API servers to simulate real-world scenarios.',
-    },
-    {
-      title: 'Integrating Mock Data in Your CI/CD Pipeline',
-      content: 'Learn how to integrate mock data into your continuous integration and continuous delivery (CI/CD) pipeline. This ensures that your tests are consistent and that your application can be built and deployed reliably without depending on a live backend.',
-    },
+    { title: 'Introduction to Mock Data', content: 'This is the full content for the introduction. Mock data is essential for rapid prototyping and testing without relying on a live backend. It allows frontend developers to build and style components with realistic data structures.' },
+    { title: 'Advanced Mocking Techniques', content: 'This chapter covers advanced techniques. You can use libraries like Faker.js to generate more realistic and varied mock data. This includes names, addresses, and even paragraphs of text.' },
+    { title: 'Integrating Mock Data in Your Workflow', content: 'Here, we discuss integration. Setting up mock servers or using build-in features of modern frontend frameworks can streamline the process of using mock data throughout your development lifecycle.' },
+    { title: 'Testing with Mock Data', content: 'This is the full content for the testing chapter. Learn how to write unit and integration tests that use mock data to ensure your components behave correctly under different data scenarios.' },
+    { title: 'From Mock to Production', content: 'The final chapter on moving to production. We will explore strategies for switching from a mock data source to a live API, including managing environment variables and handling potential data schema differences.' },
   ],
-  conclusion: 'This is the conclusion of the book. It summarizes the key takeaways and provides some final thoughts on the best practices for using mock data in modern web development.',
+  conclusion: "In conclusion, mock data is a powerful tool. By mastering its use, you can significantly speed up your development process, improve testing, and build more robust applications. This guide has provided you with the foundational knowledge to get started.",
   coverImageUrl: '',
 };
 
@@ -30,30 +23,21 @@ export async function generateEbookAction(
 ): Promise<{ success: boolean; ebook?: EbookContent; error?: string }> {
   console.log(`Starting ebook generation for topic: ${topic}`);
 
-  // Since AI packages are removed, we return mock data.
-  if (true) {
-    const coverImageUrl = generateGradientSVG(
-      mockEbook.title,
-      mockEbook.subtitle || ''
+  try {
+    // Since AI packages are removed, we generate a mock ebook.
+    const ebook = { ...mockEbook };
+    
+    // Generate a new cover based on the mock title.
+    ebook.coverImageUrl = generateGradientSVG(
+      ebook.title,
+      ebook.subtitle || ''
     );
+    console.log('Generated mock ebook and cover image SVG.');
+
     return {
       success: true,
-      ebook: {
-        ...mockEbook,
-        coverImageUrl,
-      },
+      ebook,
     };
-  }
-
-  // The following code is unreachable but kept for reference
-  try {
-    console.log('This part of the code should not be reached.');
-    
-    return {
-      success: false,
-      error: `Generation failed: AI components are currently disabled due to package installation issues.`,
-    };
-
   } catch (error) {
     console.error('Error in generateEbookAction:', error);
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred during e-book generation.';
