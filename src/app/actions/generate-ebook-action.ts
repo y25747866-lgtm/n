@@ -24,7 +24,7 @@ export async function generateEbookAction(
     // 4. Generate cover
     
     // Since the AI flows are not available, we throw an error to prevent "fake success".
-    throw new Error("AI generation flows are not implemented or available. Cannot generate e-book.");
+    throw new Error("AI GENERATION FAILED — STOP EVERYTHING");
 
   } catch (error: any) {
     console.error("Ebook generation failed:", error);
