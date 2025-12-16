@@ -5,53 +5,45 @@ import { EbookContent } from '@/lib/types';
 import { generateGradientSVG } from '@/lib/svg-utils';
 
 const mockEbook: EbookContent = {
-  title: "The Ultimate Guide to Mock Data",
-  subtitle: "How to Use Mock Data for Robust Development",
+  title: "The Art of Digital Creation",
+  subtitle: "A Mock Guide to Online Success",
   chapters: [
-    { title: "Introduction to Mock Data", content: "This is the full content for the introduction chapter. It explains what mock data is and why it's crucial for modern development workflows, especially in testing and UI prototyping..." },
-    { title: "Advanced Mocking Techniques", content: "This chapter dives into more advanced techniques. You will learn about generating realistic data sets, mocking server responses, and using libraries to streamline the process..." },
-    { title: "Mocking in CI/CD Pipelines", content: "Explore how to integrate mock data generation into your continuous integration and deployment pipelines to ensure your tests are always running against consistent and predictable data..." },
+    {
+      title: "Chapter 1: The Idea",
+      content: "This is mock content for the first chapter. In a real book, this section would explore how to find and validate a profitable idea for your digital product. It would cover market research, identifying pain points, and ensuring there's an audience for your work. We would delve into tools and techniques for brainstorming and refining your concept until it's ready for development."
+    },
+    {
+      title: "Chapter 2: Building Your Product",
+      content: "This is mock content for the second chapter. Here, we would walk through the process of actually creating your e-book. This includes structuring your content, writing engaging copy, and designing a professional layout. We'd discuss tools for writing, editing, and formatting, ensuring your final product is polished and ready for your audience."
+    },
+    {
+      title: "Chapter 3: Marketing and Sales",
+      content: "This is mock content for the third chapter. A product is only successful if people know it exists. This chapter would cover the fundamentals of digital marketing, including building a landing page, email marketing, social media promotion, and running ads. The goal is to provide a clear roadmap for launching your product and generating sales."
+    },
+     {
+      title: "Chapter 4: Advanced Strategies",
+      content: "This is mock content for the fourth chapter. Once your product is launched, the journey isn't over. This section would cover advanced topics like building a sales funnel, creating upsells and downsells, gathering testimonials, and leveraging customer feedback to improve your offerings. We would explore how to turn a single product into a sustainable business."
+    }
   ],
-  conclusion: "In conclusion, mock data is an indispensable tool for any development team. By mastering the techniques discussed in this book, you can significantly improve the quality and speed of your development cycle. This is the full, real conclusion.",
-  coverImageUrl: "" 
+  conclusion: "This is the mock conclusion. In this final section, we would summarize the key takeaways from the book and provide a clear call to action. The goal is to inspire the reader to take what they've learned and apply it to their own digital product journey, empowering them to achieve their entrepreneurial goals.",
+  coverImageUrl: generateGradientSVG("The Art of Digital Creation", "A Mock Guide to Online Success"),
 };
 
 
 export async function generateEbookAction(
   topic: string
 ): Promise<{ success: boolean; ebook?: EbookContent; error?: string }> {
-  console.log(`Starting mock ebook generation for topic: ${topic}`);
+  console.log(`Starting MOCK e-book generation for topic: ${topic}`);
 
-  // In a real scenario, you would generate based on the topic.
-  // For this mock, we'll just use the predefined content but generate a new cover.
-  const title = mockEbook.title;
-  const subtitle = mockEbook.subtitle;
-
-  try {
-    // Generate a cover image based on the title and subtitle
-    const coverImageUrl = generateGradientSVG(title, subtitle);
-    console.log('Generated mock cover image SVG.');
-
-    const ebookWithCover = {
-        ...mockEbook,
-        coverImageUrl,
-    };
-    
-    console.log('Mock ebook generation complete.');
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    return {
-      success: true,
-      ebook: ebookWithCover,
-    };
-  } catch (error) {
-    console.error('Error in generateEbookAction:', error);
-    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred during e-book generation.';
-    
-    return {
-      success: false,
-      error: `Generation failed: ${errorMessage}`,
-    };
-  }
+  // In this mock version, we return a pre-defined e-book after a short delay
+  // to simulate the generation process.
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      console.log('Mock e-book generation complete.');
+      resolve({
+        success: true,
+        ebook: mockEbook,
+      });
+    }, 2000);
+  });
 }

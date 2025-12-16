@@ -5,9 +5,8 @@ import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 
 const ConclusionInputSchema = z.object({
-    topic: z.string().describe("The main topic/title of the book."),
     bookTitle: z.string().describe("The main topic/title of the book."),
-    chapterTitles: z.array(z.string()).describe("The list of chapter titles in the book.")
+    topic: z.string().describe("The main topic/title of the book."),
 });
 
 const ConclusionOutputSchema = z.object({
