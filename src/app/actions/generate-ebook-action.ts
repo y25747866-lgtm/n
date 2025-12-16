@@ -2,50 +2,43 @@
 'use server';
 
 import { EbookContent } from '@/lib/types';
-import { generateGradientSVG } from '@/lib/svg-utils';
 
+// Mock data to be returned by the action
 const mockEbook: EbookContent = {
-  title: "The Ultimate Guide to Mock Data",
-  subtitle: "How to create and use mock data for your projects",
+  title: 'The Ultimate Guide to Mock Data',
+  subtitle: 'How to Use Mock Data for Robust Development',
   chapters: [
-    {
-      title: "Introduction to Mock Data",
-      content: "This is the content for the introduction chapter. It explains what mock data is and why it's important.",
-    },
-    {
-      title: "Creating Mock Data",
-      content: "This chapter covers various techniques and tools for creating realistic mock data for your applications.",
-    },
-    {
-      title: "Using Mock Data in Development",
-      content: "Learn how to integrate mock data into your development workflow for faster and more reliable testing.",
-    },
+    { title: 'Introduction to Mocking', content: 'This is the content for the introduction. It explains what mocking is and why it is important.' },
+    { title: 'Advanced Mocking Techniques', content: 'This chapter covers advanced techniques for mocking data and services.' },
   ],
-  conclusion: "This is the conclusion of the mock e-book. It summarizes the key takeaways and provides some final thoughts.",
-  coverImageUrl: generateGradientSVG("The Ultimate Guide to Mock Data", "A mock subtitle", "ai"),
+  conclusion: 'This is the conclusion of the mock e-book.',
+  coverImageUrl: 'https://picsum.photos/seed/1/600/800',
 };
-
 
 export async function generateEbookAction(
   topic: string
 ): Promise<{ success: boolean; ebook?: EbookContent; error?: string }> {
+  console.log(`Generating ebook for topic: ${topic}`);
+  
+  // Simulate an AI generation process
+  await new Promise(resolve => setTimeout(resolve, 2000));
+
   try {
-    // Simulate an async operation
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // As per instructions to remove AI packages, we must return mock data to keep the app functional
-    // The previous approach of throwing an error here would break the generate page.
-    const ebook = { ...mockEbook, title: `Mock Ebook About: ${topic}`};
-    ebook.coverImageUrl = ebook.coverImageUrl || generateGradientSVG(ebook.title, ebook.subtitle || '', topic.split(' ')[0] || 'ai');
+    // In a real scenario, you would call your AI generation flows here.
+    // For now, we return mock data.
     
     return {
       success: true,
-      ebook: ebook,
+      ebook: mockEbook,
     };
+
   } catch (error) {
     console.error('Error in generateEbookAction:', error);
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred during e-book generation.';
     
+    // As per the requirement, throw an error if generation fails.
+    // In this mock setup, we can simulate a failure if needed.
+    // For now, we just return an error message.
     return {
       success: false,
       error: `AI generation failed. No fallback content allowed. Reason: ${errorMessage}`,
