@@ -4,17 +4,29 @@
 import { generateGradientSVG } from '@/lib/svg-utils';
 import { EbookContent } from '@/lib/types';
 
-const mockEbook: EbookContent = {
-  title: "The Art of Digital Creation",
-  subtitle: "A Mock Guide to Online Success",
-  chapters: [
+
+export async function generateEbookAction(
+  topic: string
+): Promise<{ success: boolean; ebook?: EbookContent; error?: string }> {
+
+  // This is a mock implementation because the AI packages are causing installation errors.
+  // This ensures the application is runnable.
+  console.log("🔥 EBOOK GENERATION STARTED (MOCK)");
+  console.time("ebook-total");
+
+  await new Promise(r => setTimeout(r, 1200)); // Simulate network delay
+
+  const mockEbook: EbookContent = {
+    title: "The Art of Digital Creation",
+    subtitle: "A Mock Guide to Online Success",
+    chapters: [
     {
         title: "Chapter 1: The Idea",
-        content: "This chapter is all about finding your niche and brainstorming ideas that have market potential. We'll explore how to validate your ideas without spending a dime, ensuring you're building something people actually want. From passion projects to profitable ventures, the journey starts with a single, powerful idea. This section will guide you through identifying your unique strengths and aligning them with market needs. We'll cover techniques like keyword research, competitor analysis, and trend spotting to help you uncover hidden opportunities. By the end of this chapter, you'll have a clear and validated concept for your digital product, ready to move into the creation phase."
+        content: "Every great digital product begins with a single spark of an idea. This chapter explores how to find and validate your niche, ensuring there's a hungry market waiting for what you create. We'll delve into brainstorming techniques, market research, and how to identify problems you can solve for your audience. The goal is to move from a vague concept to a concrete, viable product idea that has the potential to grow into a successful business. This foundational step is critical for everything that follows."
     },
     {
         title: "Chapter 2: The Content",
-        content: "Content is king, and in this chapter, we'll crown you. Learn how to structure your ebook, write compelling chapters, and keep your readers engaged from the first page to the last. We'll cover storytelling techniques, how to simplify complex topics, and the importance of a strong voice. You'll also learn about different content formats and how to choose the one that best suits your topic and audience. From outlining your structure to writing the final word, this chapter provides a complete roadmap for creating high-quality, valuable content that your readers will love and share."
+        content: "Content is the heart of your digital product. In this chapter, we'll cover how to structure your knowledge into a compelling narrative that keeps readers engaged from start to finish. Whether you're writing an ebook, scripting a course, or creating a lead magnet, the principles are the same: clarity, value, and a logical flow. We'll provide templates and frameworks to help you organize your thoughts and turn your expertise into high-quality, consumable content. This is where your idea takes shape and becomes something tangible."
     },
     {
         title: "Chapter 3: The Design",
@@ -26,25 +38,18 @@ const mockEbook: EbookContent = {
     },
     {
         title: "Chapter 5: The Empire",
-        content: "One product is a business, but multiple products are an empire. In this final chapter, we'll explore how to turn your initial success into a sustainable, long-term business. We'll discuss building a brand, creating a product ecosystem, and leveraging your audience to fuel future growth. From membership sites and online courses to physical products and affiliate marketing, we'll look at the various paths you can take to expand your digital empire. The goal is to create a business that works for you, providing passive income and a platform for your future ideas. This chapter will show you how to think bigger and build a lasting legacy."
+        content: "One successful product is a victory; a series of products is an empire. This final chapter teaches you how to think beyond a single launch. We'll discuss how to build a brand, create a product ecosystem, and turn one-time buyers into lifelong fans. Learn how to gather feedback, iterate on your products, and identify new opportunities within your niche. The goal is to create a sustainable, scalable business that generates passive income and establishes you as an authority in your field. This is the path from creator to CEO."
     }
-  ],
-  conclusion: "In conclusion, building a digital product is a journey, but it's one that's more accessible than ever. By following the steps outlined in this book—from idea and content creation to design and launch—you have a repeatable formula for success. The key is to take action, stay consistent, and never stop learning. The digital world is full of opportunities for those willing to create value. Now it's your turn. Take what you've learned, start building, and launch your own digital empire. The world is waiting for what you have to offer.",
-  coverImageUrl: '',
-};
-
-export async function generateEbookAction(
-  topic: string
-): Promise<{ success: boolean; ebook?: EbookContent; error?: string }> {
+],
+    conclusion: "Building a digital product empire is a marathon, not a sprint. By following the principles in this book—from finding a solid idea and creating valuable content, to designing professionally, launching effectively, and thinking long-term—you have the complete roadmap. The journey requires dedication, but the rewards are immense. You are now equipped with the strategies to not only create and sell a digital product but to build a lasting brand. Go forth and build your empire.",
+    coverImageUrl: generateGradientSVG("The Art of Digital Creation", "A Mock Guide to Online Success")
+  };
   
-  // This is a mock implementation and will be replaced with real AI generation.
-  // We're adding a delay to simulate a real network request.
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  const coverImageUrl = generateGradientSVG(mockEbook.title, mockEbook.subtitle || '');
+  console.timeEnd("ebook-total");
+  console.log("✅ EBOOK GENERATION FINISHED (MOCK)");
 
   return {
     success: true,
-    ebook: { ...mockEbook, coverImageUrl },
+    ebook: mockEbook
   };
 }
