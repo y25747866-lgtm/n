@@ -59,13 +59,9 @@ export async function generateLongEbookPDF(
     lineHeight: 32,
   });
 
-  addNewPage();
-
   // Chapters
   for (const chapter of chapters) {
-    if (y < pageMargin + 100) { // Check space for title
-      addNewPage();
-    }
+    addNewPage();
     
     // Chapter Title
     y -= 40;
@@ -93,13 +89,10 @@ export async function generateLongEbookPDF(
         });
         y -= 15;
     }
-     y -= 20; // Space after chapter
   }
 
   // Conclusion
-  if (y < pageMargin + 100) {
-      addNewPage();
-  }
+  addNewPage();
   y -= 40;
   page.drawText('Conclusion', {
       x: pageMargin,

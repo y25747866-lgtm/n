@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { EbookContent, TemplateContent } from '@/lib/types';
 import { downloadFile } from '@/lib/download';
 import { generateLongEbookPDF } from '@/lib/pdf-generator';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useMemoFirebase } from '@/firebase/provider';
 import {
   AlertDialog,
