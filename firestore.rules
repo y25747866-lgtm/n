@@ -1,16 +1,154 @@
+/**
+ * # Firestore Security Rules
+ *
+ * ## Core Philosophy
+ * This ruleset enforces a strict user-ownership model. All data is considered private and is nested within a user-specific data tree. A user can only access, modify, or delete their own information and the content they have generated. There is no concept of public or shared data in this model.
+ *
+ * ## Data Structure
+ * The data is organized hierarchically to reflect ownership clearly. All user-related data, including subscriptions and generated products, is stored in subcollections under the path `/users/{userId}`. This structure makes it simple and performant to write security rules based on the user's authenticated ID.
+ *
+ * ## Key Security Decisions
+ * - **Strict Ownership**: Access to any document is granted only if the requesting user's UID matches the `{userId}` in the document path.
+ * - **No User Enumeration**: Listing documents from the top-level `/users` collection is explicitly disallowed to prevent scraping user profiles.
+ * - **Path-Based Security**: Authorization is primarily derived from the document path, which is a fast and efficient way to enforce user-scoping.
+ * - **Default Deny**: Any operation not explicitly permitted is denied.
+ *
+ * ## Denormalization for Authorization
+ * The ruleset relies on path-based security, which is a form of denormalization where the owner's ID is part of the document's location. For documents like 'GeneratedProduct', the schema also includes a `userId` field. The rules enforce that this internal `userId` field must always match the `userId` in the path, ensuring data integrity and preventing documents from being moved or reassigned to other users. This avoids costly `get()` calls and keeps the rules simple and secure.
+ *
+ * ## Structural Segregation
+ * The architecture uses structural segregation by design. All user-private data (profiles, subscriptions, generated products) is located in a dedicated path (`/users/{userId}/...`), completely isolating it from any potential public data collections. This is the most secure and performant pattern for managing private user data.
+ */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Allow anyone (even not signed in) to READ trending topics
-    match /trending_topics/{docId} {
-      allow read: if true;
-      allow write: if request.auth != null && request.auth.uid != null;
+
+    // ------------------------------------------------------------------------
+    // Helper Functions
+    // ------------------------------------------------------------------------
+
+    /**
+     * Checks if the user is authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
     }
 
-    // For other collections, only authenticated users can read/write
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+    /**
+     * Validates that the requesting user is the owner of the document
+     * based on the userId in the path.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * For update/delete operations, validates ownership AND ensures the
+     * document already exists. This prevents modifying non-existent data.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * Validates required relational fields for a new User document.
+     * Enforces consistency between the document ID and the internal 'id' field.
+     */
+    function isValidUserCreate(userId) {
+      return request.resource.data.id == userId;
+    }
+
+    /**
+     * Enforces immutability of the User's unique identifier upon update.
+     * This prevents the core ownership link from ever being changed.
+     */
+    function isValidUserUpdate() {
+      return request.resource.data.id == resource.data.id;
+    }
+    
+    /**
+     * Validates required relational fields for a new Subscription document.
+     * Enforces consistency between the document ID and the internal 'id' field.
+     */
+    function isValidSubscriptionCreate(subscriptionId) {
+      return request.resource.data.id == subscriptionId;
+    }
+
+    /**
+     * Enforces immutability of the Subscription's unique identifier upon update.
+     */
+    function isValidSubscriptionUpdate() {
+      return request.resource.data.id == resource.data.id;
+    }
+
+    /**
+     * Validates required relational fields for a new GeneratedProduct.
+     * Enforces that the internal 'userId' matches the owner's path and
+     * the document ID matches the internal 'id'.
+     */
+    function isValidGeneratedProductCreate(userId, generatedProductId) {
+      let data = request.resource.data;
+      return data.userId == userId && data.id == generatedProductId;
+    }
+
+    /**
+     * Enforces immutability of core relational fields ('userId', 'id') for a
+     * GeneratedProduct upon update.
+     */
+    function isValidGeneratedProductUpdate() {
+      let incomingData = request.resource.data;
+      let existingData = resource.data;
+      return incomingData.userId == existingData.userId
+          && incomingData.id == existingData.id;
+    }
+
+    // ------------------------------------------------------------------------
+    // Collection Rules
+    // ------------------------------------------------------------------------
+
+    /**
+     * @description Controls access to a user's own profile document.
+     * @path /users/{userId}
+     * @allow (get) An authenticated user can read their own profile. auth.uid: "user1", path: "/users/user1"
+     * @deny (list) No user can list all documents in the 'users' collection to prevent user enumeration.
+     * @principle Restricts access to a user's own data tree and prevents data scraping.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && isValidUserCreate(userId);
+      allow update: if isExistingOwner(userId) && isValidUserUpdate();
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Manages access to a user's subscription information.
+     * @path /users/{userId}/subscriptions/{subscriptionId}
+     * @allow (list) An authenticated user can list their own subscriptions. auth.uid: "user1", path: "/users/user1/subscriptions"
+     * @deny (get) A user cannot access another user's subscription. auth.uid: "user2", path: "/users/user1/subscriptions/sub_abc"
+     * @principle Enforces document ownership for all operations within a user-specific subcollection.
+     */
+    match /users/{userId}/subscriptions/{subscriptionId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidSubscriptionCreate(subscriptionId);
+      allow update: if isExistingOwner(userId) && isValidSubscriptionUpdate();
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Secures the products (e.g., ebooks, courses) generated by a user.
+     * @path /users/{userId}/generatedProducts/{generatedProductId}
+     * @allow (create) A user can create a new generated product for themselves. auth.uid: "user1", path: "/users/user1/generatedProducts/prod_xyz"
+     * @deny (update) A user cannot modify another user's generated product. auth.uid: "user2", path: "/users/user1/generatedProducts/prod_xyz"
+     * @principle Validates relational integrity by ensuring the document's internal `userId` always matches the owner in the path.
+     */
+    match /users/{userId}/generatedProducts/{generatedProductId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidGeneratedProductCreate(userId, generatedProductId);
+      allow update: if isExistingOwner(userId) && isValidGeneratedProductUpdate();
+      allow delete: if isExistingOwner(userId);
     }
   }
 }
