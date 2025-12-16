@@ -27,6 +27,7 @@ export const EbookContentSchema = z.object({
   subtitle: z.string().optional().describe('A brief, catchy subtitle.'),
   chapters: z
     .array(EbookChapterSchema)
+    .min(1, 'E-book must have at least one chapter.')
     .describe('An array of chapter objects, each containing a title and content.'),
   conclusion: z.string().describe("Final summary and action steps"),
   coverImageUrl: z.string().optional().describe("URL for the generated cover image"),
