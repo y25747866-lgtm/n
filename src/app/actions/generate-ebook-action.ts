@@ -5,38 +5,45 @@ import { EbookContent } from '@/lib/types';
 import { generateGradientSVG } from '@/lib/svg-utils';
 
 const mockEbook: EbookContent = {
-  title: 'The Ultimate Guide to Mock Data',
-  subtitle: 'How to use mock data for faster development',
+  title: "The Ultimate Guide to Mock Data",
+  subtitle: "How to Use Mock Data for Robust Development",
   chapters: [
-    { title: 'Introduction to Mock Data', content: 'This is the full content for the introduction. Mock data is essential for rapid prototyping and testing without relying on a live backend. It allows frontend developers to build and style components with realistic data structures.' },
-    { title: 'Advanced Mocking Techniques', content: 'This chapter covers advanced techniques. You can use libraries like Faker.js to generate more realistic and varied mock data. This includes names, addresses, and even paragraphs of text.' },
-    { title: 'Integrating Mock Data in Your Workflow', content: 'Here, we discuss integration. Setting up mock servers or using build-in features of modern frontend frameworks can streamline the process of using mock data throughout your development lifecycle.' },
-    { title: 'Testing with Mock Data', content: 'This is the full content for the testing chapter. Learn how to write unit and integration tests that use mock data to ensure your components behave correctly under different data scenarios.' },
-    { title: 'From Mock to Production', content: 'The final chapter on moving to production. We will explore strategies for switching from a mock data source to a live API, including managing environment variables and handling potential data schema differences.' },
+    { title: "Introduction to Mock Data", content: "This is the full content for the introduction chapter. It explains what mock data is and why it's crucial for modern development workflows, especially in testing and UI prototyping..." },
+    { title: "Advanced Mocking Techniques", content: "This chapter dives into more advanced techniques. You will learn about generating realistic data sets, mocking server responses, and using libraries to streamline the process..." },
+    { title: "Mocking in CI/CD Pipelines", content: "Explore how to integrate mock data generation into your continuous integration and deployment pipelines to ensure your tests are always running against consistent and predictable data..." },
   ],
-  conclusion: "In conclusion, mock data is a powerful tool. By mastering its use, you can significantly speed up your development process, improve testing, and build more robust applications. This guide has provided you with the foundational knowledge to get started.",
-  coverImageUrl: '',
+  conclusion: "In conclusion, mock data is an indispensable tool for any development team. By mastering the techniques discussed in this book, you can significantly improve the quality and speed of your development cycle. This is the full, real conclusion.",
+  coverImageUrl: "" 
 };
+
 
 export async function generateEbookAction(
   topic: string
 ): Promise<{ success: boolean; ebook?: EbookContent; error?: string }> {
-  console.log(`Starting ebook generation for topic: ${topic}`);
+  console.log(`Starting mock ebook generation for topic: ${topic}`);
+
+  // In a real scenario, you would generate based on the topic.
+  // For this mock, we'll just use the predefined content but generate a new cover.
+  const title = mockEbook.title;
+  const subtitle = mockEbook.subtitle;
 
   try {
-    // Since AI packages are removed, we generate a mock ebook.
-    const ebook = { ...mockEbook };
+    // Generate a cover image based on the title and subtitle
+    const coverImageUrl = generateGradientSVG(title, subtitle);
+    console.log('Generated mock cover image SVG.');
+
+    const ebookWithCover = {
+        ...mockEbook,
+        coverImageUrl,
+    };
     
-    // Generate a new cover based on the mock title.
-    ebook.coverImageUrl = generateGradientSVG(
-      ebook.title,
-      ebook.subtitle || ''
-    );
-    console.log('Generated mock ebook and cover image SVG.');
+    console.log('Mock ebook generation complete.');
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
 
     return {
       success: true,
-      ebook,
+      ebook: ebookWithCover,
     };
   } catch (error) {
     console.error('Error in generateEbookAction:', error);

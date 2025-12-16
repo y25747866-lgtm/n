@@ -6,6 +6,7 @@ import { z } from 'zod';
 
 const ConclusionInputSchema = z.object({
     topic: z.string().describe("The main topic/title of the book."),
+    bookTitle: z.string().describe("The main topic/title of the book."),
     chapterTitles: z.array(z.string()).describe("The list of chapter titles in the book.")
 });
 
@@ -19,32 +20,10 @@ export const conclusionPrompt = ai.definePrompt({
   input: { schema: ConclusionInputSchema },
   output: { schema: ConclusionOutputSchema },
   prompt: `
-SYSTEM:
-You are an expert author tasked with writing the conclusion for an e-book.
+Write a full professional conclusion (600–800 words)
+for the ebook "{bookTitle}" about "{topic}".
 
-STRICT RULES:
-- The conclusion must be comprehensive and well-written, 600-800 words.
-- It should summarize the key takeaways from the chapters.
-- It should provide a strong concluding statement or call to action.
-- Do NOT just list the chapter titles. Synthesize the ideas.
-
-BOOK TOPIC:
-"{topic}"
-
-CHAPTERS IN THE BOOK:
-{{#each chapterTitles}}
-- {{this}}
-{{/each}}
-
-YOUR TASK:
-Write a full, compelling conclusion for the e-book.
-
-OUTPUT JSON ONLY:
-{
-  "content": "The full, complete text of the conclusion..."
-}
-
-BEGIN.
+NO placeholders.
 `,
   config: {
     maxOutputTokens: 2048,
@@ -69,5 +48,6 @@ export const generateConclusionFlow = ai.defineFlow(
 );
 
 export async function generateConclusion(input: z.infer<typeof ConclusionInputSchema>) {
-    return generateConclusionFlow(input);
+    const result = await generateConclusionFlow(input);
+    return result.content;
 }
