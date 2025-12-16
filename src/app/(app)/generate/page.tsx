@@ -1,8 +1,7 @@
-
 'use client';
 
 import { useState } from 'react';
-import { useForm, useForm as useTemplateForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Form,
@@ -15,25 +14,27 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sparkles, Wand2, Loader2, Download, RefreshCw, BookOpen, FileText } from 'lucide-react';
+import { Sparkles, Wand2, Loader2, Download, RefreshCw, FileText } from 'lucide-react';
 import { ErrorDisplay } from '@/components/boss-os/error-display';
 import { GenerationConfigSchema, type GenerationConfig, type EbookContent, TemplateGenerationConfigSchema, TemplateGenerationConfig, TemplateContent } from '@/lib/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { generateLongEbookPDF } from '@/lib/pdf-generator';
 import Image from 'next/image';
-import { generateGradientSVG } from '@/lib/svg-utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { downloadFile } from '@/lib/download';
 import { useFirebase } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { generateEbookAction } from '@/app/actions/generate-ebook-action';
 
 export default function GeneratePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [generatedEbook, setGeneratedEbook] = useState<EbookContent | null>(null);
   const [generatedTemplate, setGeneratedTemplate] = useState<TemplateContent | null>(null);
+  const [generatedHtml, setGeneratedHtml] = useState<string | null>(null);
+
   const { firestore, user } = useFirebase();
 
   const ebookForm = useForm<GenerationConfig>({
@@ -41,11 +42,10 @@ export default function GeneratePage() {
     defaultValues: {
       topic: '',
       productType: 'Ebook',
-      category: 'business',
     },
   });
 
-  const templateForm = useTemplateForm<TemplateGenerationConfig>({
+  const templateForm = useForm<TemplateGenerationConfig>({
     resolver: zodResolver(TemplateGenerationConfigSchema),
     defaultValues: {
       topic: '',
@@ -57,27 +57,18 @@ export default function GeneratePage() {
     setError(null);
     setIsLoading(true);
     setGeneratedEbook(null);
+    setGeneratedHtml(null);
 
     try {
-      const response = await fetch('/api/create-ebook', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic: values.topic, category: values.category }),
-      });
+      const result = await generateEbookAction(values.topic);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      if (!result.success || !result.ebook) {
+        throw new Error(result.error || 'Failed to generate ebook content.');
       }
       
-      const ebookData: EbookContent = await response.json();
-      
-      const coverImage = generateGradientSVG(ebookData.title, ebookData.subtitle || '', values.category);
-      
-      setGeneratedEbook({
-        ...ebookData,
-        coverImageUrl: coverImage,
-      });
+      setGeneratedEbook(result.ebook);
+      // We no longer generate HTML on the server to save tokens, we generate it on client
+      // setGeneratedHtml(result.htmlContent);
 
     } catch (e: any) {
       setError(`Failed to generate ebook: ${e.message}`);
@@ -171,6 +162,7 @@ export default function GeneratePage() {
   
   const handleResetEbook = () => {
     setGeneratedEbook(null);
+    setGeneratedHtml(null);
     ebookForm.reset();
   }
 
@@ -265,6 +257,7 @@ export default function GeneratePage() {
                 <Card className="glass-card">
                   <CardHeader>
                     <CardTitle>Generate a New E-book</CardTitle>
+                    <CardDescription>Just enter a topic, and we'll handle the rest—title, chapters, content, and cover.</CardDescription>
                   </CardHeader>
                   <CardContent className="p-6">
                     <Form {...ebookForm}>
@@ -287,33 +280,9 @@ export default function GeneratePage() {
                             </FormItem>
                           )}
                         />
-                         <FormField
-                          control={ebookForm.control}
-                          name="category"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-lg">Category</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
-                                <FormControl>
-                                  <SelectTrigger className="h-12 text-base">
-                                    <SelectValue placeholder="Select a category" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="business">Business</SelectItem>
-                                  <SelectItem value="ai">AI</SelectItem>
-                                  <SelectItem value="finance">Finance</SelectItem>
-                                  <SelectItem value="education">Education</SelectItem>
-                                  <SelectItem value="marketing">Marketing</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
                         <Button type="submit" size="lg" className="w-full h-12 text-lg" disabled={isLoading}>
                           {isLoading ? <Loader2 className="animate-spin" /> : <Sparkles />}
-                          <span className="ml-2">Generate Your Product</span>
+                          <span className="ml-2">{isLoading ? "Generating Your Masterpiece..." : "Generate Your Product"}</span>
                         </Button>
                       </form>
                     </Form>
@@ -427,5 +396,3 @@ export default function GeneratePage() {
     </div>
   );
 }
-
-    

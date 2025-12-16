@@ -1,53 +1,60 @@
-
 import { generateLongEbookPDF } from "@/lib/pdf-generator";
+import { z } from 'zod';
+
+const EbookRequestSchema = z.object({
+  topic: z.string(),
+  category: z.string(),
+});
+
+const EbookContentSchema = z.object({
+  title: z.string(),
+  subtitle: z.string(),
+  chapters: z.array(z.object({
+    title: z.string(),
+    content: z.string(),
+  })),
+  conclusion: z.string(),
+  cover_image_prompt: z.string(),
+});
+
 
 export async function POST(req: Request) {
-  const { topic, category } = await req.json();
+  const body = await req.json();
+  const validation = EbookRequestSchema.safeParse(body);
+
+  if (!validation.success) {
+    return new Response(JSON.stringify({ error: 'Invalid request body' }), { status: 400 });
+  }
+
+  const { topic, category } = validation.data;
 
   const systemPrompt = `
-You are a professional digital product creator and book author.
+You are a professional author and book designer.
+Your task is to generate a complete non-fiction e-book based on a topic and category.
 
-You are creating an ebook on the topic: "${topic}" in the category: "${category}".
+Topic: ${topic}
+Category: ${category}
 
-You MUST do ALL of the following automatically:
-- Decide the best ebook TITLE by yourself
-- Decide the best SUBTITLE by yourself
-- Write a complete non-fiction ebook with at least 5 chapters
-- Each chapter must have real, useful, actionable content
-- Clear language, beginner-friendly
-- No filler text
-- No placeholder text
-- No mention of AI
-- Professional tone
+RULES:
+- The book should have 5 chapters.
+- Each chapter must be between 400-600 words.
+- The content must be practical, well-structured, and professional.
+- Generate a compelling title and a short, catchy subtitle.
+- Generate a detailed, creative prompt for a premium, modern e-book cover image. The prompt should reflect the topic and category.
+- The conclusion should summarize the key takeaways and provide a call to action.
 
-You must ALSO generate:
-- A short but detailed PROMPT for an AI image generator for the cover
-- The image prompt must be tailored to the **${category}** category
-- The image should feature modern, clean, premium design aesthetics
-- It should be suitable for selling online as a high-quality product cover
-
-VERY IMPORTANT:
-- Output ONLY valid JSON
-- Do NOT add explanations
-- Do NOT add extra text
-- Do NOT wrap in markdown
-- Do NOT add comments
-
-JSON FORMAT (MUST MATCH EXACTLY):
-
+JSON OUTPUT FORMAT (MUST MATCH EXACTLY):
 {
-  "title": "",
-  "subtitle": "",
+  "title": "The main title of the e-book",
+  "subtitle": "A brief, catchy subtitle",
   "chapters": [
-    {
-      "title": "",
-      "content": ""
-    }
+    { "title": "Chapter 1 Title", "content": "Full text for chapter 1..." },
+    { "title": "Chapter 2 Title", "content": "Full text for chapter 2..." }
   ],
-  "conclusion": "",
-  "cover_image_prompt": ""
+  "conclusion": "Final summary and action steps...",
+  "cover_image_prompt": "A short image prompt for a premium ebook cover..."
 }
-        `;
+`;
 
   try {
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -58,15 +65,17 @@ JSON FORMAT (MUST MATCH EXACTLY):
       },
       body: JSON.stringify({
         model: "nousresearch/hermes-2-pro-llama-3-8b",
+        response_format: { type: "json_object" },
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Create a complete ebook about this topic: ${topic}` }
+          { role: "user", content: `Create the e-book now.` }
         ]
       })
     });
 
     if (!response.ok) {
       const errorBody = await response.text();
+      console.error(`API Error Response: ${errorBody}`);
       throw new Error(`API request failed with status ${response.status}: ${errorBody}`);
     }
 
@@ -76,13 +85,13 @@ JSON FORMAT (MUST MATCH EXACTLY):
       throw new Error("Invalid response structure from API");
     }
 
-    const ebookData = JSON.parse(completion.choices[0].message.content);
+    const ebookData = EbookContentSchema.parse(JSON.parse(completion.choices[0].message.content));
 
     return new Response(JSON.stringify(ebookData), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
-
+    
   } catch (error: any) {
     console.error("Error calling OpenRouter API:", error);
     return new Response(JSON.stringify({ error: error.message }), {
