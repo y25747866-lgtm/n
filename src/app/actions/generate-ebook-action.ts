@@ -22,7 +22,7 @@ const mockEbook: EbookContent = {
     },
     {
         title: "Chapter 4: The Launch",
-        content": "Your product is ready, now it's time to share it with the world. This chapter details how to plan and execute a successful launch. We'll cover email marketing, social media strategies, and how to build buzz before your product even goes live. Learn how to create a simple yet effective sales page and pricing strategies that maximize your revenue. A successful launch is about momentum. We'll show you how to build it, maintain it, and leverage it for long-term success. From pre-launch teasers to post-launch follow-ups, you'll have a complete playbook for making a splash in the market."
+        content: "Your product is ready, now it's time to share it with the world. This chapter details how to plan and execute a successful launch. We'll cover email marketing, social media strategies, and how to build buzz before your product even goes live. Learn how to create a simple yet effective sales page and pricing strategies that maximize your revenue. A successful launch is about momentum. We'll show you how to build it, maintain it, and leverage it for long-term success. From pre-launch teasers to post-launch follow-ups, you'll have a complete playbook for making a splash in the market."
     },
     {
         title: "Chapter 5: The Empire",
