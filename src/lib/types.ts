@@ -4,10 +4,6 @@ import { z } from 'zod';
 export const GenerationConfigSchema = z.object({
   topic: z.string().min(10, { message: 'Topic must be at least 10 characters long.' }),
   productType: z.string(),
-  tone: z.string(),
-  length: z.string(),
-  coverStyle: z.string(),
-  authorName: z.string().optional(),
 });
 
 export type GenerationConfig = z.infer<typeof GenerationConfigSchema>;
@@ -25,9 +21,7 @@ export const EbookContentSchema = z.object({
     .describe('An array of chapter objects, each containing a title and content.'),
   conclusion: z.string().describe("Final summary and action steps"),
   cover_image_prompt: z.string().describe("A short image prompt for a premium ebook cover."),
-}).extend({
-    coverImageUrl: z.string().optional(),
-    cover_status: z.string().optional(),
+  coverImageUrl: z.string().optional().describe("URL for the generated cover image"),
 });
 
 export type EbookContent = z.infer<typeof EbookContentSchema>;

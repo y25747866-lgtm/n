@@ -10,7 +10,6 @@ You MUST do ALL of the following automatically:
 - Decide the best ebook TITLE by yourself
 - Decide the best SUBTITLE by yourself
 - Write a complete non-fiction ebook
-- PDF 30-40 page 
 - Each chapter must have real, useful, actionable content
 - Clear language, beginner-friendly
 - No filler text
@@ -76,17 +75,9 @@ JSON FORMAT (MUST MATCH EXACTLY):
 
     const ebookData = JSON.parse(completion.choices[0].message.content);
 
-    const pdfBytes = await generateLongEbookPDF(
-      ebookData.title,
-      ebookData.chapters,
-      ebookData.conclusion
-    );
-
-    return new Response(pdfBytes, {
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": "attachment; filename=ebook.pdf",
-      },
+    return new Response(JSON.stringify(ebookData), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
     });
 
   } catch (error: any) {
