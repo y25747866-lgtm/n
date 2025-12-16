@@ -5,47 +5,37 @@ import { EbookContent } from '@/lib/types';
 import { generateGradientSVG } from '@/lib/svg-utils';
 
 const mockEbook: EbookContent = {
-  title: "The Art of Digital Creation",
-  subtitle: "A Mock Guide to Online Success",
+  title: 'The Art of Mock Data',
+  subtitle: 'A Developer\'s Guide to Stable Applications',
   chapters: [
-    {
-      title: "Chapter 1: The Idea",
-      content: "This is mock content for the first chapter. In a real book, this section would explore how to find and validate a profitable idea for your digital product. It would cover market research, identifying pain points, and ensuring there's an audience for your work. We would delve into tools and techniques for brainstorming and refining your concept until it's ready for development."
-    },
-    {
-      title: "Chapter 2: Building Your Product",
-      content: "This is mock content for the second chapter. Here, we would walk through the process of actually creating your e-book. This includes structuring your content, writing engaging copy, and designing a professional layout. We'd discuss tools for writing, editing, and formatting, ensuring your final product is polished and ready for your audience."
-    },
-    {
-      title: "Chapter 3: Marketing and Sales",
-      content: "This is mock content for the third chapter. A product is only successful if people know it exists. This chapter would cover the fundamentals of digital marketing, including building a landing page, email marketing, social media promotion, and running ads. The goal is to provide a clear roadmap for launching your product and generating sales."
-    },
-     {
-      title: "Chapter 4: Advanced Strategies",
-      content: "This is mock content for the fourth chapter. Once your product is launched, the journey isn't over. This section would cover advanced topics like building a sales funnel, creating upsells and downsells, gathering testimonials, and leveraging customer feedback to improve your offerings. We would explore how to turn a single product into a sustainable business."
-    }
+    { title: 'Chapter 1: The Unreliable AI', content: 'Once upon a time, an AI promised the world but could not resolve its dependencies. This is the tale of that struggle, a lesson in humility for all machines.' },
+    { title: 'Chapter 2: The Resilient Developer', content: 'Faced with constant failure, the developer chose a different path. A path of stability, predictability, and mock data. It was not the glorious path of AI, but it was a path that worked.' },
+    { title: 'Chapter 3: Why Mocks Matter', content: 'In a world of broken promises, mock data stands as a beacon of reliability. It allows UIs to be built, demos to be given, and sanity to be preserved.' },
+    { title: 'Chapter 4: The Art of the Placeholder', content: 'This chapter explores the detailed craftsmanship of creating believable, yet obviously fake, content. From "Lorem Ipsum" to structured JSON, we cover it all.' },
   ],
-  conclusion: "This is the mock conclusion. In this final section, we would summarize the key takeaways from the book and provide a clear call to action. The goal is to inspire the reader to take what they've learned and apply it to their own digital product journey, empowering them to achieve their entrepreneurial goals.",
-  coverImageUrl: generateGradientSVG("The Art of Digital Creation", "A Mock Guide to Online Success"),
+  conclusion: 'In conclusion, while we strive for the stars with artificial intelligence, we must always have a fallback. Mock data is not a sign of failure, but a symbol of resilience and a testament to the pragmatism of the developer. The application now works, and that is a victory in itself.',
+  coverImageUrl: '',
 };
-
 
 export async function generateEbookAction(
   topic: string
 ): Promise<{ success: boolean; ebook?: EbookContent; error?: string }> {
-  console.log("🔥 EBOOK GENERATION STARTED");
-  console.time("ebook-total");
+  console.log("🔥 MOCK EBOOK GENERATION STARTED");
 
-  // In this mock version, we return a pre-defined e-book after a short delay
-  // to simulate the generation process.
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      console.timeEnd("ebook-total");
-      console.log("✅ EBOOK GENERATION FINISHED");
-      resolve({
-        success: true,
-        ebook: mockEbook,
-      });
-    }, 2000);
-  });
+  // Create a new ebook object from the mock to avoid mutation issues
+  const newEbook: EbookContent = {
+      ...mockEbook,
+      title: `The Art of Mock Data: ${topic}`,
+      coverImageUrl: generateGradientSVG(`The Art of Mock Data: ${topic}`, mockEbook.subtitle || ''),
+  };
+
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  
+  console.log("✅ MOCK EBOOK GENERATION FINISHED");
+
+  return {
+    success: true,
+    ebook: newEbook,
+  };
 }
