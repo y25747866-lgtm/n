@@ -36,6 +36,14 @@ export const EbookContentSchema = z.object({
 
 export type EbookContent = z.infer<typeof EbookContentSchema>;
 
+export const EbookOutlineSchema = z.object({
+    title: z.string(),
+    subtitle: z.string(),
+    chapters: z.array(z.string()),
+});
+
+export type EbookOutline = z.infer<typeof EbookOutlineSchema>;
+
 export const TemplateContentSchema = z.object({
     id: z.string().optional(),
     productType: z.literal('Template').optional(),
