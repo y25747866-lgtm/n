@@ -26,33 +26,9 @@ export async function generateEbookAction(
     // Since the AI flows are not available, we throw an error to prevent "fake success".
     throw new Error("AI generation flows are not implemented or available. Cannot generate e-book.");
 
-    // The code below is unreachable until the AI flows are restored.
-    /*
-    const ebookContent: EbookContent = {
-        title: "The Art of Digital Creation",
-        subtitle: "A Guide to Online Success",
-        chapters: [
-            { title: "Chapter 1: The Idea", content: "..." },
-            { title: "Chapter 2: The Content", content: "..." },
-            { title: "Chapter 3: The Design", content: "..." },
-            { title: "Chapter 4: The Launch", content: "..." },
-            { title: "Chapter 5: The Empire", content: "..." },
-        ],
-        conclusion: "...",
-        coverImageUrl: generateGradientSVG("Title", "Subtitle")
-    };
-
-    return {
-        success: true,
-        ebook: ebookContent
-    };
-    */
-
   } catch (error: any) {
     console.error("Ebook generation failed:", error);
-    return {
-      success: false,
-      error: error.message || "An unknown error occurred during e-book generation.",
-    };
+    // Re-throw a new, explicit error to ensure the failure is not silently handled.
+    throw new Error("AI GENERATION FAILED — STOP EVERYTHING");
   }
 }
