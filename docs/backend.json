@@ -82,7 +82,7 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Product",
       "type": "object",
-      "description": "Represents a generated product (ebook, course, etc.) in Boss OS.",
+      "description": "Represents a generated digital product in Boss OS, such as an E-book.",
       "properties": {
         "id": {
           "type": "string",
@@ -90,35 +90,63 @@
         },
         "userId": {
           "type": "string",
-          "description": "Reference to the User that generated this product. (Relationship: User 1:N Product)"
+          "description": "Reference to the User that generated this product."
+        },
+        "productType": {
+          "type": "string",
+          "description": "Type of product (e.g., 'E-book', 'Course')."
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the product."
+        },
+        "subtitle": {
+          "type": "string",
+          "description": "Subtitle of the product."
         },
         "topic": {
           "type": "string",
-          "description": "Topic of the generated product."
-        },
-        "type": {
-          "type": "string",
-          "description": "Type of product (e.g., Ebook, Course Script)."
+          "description": "The user-provided topic for generation."
         },
         "tone": {
           "type": "string",
-          "description": "Tone of the product (e.g., Casual, Professional)."
+          "description": "Tone of the product (e.g., 'Casual', 'Professional')."
         },
-        "length": {
-          "type": "string",
-          "description": "Length of the product (Short, Medium, Long)."
-        },
-        "coverStyle": {
-          "type": "string",
-          "description": "Style of the generated cover (e.g., Minimal, Photo)."
-        },
-        "contentUrl": {
-          "type": "string",
-          "description": "URL of the generated content (e.g., ebook content)."
+        "content": {
+          "type": "object",
+          "description": "Structured content of the product, varies by productType.",
+          "properties": {
+            "chapters": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": {"type": "string"},
+                  "content": {"type": "string"}
+                },
+                "required": ["title", "content"]
+              }
+            },
+            "conclusion": {
+              "type": "string"
+            }
+          }
         },
         "coverImageUrl": {
           "type": "string",
           "description": "URL of the generated cover image."
+        },
+        "pricing": {
+          "type": "object",
+          "properties": {
+            "oneTime": { "type": "number", "description": "One-time purchase price." },
+            "subscriptionTier": { "type": "string", "description": "Required subscription level to access."}
+          }
+        },
+        "downloadFormat": {
+          "type": "string",
+          "enum": ["PDF", "EPUB", "MOBI"],
+          "description": "Available download format."
         },
         "createdAt": {
           "type": "string",
@@ -129,15 +157,67 @@
       "required": [
         "id",
         "userId",
+        "productType",
+        "title",
         "topic",
-        "type",
-        "tone",
-        "length",
-        "coverStyle",
-        "contentUrl",
-        "coverImageUrl",
+        "content",
+        "downloadFormat",
         "createdAt"
       ]
+    },
+    "Course": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Course",
+      "type": "object",
+      "description": "Represents a generated video course script in Boss OS.",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the course." },
+        "userId": { "type": "string", "description": "Reference to the User that generated this course." },
+        "productType": { "type": "string", "enum": ["Course"], "default": "Course" },
+        "title": { "type": "string", "description": "Title of the course." },
+        "tagline": { "type": "string", "description": "A short, catchy tagline for the course." },
+        "description": { "type": "string", "description": "A detailed description of the course content and objectives." },
+        "content": {
+          "type": "object",
+          "properties": {
+            "modules": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": { "type": "string" },
+                  "lessons": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "title": { "type": "string" },
+                        "script": { "type": "string" },
+                        "videoLengthMinutes": { "type": "number" }
+                      },
+                      "required": ["title", "script"]
+                    }
+                  }
+                },
+                "required": ["title", "lessons"]
+              }
+            }
+          }
+        },
+        "pricing": {
+          "type": "object",
+          "properties": {
+            "oneTime": { "type": "number", "description": "One-time purchase price." },
+            "paymentPlan": { "type": "string", "description": "e.g., '3 payments of $99'" }
+          }
+        },
+        "downloadFormat": {
+          "type": "string",
+          "enum": ["PDF Script", "Video Files (future)"],
+          "description": "Available download format."
+        }
+      },
+      "required": ["id", "userId", "title", "description", "content", "downloadFormat"]
     },
     "Trend": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -335,5 +415,3 @@
     "reasoning": "The Firestore data structure is designed to ensure security, scalability, and ease of debugging, while adhering to the principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). It leverages denormalization to avoid hierarchical authorization dependencies and simplifies security rules by structurally segregating data based on access requirements.\n\n**Authorization Independence:**\nAuthorization Independence is achieved via denormalization of access control data. For example, the `products` subcollection under each `user` uses the `userId` field to determine ownership. This eliminates the need for security rules to perform `get()` operations on parent documents, which would violate atomic operations. The `Trend` collection is globally readable and writable only by admins (defined through the `/roles_admin/{uid}` collection), and the data integrity is upheld without relying on external data.\n\n**Clarity of Intent:**\nThe structure explicitly defines ownership using path-based access control (e.g., `/users/{userId}/products/{productId}`). This approach makes it straightforward to implement security rules based on user ownership.\n\n**DBAC (Database-Based Access Control):**\nGlobal roles (e.g., admin) are managed through the `/roles_admin/{uid}` collection. The existence of a document for a user ID in this collection grants admin privileges.\n\n**QAPs (Rules are not Filters):**\nThe structure supports secure `list` operations by ensuring that collections do not mix data with different access needs. For instance, user-generated products are stored under `/users/{userId}/products/{productId}`, ensuring that listing products under a user only returns the products owned by that user. Similarly, `/trends` can be read globally, as that entire collection has the same access requirements.\n\n**Invariants:**\nThe structure ensures the integrity of ownership, timestamps, and denormalized data. Ownership is explicitly modeled using the `userId` field in the `products` collection, creating a strict link to the user who owns the record."
   }
 }
-
-    
