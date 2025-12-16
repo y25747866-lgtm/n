@@ -8,12 +8,24 @@ function escape(text: string): string {
         .replace(/'/g, '&#039;');
 }
 
-export function generateGradientSVG(title: string, subtitle: string){
+const categoryColors: Record<string, { start: string; end: string }> = {
+    business: { start: '#3B82F6', end: '#1E40AF' }, // Blue
+    ai: { start: '#8B5CF6', end: '#4C1D95' },       // Purple
+    finance: { start: '#10B981', end: '#047857' },  // Green
+    education: { start: '#F59E0B', end: '#B45309' }, // Amber
+    marketing: { start: '#EC4899', end: '#9D174D' }, // Pink
+    default: { start: '#0B0F19', end: '#3B82F6' },
+};
+
+
+export function generateGradientSVG(title: string, subtitle: string, category: string = 'default'){
+  const colors = categoryColors[category] || categoryColors.default;
+  
   const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='1600' viewBox='0 0 1200 1600'>
   <defs>
     <linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
-      <stop offset='0' stop-color='#0B0F19'/>
-      <stop offset='1' stop-color='#3B82F6'/>
+      <stop offset='0' stop-color='${colors.start}'/>
+      <stop offset='1' stop-color='${colors.end}'/>
     </linearGradient>
   </defs>
   <rect width='100%' height='100%' fill='url(#g)'/>

@@ -4,6 +4,7 @@ import { z } from 'zod';
 export const GenerationConfigSchema = z.object({
   topic: z.string().min(10, { message: 'Topic must be at least 10 characters long.' }),
   productType: z.string(),
+  category: z.string(),
 });
 
 export type GenerationConfig = z.infer<typeof GenerationConfigSchema>;

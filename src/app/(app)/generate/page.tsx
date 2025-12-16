@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -13,14 +14,15 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sparkles, Wand2, Loader2, Download, RefreshCw } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Sparkles, Wand2, Loader2, Download, RefreshCw, BookOpen } from 'lucide-react';
 import { ErrorDisplay } from '@/components/boss-os/error-display';
 import { GenerationConfigSchema, type GenerationConfig, type EbookContent } from '@/lib/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { generateLongEbookPDF } from '@/lib/pdf-generator';
 import Image from 'next/image';
 import { generateGradientSVG } from '@/lib/svg-utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function GeneratePage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -32,6 +34,7 @@ export default function GeneratePage() {
     defaultValues: {
       topic: '',
       productType: 'Ebook',
+      category: 'business',
     },
   });
 
@@ -44,7 +47,7 @@ export default function GeneratePage() {
       const response = await fetch('/api/create-ebook', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic: values.topic }),
+        body: JSON.stringify({ topic: values.topic, category: values.category }),
       });
 
       if (!response.ok) {
@@ -54,8 +57,7 @@ export default function GeneratePage() {
       
       const ebookData: EbookContent = await response.json();
       
-      // Generate a placeholder cover
-      const coverImage = generateGradientSVG(ebookData.title, ebookData.subtitle || '');
+      const coverImage = generateGradientSVG(ebookData.title, ebookData.subtitle || '', values.category);
       
       setGeneratedEbook({
         ...ebookData,
@@ -114,10 +116,11 @@ export default function GeneratePage() {
       {generatedEbook ? (
         <Card className="glass-card text-center animate-fade-in">
             <CardHeader>
-                <CardTitle className="text-2xl">Your Product is Ready!</CardTitle>
+                <CardTitle className="text-3xl font-bold">Your E-book is Ready!</CardTitle>
+                <CardDescription>Review your generated product below and download it as a PDF.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6 flex flex-col items-center">
-                <div className="relative w-full max-w-sm aspect-[3/4] rounded-lg overflow-hidden shadow-2xl">
+                <div className="relative w-full max-w-sm aspect-[3/4] rounded-lg overflow-hidden shadow-2xl transition-transform hover:scale-105">
                     <Image
                       src={generatedEbook.coverImageUrl || ''}
                       alt={generatedEbook.title}
@@ -126,11 +129,17 @@ export default function GeneratePage() {
                       data-ai-hint="ebook cover"
                     />
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-2">
                     <h2 className="text-2xl font-bold">{generatedEbook.title}</h2>
-                    <p className="text-muted-foreground">{generatedEbook.subtitle}</p>
+                    <p className="text-muted-foreground text-lg">{generatedEbook.subtitle}</p>
+                    <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground pt-2">
+                      <BookOpen className="h-4 w-4" />
+                      <span>{generatedEbook.chapters.length} Chapters</span>
+                      <span className="text-xs">•</span>
+                      <span>Multi-Page PDF</span>
+                    </div>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex gap-4 pt-4">
                     <Button onClick={handleDownload} size="lg" className="h-12 text-lg">
                         <Download />
                         <span className="ml-2">Download PDF</span>
@@ -171,6 +180,30 @@ export default function GeneratePage() {
                               disabled={isLoading}
                             />
                           </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                     <FormField
+                      control={form.control}
+                      name="category"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-lg">Category</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
+                            <FormControl>
+                              <SelectTrigger className="h-12 text-base">
+                                <SelectValue placeholder="Select a category" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="business">Business</SelectItem>
+                              <SelectItem value="ai">AI</SelectItem>
+                              <SelectItem value="finance">Finance</SelectItem>
+                              <SelectItem value="education">Education</SelectItem>
+                              <SelectItem value="marketing">Marketing</SelectItem>
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}

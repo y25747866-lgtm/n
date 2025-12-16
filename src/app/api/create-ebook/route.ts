@@ -1,15 +1,18 @@
+
 import { generateLongEbookPDF } from "@/lib/pdf-generator";
 
 export async function POST(req: Request) {
-  const { topic } = await req.json();
+  const { topic, category } = await req.json();
 
   const systemPrompt = `
 You are a professional digital product creator and book author.
 
+You are creating an ebook on the topic: "${topic}" in the category: "${category}".
+
 You MUST do ALL of the following automatically:
 - Decide the best ebook TITLE by yourself
 - Decide the best SUBTITLE by yourself
-- Write a complete non-fiction ebook
+- Write a complete non-fiction ebook with at least 5 chapters
 - Each chapter must have real, useful, actionable content
 - Clear language, beginner-friendly
 - No filler text
@@ -18,10 +21,10 @@ You MUST do ALL of the following automatically:
 - Professional tone
 
 You must ALSO generate:
-- A short but detailed PROMPT for an AI image generator
-- The image prompt must describe a premium ebook cover
-- Modern, clean, professional design
-- Suitable for selling online
+- A short but detailed PROMPT for an AI image generator for the cover
+- The image prompt must be tailored to the **${category}** category
+- The image should feature modern, clean, premium design aesthetics
+- It should be suitable for selling online as a high-quality product cover
 
 VERY IMPORTANT:
 - Output ONLY valid JSON
