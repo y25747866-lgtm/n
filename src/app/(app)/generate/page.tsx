@@ -19,7 +19,6 @@ import { Sparkles, Wand2, Loader2, Download, RefreshCw } from 'lucide-react';
 import { ErrorDisplay } from '@/components/boss-os/error-display';
 import { GenerationConfigSchema, type GenerationConfig, type EbookContent } from '@/lib/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { generateLongEbookPDF } from '@/lib/pdf-generator';
 import Image from 'next/image';
 import { useFirebase } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
@@ -94,32 +93,6 @@ export default function GeneratePage() {
         setError("Could not save product to your history. You can still download it.");
     }
   }
-
-  const handleDownloadEbook = async () => {
-    if (!generatedEbook) return;
-
-    try {
-      const pdfBytes = await generateLongEbookPDF(
-        generatedEbook.title,
-        generatedEbook.chapters,
-        generatedEbook.conclusion
-      );
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${generatedEbook.title.slice(0, 20).replace(/\s+/g, '_')}_ebook.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-      
-      await saveToHistory(generatedEbook, 'Ebook');
-
-    } catch (e: any) {
-        setError(`Failed to create PDF: ${e.message}`);
-    }
-  };
   
   const handleResetEbook = () => {
     setGeneratedEbook(null);
@@ -196,9 +169,9 @@ export default function GeneratePage() {
                       </div>
 
                       <div className="flex justify-center gap-4 pt-4">
-                          <Button onClick={handleDownloadEbook} size="lg" className="h-12 text-lg">
+                          <Button size="lg" className="h-12 text-lg" disabled>
                               <Download />
-                              <span className="ml-2">Download PDF</span>
+                              <span className="ml-2">Download PDF (Coming Soon)</span>
                           </Button>
                           <Button onClick={handleResetEbook} size="lg" variant="outline" className="h-12 text-lg">
                               <RefreshCw />

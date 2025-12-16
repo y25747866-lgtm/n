@@ -9,7 +9,6 @@ import { Book, Download, FileText, History, Loader2, Trash2 } from 'lucide-react
 import { Badge } from '@/components/ui/badge';
 import { EbookContent, TemplateContent } from '@/lib/types';
 import { downloadFile } from '@/lib/download';
-import { generateLongEbookPDF } from '@/lib/pdf-generator';
 import { useState } from 'react';
 import { useMemoFirebase } from '@/firebase/provider';
 import {
@@ -31,30 +30,12 @@ function HistoryItemCard({ item }: { item: any }) {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDownload = async () => {
-    if (item.productType === 'Ebook') {
-      const ebook = item as EbookContent;
-      try {
-        const pdfBytes = await generateLongEbookPDF(
-          ebook.title,
-          ebook.chapters,
-          ebook.conclusion
-        );
-        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${ebook.title.slice(0, 20).replace(/\s+/g, '_')}_ebook.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        window.URL.revokeObjectURL(url);
-      } catch (e: any) {
-        console.error(`Failed to create PDF: ${e.message}`);
-      }
-    } else if (item.productType === 'Template') {
-        const template = item as TemplateContent;
-        downloadFile(template.content, `${template.title.replace(/\s+/g, '_')}.txt`, 'text/plain');
-    }
+    // Client-side PDF generation is removed.
+    // This will be replaced with a link to a server-generated file.
+    toast({
+      title: "Download Not Implemented",
+      description: "Server-side PDF generation is coming soon!",
+    });
   };
 
   const handleDelete = async () => {
@@ -95,7 +76,7 @@ function HistoryItemCard({ item }: { item: any }) {
         <Badge variant="secondary">{item.productType}</Badge>
       </CardContent>
       <CardFooter className="flex gap-2">
-        <Button variant="outline" onClick={handleDownload}>
+        <Button variant="outline" onClick={handleDownload} disabled>
           <Download className="mr-2 h-4 w-4" />
           Download
         </Button>
