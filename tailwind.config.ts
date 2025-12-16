@@ -97,6 +97,9 @@ export default {
       backgroundImage: {
         'accent-gradient-1': 'linear-gradient(135deg, hsl(var(--accent-1-start)), hsl(var(--accent-1-mid)), hsl(var(--accent-1-end)))',
         'accent-gradient-2': 'linear-gradient(135deg, hsl(var(--accent-2-start)), hsl(var(--accent-2-mid)), hsl(var(--accent-2-end)))',
+      },
+      lineHeight: {
+        'tight': '1.1',
       }
     },
   },

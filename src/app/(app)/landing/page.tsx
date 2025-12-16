@@ -74,21 +74,21 @@ export default function LandingPage() {
 
       <main className="container mx-auto max-w-5xl px-4">
         {/* Hero Section */}
-        <section className="py-20 text-center sm:py-32">
-          <h1 className="text-4xl font-black tracking-tighter sm:text-6xl md:text-7xl bg-clip-text text-transparent bg-accent-gradient-1">
+        <section className="flex min-h-screen flex-col items-center justify-center text-center">
+          <h1 className="text-[clamp(3rem,8vw,5.5rem)] font-black leading-tight tracking-tighter bg-clip-text text-transparent bg-accent-gradient-1">
             The All-In-One Digital Product OS
           </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
+          <p className="mx-auto mt-6 max-w-2xl text-[clamp(1.1rem,2vw,1.25rem)] text-muted-foreground">
             Stop juggling tools. NexoraOS is your AI-powered command center to discover, create, and launch digital products in record time.
           </p>
-          <div className="mt-8 flex justify-center gap-4">
-            <Button size="lg" asChild className="h-12 px-8 text-lg">
+          <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
+            <Button size="lg" asChild className="h-14 px-10 text-xl">
                 <Link href="/generate">
                     <Sparkles className="mr-2 h-5 w-5" />
                     Start Creating Now
                 </Link>
             </Button>
-            <Button size="lg" variant="outline" asChild className="h-12 px-8 text-lg">
+            <Button size="lg" variant="outline" asChild className="h-14 px-10 text-xl">
                 <Link href="#features">Learn More</Link>
             </Button>
           </div>
