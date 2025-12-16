@@ -24,6 +24,8 @@ export const EbookChapterSchema = z.object({
 });
 
 export const EbookContentSchema = z.object({
+  id: z.string().optional(),
+  productType: z.literal('Ebook').optional(),
   title: z.string().describe('The main title of the e-book.'),
   subtitle: z.string().optional().describe('A brief, catchy subtitle.'),
   chapters: z
@@ -32,13 +34,17 @@ export const EbookContentSchema = z.object({
   conclusion: z.string().describe("Final summary and action steps"),
   cover_image_prompt: z.string().describe("A short image prompt for a premium ebook cover."),
   coverImageUrl: z.string().optional().describe("URL for the generated cover image"),
+  generationDate: z.string().optional(),
 });
 
 export type EbookContent = z.infer<typeof EbookContentSchema>;
 
 export const TemplateContentSchema = z.object({
+    id: z.string().optional(),
+    productType: z.literal('Template').optional(),
     title: z.string().describe("The main title of the template."),
     content: z.string().describe("The full text content of the template, formatted with markdown."),
+    generationDate: z.string().optional(),
 });
 
 export type TemplateContent = z.infer<typeof TemplateContentSchema>;

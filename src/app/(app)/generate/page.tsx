@@ -24,12 +24,16 @@ import Image from 'next/image';
 import { generateGradientSVG } from '@/lib/svg-utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { downloadFile } from '@/lib/download';
+import { useFirebase } from '@/firebase';
+import { doc, setDoc } from 'firebase/firestore';
+import { v4 as uuidv4 } from 'uuid';
 
 export default function GeneratePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [generatedEbook, setGeneratedEbook] = useState<EbookContent | null>(null);
   const [generatedTemplate, setGeneratedTemplate] = useState<TemplateContent | null>(null);
+  const { firestore, user } = useFirebase();
 
   const ebookForm = useForm<GenerationConfig>({
     resolver: zodResolver(GenerationConfigSchema),
@@ -107,6 +111,31 @@ export default function GeneratePage() {
     }
   };
 
+  const saveToHistory = async (productData: EbookContent | TemplateContent, productType: 'Ebook' | 'Template') => {
+    if (!firestore || !user) {
+        setError("You must be logged in to save to history.");
+        return;
+    };
+    
+    const id = uuidv4();
+    const historyRef = doc(firestore, 'users', user.uid, 'generatedProducts', id);
+
+    const dataToSave = {
+      ...productData,
+      id,
+      userId: user.uid,
+      productType,
+      generationDate: new Date().toISOString(),
+    };
+
+    try {
+        await setDoc(historyRef, dataToSave);
+    } catch (e: any) {
+        console.error("Error saving to history:", e);
+        setError("Could not save product to your history. You can still download it.");
+    }
+  }
+
   const handleDownloadEbook = async () => {
     if (!generatedEbook) return;
 
@@ -125,14 +154,18 @@ export default function GeneratePage() {
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
+      
+      await saveToHistory(generatedEbook, 'Ebook');
+
     } catch (e: any) {
         setError(`Failed to create PDF: ${e.message}`);
     }
   };
 
-  const handleDownloadTemplate = () => {
+  const handleDownloadTemplate = async () => {
     if (!generatedTemplate) return;
     downloadFile(generatedTemplate.content, `${generatedTemplate.title.replace(/\s+/g, '_')}.txt`, 'text/plain');
+    await saveToHistory(generatedTemplate, 'Template');
   };
   
   const handleResetEbook = () => {

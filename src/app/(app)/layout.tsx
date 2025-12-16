@@ -6,10 +6,11 @@ import Header from '@/components/boss-os/header';
 import { SidebarProvider, useSidebar } from '@/contexts/sidebar-provider';
 import { SubscriptionProvider } from '@/contexts/subscription-provider';
 import { cn } from '@/lib/utils';
-import React from 'react';
-import { FirebaseClientProvider, useUser } from '@/firebase';
+import React, { useEffect } from 'react';
+import { FirebaseClientProvider, useAuth, useUser } from '@/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePathname } from 'next/navigation';
+import { signInAnonymously } from 'firebase/auth';
 
 function AppSkeleton() {
   const { isOpen, isDesktop, isNavVisible } = useSidebar();
@@ -65,15 +66,24 @@ function AppSkeleton() {
 
 function AppContent({ children }: { children: React.ReactNode }) {
   const { isOpen, isDesktop, isNavVisible } = useSidebar();
-  const { isUserLoading } = useUser();
+  const { user, isUserLoading } = useUser();
+  const auth = useAuth();
   const pathname = usePathname();
+
+  useEffect(() => {
+    if (!isUserLoading && !user && auth) {
+      signInAnonymously(auth).catch((error) => {
+        console.error("Anonymous sign-in failed:", error);
+      });
+    }
+  }, [isUserLoading, user, auth]);
 
   // The landing page should not show the main app layout
   if (pathname === '/landing') {
     return <>{children}</>;
   }
 
-  if (isUserLoading) {
+  if (isUserLoading || !user) {
     return <AppSkeleton />;
   }
 

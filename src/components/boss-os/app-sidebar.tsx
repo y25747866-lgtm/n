@@ -10,6 +10,7 @@ import {
   Wand2,
   X,
   Search,
+  History,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -35,18 +36,31 @@ import { Separator } from '../ui/separator';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { VisuallyHidden } from '@/components/ui/visually-hidden';
 import { Logo } from './logo';
+import { useUser, useAuth } from '@/firebase';
+import { signOut } from 'firebase/auth';
 
 const menuItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/generate', label: 'Generator', icon: Wand2 },
+  { href: '/history', label: 'History', icon: History },
   { href: '/subscription', label: 'Subscription', icon: CreditCard },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
 function ProfileSection() {
     const { isOpen } = useSidebar();
+    const { user } = useUser();
+    const auth = useAuth();
     const avatarImage = PlaceHolderImages.find(p => p.id === 'avatar-1');
-    const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('');
+    const getInitials = (name: string) => name ? name.split(' ').map(n => n[0]).join('') : 'U';
+
+    const handleSignOut = () => {
+        if (auth) {
+            signOut(auth);
+        }
+    }
+
+    if (!user) return null;
 
     if (!isOpen) {
         return (
@@ -56,14 +70,14 @@ function ProfileSection() {
                         <TooltipTrigger asChild>
                              <Link href="/settings">
                                 <Avatar className="h-10 w-10">
-                                    <AvatarImage src={avatarImage?.imageUrl} alt="User Avatar" data-ai-hint={avatarImage?.imageHint} />
-                                    <AvatarFallback>{getInitials("User")}</AvatarFallback>
+                                    <AvatarImage src={user.photoURL || avatarImage?.imageUrl} alt={user.displayName || "User Avatar"} data-ai-hint={avatarImage?.imageHint} />
+                                    <AvatarFallback>{getInitials(user.displayName || "User")}</AvatarFallback>
                                 </Avatar>
                             </Link>
                         </TooltipTrigger>
                         <TooltipContent side="right">
-                           <p>User</p>
-                           <p className="text-xs text-muted-foreground">user@example.com</p>
+                           <p>{user.displayName || "Anonymous User"}</p>
+                           <p className="text-xs text-muted-foreground">{user.email || `UID: ${user.uid.slice(0,6)}...`}</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
@@ -75,15 +89,15 @@ function ProfileSection() {
         <div className="p-4">
             <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10">
-                    <AvatarImage src={avatarImage?.imageUrl} alt="User Avatar" data-ai-hint={avatarImage?.imageHint} />
-                    <AvatarFallback>{getInitials("User")}</AvatarFallback>
+                    <AvatarImage src={user.photoURL || avatarImage?.imageUrl} alt={user.displayName || "User Avatar"} data-ai-hint={avatarImage?.imageHint} />
+                    <AvatarFallback>{getInitials(user.displayName || "User")}</AvatarFallback>
                 </Avatar>
                 <div>
-                    <p className="text-sm font-semibold leading-none">User</p>
-                    <p className="text-xs leading-none text-muted-foreground mt-1">user@example.com</p>
+                    <p className="text-sm font-semibold leading-none">{user.displayName || "Anonymous User"}</p>
+                    <p className="text-xs leading-none text-muted-foreground mt-1">{user.email || `UID: ${user.uid.slice(0,12)}...`}</p>
                 </div>
             </div>
-            <Button variant="ghost" className="w-full justify-start mt-2">
+            <Button variant="ghost" className="w-full justify-start mt-2" onClick={handleSignOut}>
                 <LogOut />
                 <span>Log out</span>
             </Button>

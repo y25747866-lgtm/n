@@ -9,9 +9,11 @@ import { Separator } from "@/components/ui/separator";
 import { useSubscription } from "@/contexts/subscription-provider";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { useUser } from "@/firebase";
 
 export default function SettingsPage() {
   const { subscription } = useSubscription();
+  const { user } = useUser();
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
@@ -28,13 +30,17 @@ export default function SettingsPage() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
-            <Input id="name" defaultValue="User" />
+            <Input id="name" defaultValue={user?.displayName || "Anonymous User"} disabled />
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" defaultValue="user@example.com" />
+            <Input id="email" type="email" defaultValue={user?.email || "No email provided"} disabled />
           </div>
-          <Button>Save Changes</Button>
+          <div className="space-y-2">
+            <Label htmlFor="uid">User ID</Label>
+            <Input id="uid" type="text" defaultValue={user?.uid} disabled />
+          </div>
+          <Button disabled>Save Changes (Coming Soon)</Button>
         </CardContent>
       </Card>
 
