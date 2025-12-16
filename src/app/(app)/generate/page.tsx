@@ -40,7 +40,6 @@ export default function GeneratePage() {
   const [error, setError] = useState<string | null>(null);
   const [generatedEbook, setGeneratedEbook] = useState<EbookContent | null>(null);
   const [generatedTemplate, setGeneratedTemplate] = useState<TemplateContent | null>(null);
-  const [generatedHtml, setGeneratedHtml] = useState<string | null>(null);
 
   const { firestore, user } = useFirebase();
 
@@ -64,7 +63,6 @@ export default function GeneratePage() {
     setError(null);
     setIsLoading(true);
     setGeneratedEbook(null);
-    setGeneratedHtml(null);
 
     try {
       const result = await generateEbookAction(values.topic);
@@ -74,8 +72,6 @@ export default function GeneratePage() {
       }
       
       setGeneratedEbook(result.ebook);
-      // We no longer generate HTML on the server to save tokens, we generate it on client
-      // setGeneratedHtml(result.htmlContent);
 
     } catch (e: any) {
       setError(`Failed to generate ebook: ${e.message}`);
@@ -169,7 +165,6 @@ export default function GeneratePage() {
   
   const handleResetEbook = () => {
     setGeneratedEbook(null);
-    setGeneratedHtml(null);
     ebookForm.reset();
   }
 
