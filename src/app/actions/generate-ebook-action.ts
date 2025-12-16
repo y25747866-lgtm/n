@@ -11,8 +11,8 @@ export async function generateEbookAction(
 
   // This function is intended to call a multi-step AI generation process.
   // The AI packages are currently removed due to installation issues.
-  // By removing the mock data, this function will now fail as intended
-  // until the AI generation pipeline is restored.
+  // By removing any mock data or conditional fallbacks, this function 
+  // will now fail as intended until the AI generation pipeline is restored.
   
   console.log("🔥 EBOOK GENERATION STARTED");
 
