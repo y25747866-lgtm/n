@@ -16,38 +16,16 @@ import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
 } from '@/components/ui/card';
-import { Sparkles, Wand2, Loader2, Book, FileText, Download } from 'lucide-react';
+import { Sparkles, Wand2, Loader2 } from 'lucide-react';
 import { ErrorDisplay } from '@/components/boss-os/error-display';
 import {
   GenerationConfigSchema,
   type GenerationConfig,
-  type EbookContent,
 } from '@/lib/types';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { marked } from 'marked';
-import Image from 'next/image';
-import { downloadFile } from '@/lib/download';
-import { generateGradientSVG } from '@/lib/svg-utils';
-
-
-const placeholderProduct: EbookContent = {
-    title: "The Art of Digital Creation",
-    subtitle: "A guide to building your online empire.",
-    chapters: [
-        { title: "Chapter 1: Finding Your Niche", content: "This is the content for chapter 1. It's all about finding the perfect niche for your digital products." },
-        { title: "Chapter 2: Creating Your First Product", content: "This is the content for chapter 2. We'll walk you through creating something amazing." },
-        { title: "Chapter 3: Marketing and Sales", content: "This is the content for chapter 3. Learn how to get your product in front of the right people." },
-    ],
-    conclusion: "You now have the tools to succeed. Go out and create!",
-    cover_image_prompt: "A minimalist digital art cover with abstract shapes and a modern color palette.",
-};
 
 
 export default function GeneratePage() {
-  const [product, setProduct] = useState<EbookContent | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -65,36 +43,36 @@ export default function GeneratePage() {
 
   const onSubmit = async (values: GenerationConfig) => {
     setError(null);
-    setProduct(null);
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-        const generatedProduct = {
-            ...placeholderProduct,
-            coverImageUrl: generateGradientSVG(placeholderProduct.title, placeholderProduct.subtitle)
-        };
-        setProduct(generatedProduct);
-        setIsLoading(false);
-    }, 2000);
-  };
-  
-  
-  const handleDownloadPDF = async () => {
-    // PDF generation is temporarily disabled.
-    alert("PDF download functionality is coming soon!");
-  };
-  
-  const handleDownloadMarkdown = () => {
-    if (!product) return;
-    let mdContent = `# ${product.title}\n\n## ${product.subtitle}\n\n`;
-    product.chapters.forEach(chapter => {
-      mdContent += `### ${chapter.title}\n\n${chapter.content}\n\n`;
-    });
-    if (product.conclusion) {
-      mdContent += `### Conclusion\n\n${product.conclusion}\n\n`;
+    try {
+      const response = await fetch('/api/create-ebook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic: values.topic }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      // Handle the PDF download
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${values.topic.slice(0, 20).replace(/\s+/g, '_')}_ebook.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+
+    } catch (e: any) {
+      setError(`Failed to generate ebook: ${e.message}`);
+    } finally {
+      setIsLoading(false);
     }
-    downloadFile(mdContent, `${product.title.replace(/\s+/g, '_')}.md`, 'text/markdown');
   };
 
 
@@ -151,7 +129,7 @@ export default function GeneratePage() {
                   ) : (
                     <Sparkles />
                   )}
-                  <span className="ml-2">Generate Your First Product</span>
+                  <span className="ml-2">Generate & Download PDF</span>
                 </Button>
               </form>
             </Form>
@@ -160,78 +138,6 @@ export default function GeneratePage() {
 
         {error && <ErrorDisplay message={error} />}
 
-        {product && (
-          <Card className="glass-card animate-fade-in">
-            <CardHeader>
-              <CardTitle>{product.title}</CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="md:col-span-1 space-y-6">
-                
-                {product.coverImageUrl && (
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-semibold">Generated Cover</h3>
-                    <div className="aspect-[3/4] relative w-full overflow-hidden rounded-md border">
-                        <Image
-                            src={product.coverImageUrl}
-                            alt={`Cover for ${product.title}`}
-                            fill
-                            className="object-cover"
-                            unoptimized
-                        />
-                    </div>
-                  </div>
-                )}
-                
-                <div className="space-y-2">
-                  <h3 className="text-lg font-semibold">Downloads</h3>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={handleDownloadMarkdown}
-                      disabled={isLoading}
-                    >
-                      <FileText /> Markdown
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={handleDownloadPDF}
-                      disabled={isLoading}
-                    >
-                      {isLoading ? <Loader2 className="animate-spin" /> : <Download />}
-                      PDF
-                    </Button>
-                  </div>
-                </div>
-                 <div className="space-y-2">
-                  <h3 className="text-lg font-semibold">Cover Prompt</h3>
-                  <p className="text-sm text-muted-foreground p-4 bg-muted/50 rounded-lg">{product.cover_image_prompt}</p>
-                </div>
-              </div>
-              <div className="md:col-span-2">
-                <h3 className="text-lg font-semibold mb-4">E-book Content</h3>
-                 <Accordion type="single" collapsible className="w-full" defaultValue="chapter-0">
-                    {product.chapters.map((chapter, index) => (
-                      <AccordionItem key={index} value={`chapter-${index}`}>
-                        <AccordionTrigger>{chapter.title}</AccordionTrigger>
-                        <AccordionContent>
-                            <div className="prose prose-sm prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: marked(chapter.content) }} />
-                        </AccordionContent>
-                      </AccordionItem>
-                    ))}
-                    {product.conclusion && (
-                        <AccordionItem value="conclusion">
-                            <AccordionTrigger>Conclusion</AccordionTrigger>
-                            <AccordionContent>
-                                <div className="prose prose-sm prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: marked(product.conclusion) }} />
-                            </AccordionContent>
-                        </AccordionItem>
-                    )}
-                  </Accordion>
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </>
   );

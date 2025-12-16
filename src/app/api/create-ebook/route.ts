@@ -1,3 +1,4 @@
+import { generateLongEbookPDF } from "@/lib/pdf-generator";
 
 export async function POST(req: Request) {
   const { topic } = await req.json();
@@ -73,8 +74,19 @@ JSON FORMAT (MUST MATCH EXACTLY):
       throw new Error("Invalid response structure from API");
     }
 
-    return Response.json({
-      ebook: completion.choices[0].message.content,
+    const ebookData = JSON.parse(completion.choices[0].message.content);
+
+    const pdfBytes = await generateLongEbookPDF(
+      ebookData.title,
+      ebookData.chapters,
+      ebookData.conclusion
+    );
+
+    return new Response(pdfBytes, {
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": "attachment; filename=ebook.pdf",
+      },
     });
 
   } catch (error: any) {
