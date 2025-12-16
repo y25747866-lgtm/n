@@ -54,17 +54,22 @@ export default function GeneratePage() {
     setGeneratedEbook(null);
 
     try {
+      // The entire generation process is awaited here. The frontend does not
+      // guess the result. It waits for the backend to confirm completion.
       const result = await generateEbookAction(values.topic);
 
       if (!result.success || !result.ebook) {
+        // If the backend indicates failure, throw an error.
         throw new Error(result.error || 'Failed to generate ebook content.');
       }
       
+      // Only upon definitive success from the backend, update the UI.
       setGeneratedEbook(result.ebook);
 
     } catch (e: any) {
-      setError(`Failed to generate ebook: ${e.message}`);
+      setError(`Generation failed: ${e.message}`);
     } finally {
+      // This runs only after the backend has fully resolved (success or failure).
       setIsLoading(false);
     }
   };
