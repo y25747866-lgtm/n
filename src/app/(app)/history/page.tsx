@@ -2,18 +2,33 @@
 'use client';
 
 import { useCollection, useFirebase } from '@/firebase';
-import { collection, orderBy, query } from 'firebase/firestore';
+import { collection, orderBy, query, doc, deleteDoc } from 'firebase/firestore';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Book, Download, FileText, History, Loader2 } from 'lucide-react';
+import { Book, Download, FileText, History, Loader2, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { EbookContent, TemplateContent } from '@/lib/types';
 import { downloadFile } from '@/lib/download';
 import { generateLongEbookPDF } from '@/lib/pdf-generator';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useMemoFirebase } from '@/firebase/provider';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useToast } from '@/hooks/use-toast';
 
 function HistoryItemCard({ item }: { item: any }) {
+  const { firestore, user } = useFirebase();
+  const { toast } = useToast();
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDownload = async () => {
     if (item.productType === 'Ebook') {
@@ -42,8 +57,31 @@ function HistoryItemCard({ item }: { item: any }) {
     }
   };
 
+  const handleDelete = async () => {
+    if (!firestore || !user) return;
+    setIsDeleting(true);
+    try {
+      const docRef = doc(firestore, 'users', user.uid, 'generatedProducts', item.id);
+      await deleteDoc(docRef);
+      toast({
+        title: "Item Deleted",
+        description: `"${item.title}" has been removed from your history.`,
+      });
+    } catch (error) {
+      console.error("Error deleting document: ", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not delete the item. Please try again.",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+
   return (
-    <Card className="glass-card">
+    <Card className="glass-card flex flex-col">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
             {item.productType === 'Ebook' ? <Book className="h-5 w-5 text-primary" /> : <FileText className="h-5 w-5 text-primary" />}
@@ -53,14 +91,36 @@ function HistoryItemCard({ item }: { item: any }) {
             {new Date(item.generationDate).toLocaleString()}
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1">
         <Badge variant="secondary">{item.productType}</Badge>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex gap-2">
         <Button variant="outline" onClick={handleDownload}>
           <Download className="mr-2 h-4 w-4" />
           Download
         </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="destructive" size="icon">
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete this item
+                from your history.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
+                {isDeleting ? <Loader2 className="animate-spin" /> : "Delete"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </CardFooter>
     </Card>
   );
