@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -143,7 +144,7 @@ export default function GeneratePage() {
         <Tabs defaultValue="ebook" className="w-full">
           <TabsList className="grid w-full grid-cols-2 max-w-xs mx-auto">
             <TabsTrigger value="ebook">E-book</TabsTrigger>
-            <TabsTrigger value="course">Course</TabsTrigger>
+            <TabsTrigger value="course" disabled>Course</TabsTrigger>
           </TabsList>
           
           <TabsContent value="ebook">

@@ -1,40 +1,48 @@
 
 'use server';
 
-import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { EbookContent, EbookContentSchema } from '@/lib/types';
+import { EbookContent } from '@/lib/types';
+import { generateGradientSVG } from '@/lib/svg-utils';
 
-export async function generateEbookAction(topic: string): Promise<{ success: boolean; ebook?: EbookContent; error?: string; }> {
+export async function generateEbookAction(
+  topic: string
+): Promise<{ success: boolean; ebook?: EbookContent; error?: string }> {
   try {
-    // Mock blueprint generation
-    const blueprint = {
-      title: 'The Ultimate Guide to ' + topic,
-      subtitle: 'A comprehensive overview',
-      chapters: Array.from({ length: 10 }, (_, i) => `Chapter ${i + 1}: An Introduction`),
+    // This is now returning mock data to avoid dependency issues.
+    const mockBlueprint = {
+      title: "The Ultimate Guide to Mock Data",
+      subtitle: "How to Use Placeholders Effectively",
+      chapters: [
+        "Introduction to Mocking",
+        "Advanced Placeholder Strategies",
+        "Debugging with Mock Data",
+        "Mock Data in Production",
+        "The Future of Mocking",
+        "Case Study: Mocking at Scale",
+        "Interview with a Mock Data Expert",
+        "Common Mocking Pitfalls",
+        "Conclusion: The Power of Mock",
+        "Appendix: Mock Data Cheatsheet"
+      ],
     };
 
-    // Mock chapter generation
-    const chapters = blueprint.chapters.map(chapterTitle => ({
-      title: chapterTitle,
-      content: `This is the mock content for ${chapterTitle}. Replace this with real content generation. It should be between 800 and 1200 words and include headings, bullet points, and practical examples.`
+    const mockChapters = mockBlueprint.chapters.map((title) => ({
+      title: title,
+      content: `This is the mock content for the chapter titled "${title}". It is a placeholder to ensure the application can build and run without the genkit AI dependencies. Replace this with real content generation when the dependency issues are resolved.`
     }));
 
-    const coverImage = PlaceHolderImages.find(p => p.id === 'cover-gradient');
-
     const ebook: EbookContent = {
-      title: blueprint.title,
-      subtitle: blueprint.subtitle,
-      chapters: chapters,
-      conclusion: "This is a placeholder conclusion. The AI flow for this is not yet implemented.",
-      coverImageUrl: coverImage?.imageUrl || '',
-      cover_image_prompt: "A premium, modern ebook cover with an abstract design.",
+      title: mockBlueprint.title,
+      subtitle: mockBlueprint.subtitle,
+      chapters: mockChapters,
+      conclusion:
+        'This is a placeholder conclusion. A dedicated AI flow should be implemented to generate a meaningful summary and call to action.',
+      coverImageUrl: generateGradientSVG(mockBlueprint.title, mockBlueprint.subtitle, 'ai'),
     };
-
-    const validatedEbook = EbookContentSchema.parse(ebook);
 
     return {
       success: true,
-      ebook: validatedEbook,
+      ebook: ebook,
     };
   } catch (error) {
     console.error('Error in generateEbookAction:', error);
