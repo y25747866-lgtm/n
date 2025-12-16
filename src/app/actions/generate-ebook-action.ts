@@ -33,13 +33,15 @@ const mockEbook: EbookContent = {
 export async function generateEbookAction(
   topic: string
 ): Promise<{ success: boolean; ebook?: EbookContent; error?: string }> {
-  console.log(`Starting MOCK e-book generation for topic: ${topic}`);
+  console.log("🔥 EBOOK GENERATION STARTED");
+  console.time("ebook-total");
 
   // In this mock version, we return a pre-defined e-book after a short delay
   // to simulate the generation process.
   return new Promise((resolve) => {
     setTimeout(() => {
-      console.log('Mock e-book generation complete.');
+      console.timeEnd("ebook-total");
+      console.log("✅ EBOOK GENERATION FINISHED");
       resolve({
         success: true,
         ebook: mockEbook,
