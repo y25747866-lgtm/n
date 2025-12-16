@@ -29,9 +29,7 @@ export const EbookContentSchema = z.object({
     .array(EbookChapterSchema)
     .describe('An array of chapter objects, each containing a title and content.'),
   conclusion: z.string().describe("Final summary and action steps"),
-  cover_image_prompt: z.string().optional().describe("A short image prompt for a premium ebook cover."),
   coverImageUrl: z.string().optional().describe("URL for the generated cover image"),
-  // Fields from the new prompt that are not directly part of the final object, but needed for schema validation
   estimated_pages: z.number().optional(),
 });
 
