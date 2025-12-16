@@ -21,6 +21,7 @@ export const EbookChapterSchema = z.object({
   title: z.string().describe('The title of the chapter.'),
   content: z.string().describe("Full text for the chapter."),
 });
+export type EbookChapter = z.infer<typeof EbookChapterSchema>;
 
 export const EbookContentSchema = z.object({
   title: z.string().describe('The main title of the e-book.'),
