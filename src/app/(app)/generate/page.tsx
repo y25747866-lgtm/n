@@ -173,9 +173,9 @@ export default function GeneratePage() {
                               </div>
                           </div>
 
-                          {/* Right Column: Content Preview */}
+                          {/* Right Column: Content */}
                           <div className="space-y-4">
-                              <h3 className="text-xl font-semibold">Content Preview</h3>
+                              <h3 className="text-xl font-semibold">Full Content</h3>
                               <Accordion type="single" collapsible className="w-full max-h-[500px] overflow-y-auto pr-2">
                                 {generatedEbook.chapters.map((chapter, index) => (
                                   <AccordionItem key={index} value={`chapter-${index}`}>
