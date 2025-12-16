@@ -9,6 +9,15 @@ export const GenerationConfigSchema = z.object({
 
 export type GenerationConfig = z.infer<typeof GenerationConfigSchema>;
 
+
+export const TemplateGenerationConfigSchema = z.object({
+  topic: z.string().min(5, { message: 'Topic must be at least 5 characters long.' }),
+  templateType: z.string(),
+});
+
+export type TemplateGenerationConfig = z.infer<typeof TemplateGenerationConfigSchema>;
+
+
 export const EbookChapterSchema = z.object({
   title: z.string().describe('The title of the chapter.'),
   content: z.string().describe("Full text for the chapter."),
@@ -26,5 +35,13 @@ export const EbookContentSchema = z.object({
 });
 
 export type EbookContent = z.infer<typeof EbookContentSchema>;
+
+export const TemplateContentSchema = z.object({
+    title: z.string().describe("The main title of the template."),
+    content: z.string().describe("The full text content of the template, formatted with markdown."),
+});
+
+export type TemplateContent = z.infer<typeof TemplateContentSchema>;
+
 
 export type JobStatus = 'pending' | 'running' | 'completed' | 'error';

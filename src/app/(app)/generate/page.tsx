@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useForm as useTemplateForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Form,
@@ -15,21 +15,23 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sparkles, Wand2, Loader2, Download, RefreshCw, BookOpen } from 'lucide-react';
+import { Sparkles, Wand2, Loader2, Download, RefreshCw, BookOpen, FileText } from 'lucide-react';
 import { ErrorDisplay } from '@/components/boss-os/error-display';
-import { GenerationConfigSchema, type GenerationConfig, type EbookContent } from '@/lib/types';
+import { GenerationConfigSchema, type GenerationConfig, type EbookContent, TemplateGenerationConfigSchema, TemplateGenerationConfig, TemplateContent } from '@/lib/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { generateLongEbookPDF } from '@/lib/pdf-generator';
 import Image from 'next/image';
 import { generateGradientSVG } from '@/lib/svg-utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { downloadFile } from '@/lib/download';
 
 export default function GeneratePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [generatedEbook, setGeneratedEbook] = useState<EbookContent | null>(null);
+  const [generatedTemplate, setGeneratedTemplate] = useState<TemplateContent | null>(null);
 
-  const form = useForm<GenerationConfig>({
+  const ebookForm = useForm<GenerationConfig>({
     resolver: zodResolver(GenerationConfigSchema),
     defaultValues: {
       topic: '',
@@ -38,7 +40,15 @@ export default function GeneratePage() {
     },
   });
 
-  const onSubmit = async (values: GenerationConfig) => {
+  const templateForm = useTemplateForm<TemplateGenerationConfig>({
+    resolver: zodResolver(TemplateGenerationConfigSchema),
+    defaultValues: {
+      topic: '',
+      templateType: 'Checklist',
+    },
+  });
+
+  const onEbookSubmit = async (values: GenerationConfig) => {
     setError(null);
     setIsLoading(true);
     setGeneratedEbook(null);
@@ -70,8 +80,34 @@ export default function GeneratePage() {
       setIsLoading(false);
     }
   };
-  
-  const handleDownload = async () => {
+
+  const onTemplateSubmit = async (values: TemplateGenerationConfig) => {
+    setError(null);
+    setIsLoading(true);
+    setGeneratedTemplate(null);
+    
+    try {
+        const response = await fetch('/api/create-template', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(values),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+
+        const templateData: TemplateContent = await response.json();
+        setGeneratedTemplate(templateData);
+    } catch (e: any) {
+        setError(`Failed to generate template: ${e.message}`);
+    } finally {
+        setIsLoading(false);
+    }
+  };
+
+  const handleDownloadEbook = async () => {
     if (!generatedEbook) return;
 
     try {
@@ -93,10 +129,20 @@ export default function GeneratePage() {
         setError(`Failed to create PDF: ${e.message}`);
     }
   };
+
+  const handleDownloadTemplate = () => {
+    if (!generatedTemplate) return;
+    downloadFile(generatedTemplate.content, `${generatedTemplate.title.replace(/\s+/g, '_')}.txt`, 'text/plain');
+  };
   
-  const handleReset = () => {
+  const handleResetEbook = () => {
     setGeneratedEbook(null);
-    form.reset();
+    ebookForm.reset();
+  }
+
+  const handleResetTemplate = () => {
+    setGeneratedTemplate(null);
+    templateForm.reset();
   }
 
   return (
@@ -113,110 +159,114 @@ export default function GeneratePage() {
         </p>
       </header>
       
-      {generatedEbook ? (
-        <Card className="glass-card text-center animate-fade-in">
-            <CardHeader>
-                <CardTitle className="text-3xl font-bold">Your E-book is Ready!</CardTitle>
-                <CardDescription>Review your generated product below and download it as a PDF.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6 flex flex-col items-center">
-                <div className="relative w-full max-w-sm aspect-[3/4] rounded-lg overflow-hidden shadow-2xl transition-transform hover:scale-105">
-                    <Image
-                      src={generatedEbook.coverImageUrl || ''}
-                      alt={generatedEbook.title}
-                      fill
-                      className="object-cover"
-                      data-ai-hint="ebook cover"
-                    />
-                </div>
-                <div className="space-y-2">
-                    <h2 className="text-2xl font-bold">{generatedEbook.title}</h2>
-                    <p className="text-muted-foreground text-lg">{generatedEbook.subtitle}</p>
-                    <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground pt-2">
-                      <BookOpen className="h-4 w-4" />
-                      <span>{generatedEbook.chapters.length} Chapters</span>
-                      <span className="text-xs">•</span>
-                      <span>Multi-Page PDF</span>
-                    </div>
-                </div>
-                <div className="flex gap-4 pt-4">
-                    <Button onClick={handleDownload} size="lg" className="h-12 text-lg">
-                        <Download />
-                        <span className="ml-2">Download PDF</span>
-                    </Button>
-                    <Button onClick={handleReset} size="lg" variant="outline" className="h-12 text-lg">
-                        <RefreshCw />
-                        <span className="ml-2">Generate Another</span>
-                    </Button>
-                </div>
-            </CardContent>
-        </Card>
-      ) : (
+      
         <Tabs defaultValue="ebook" className="w-full">
           <TabsList className="grid w-full grid-cols-3 max-w-md mx-auto">
             <TabsTrigger value="ebook">E-book</TabsTrigger>
             <TabsTrigger value="course">Course</TabsTrigger>
-            <TabsTrigger value="template" disabled>Template</TabsTrigger>
+            <TabsTrigger value="template">Template</TabsTrigger>
           </TabsList>
+          
           <TabsContent value="ebook">
-            <Card className="glass-card">
-              <CardHeader>
-                <CardTitle>Generate a New E-book</CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <FormField
-                      control={form.control}
-                      name="topic"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-lg">Topic Idea</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="e.g., 'Beginner's guide to investing in cryptocurrency'"
-                              className="h-12 text-base"
-                              disabled={isLoading}
+             {generatedEbook ? (
+                <Card className="glass-card text-center animate-fade-in">
+                    <CardHeader>
+                        <CardTitle className="text-3xl font-bold">Your E-book is Ready!</CardTitle>
+                        <CardDescription>Review your generated product below and download it as a PDF.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6 flex flex-col items-center">
+                        <div className="relative w-full max-w-sm aspect-[3/4] rounded-lg overflow-hidden shadow-2xl transition-transform hover:scale-105">
+                            <Image
+                              src={generatedEbook.coverImageUrl || ''}
+                              alt={generatedEbook.title}
+                              fill
+                              className="object-cover"
+                              data-ai-hint="ebook cover"
                             />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                     <FormField
-                      control={form.control}
-                      name="category"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-lg">Category</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
-                            <FormControl>
-                              <SelectTrigger className="h-12 text-base">
-                                <SelectValue placeholder="Select a category" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="business">Business</SelectItem>
-                              <SelectItem value="ai">AI</SelectItem>
-                              <SelectItem value="finance">Finance</SelectItem>
-                              <SelectItem value="education">Education</SelectItem>
-                              <SelectItem value="marketing">Marketing</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button type="submit" size="lg" className="w-full h-12 text-lg" disabled={isLoading}>
-                      {isLoading ? <Loader2 className="animate-spin" /> : <Sparkles />}
-                      <span className="ml-2">Generate Your Product</span>
-                    </Button>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
+                        </div>
+                        <div className="space-y-2">
+                            <h2 className="text-2xl font-bold">{generatedEbook.title}</h2>
+                            <p className="text-muted-foreground text-lg">{generatedEbook.subtitle}</p>
+                            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground pt-2">
+                              <BookOpen className="h-4 w-4" />
+                              <span>{generatedEbook.chapters.length} Chapters</span>
+                              <span className="text-xs">•</span>
+                              <span>Multi-Page PDF</span>
+                            </div>
+                        </div>
+                        <div className="flex gap-4 pt-4">
+                            <Button onClick={handleDownloadEbook} size="lg" className="h-12 text-lg">
+                                <Download />
+                                <span className="ml-2">Download PDF</span>
+                            </Button>
+                            <Button onClick={handleResetEbook} size="lg" variant="outline" className="h-12 text-lg">
+                                <RefreshCw />
+                                <span className="ml-2">Generate Another</span>
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+              ) : (
+                <Card className="glass-card">
+                  <CardHeader>
+                    <CardTitle>Generate a New E-book</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <Form {...ebookForm}>
+                      <form onSubmit={ebookForm.handleSubmit(onEbookSubmit)} className="space-y-6">
+                        <FormField
+                          control={ebookForm.control}
+                          name="topic"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-lg">Topic Idea</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  placeholder="e.g., 'Beginner's guide to investing in cryptocurrency'"
+                                  className="h-12 text-base"
+                                  disabled={isLoading}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                         <FormField
+                          control={ebookForm.control}
+                          name="category"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-lg">Category</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
+                                <FormControl>
+                                  <SelectTrigger className="h-12 text-base">
+                                    <SelectValue placeholder="Select a category" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="business">Business</SelectItem>
+                                  <SelectItem value="ai">AI</SelectItem>
+                                  <SelectItem value="finance">Finance</SelectItem>
+                                  <SelectItem value="education">Education</SelectItem>
+                                  <SelectItem value="marketing">Marketing</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <Button type="submit" size="lg" className="w-full h-12 text-lg" disabled={isLoading}>
+                          {isLoading ? <Loader2 className="animate-spin" /> : <Sparkles />}
+                          <span className="ml-2">Generate Your Product</span>
+                        </Button>
+                      </form>
+                    </Form>
+                  </CardContent>
+                </Card>
+            )}
           </TabsContent>
+
            <TabsContent value="course">
               <Card className="glass-card">
                 <CardHeader>
@@ -227,8 +277,96 @@ export default function GeneratePage() {
                 </CardContent>
               </Card>
            </TabsContent>
+
+           <TabsContent value="template">
+            {generatedTemplate ? (
+              <Card className="glass-card animate-fade-in">
+                <CardHeader>
+                    <CardTitle className="text-3xl font-bold">Your Template is Ready!</CardTitle>
+                    <CardDescription>Review your generated template and download it as a text file.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                        <h2 className="text-2xl font-bold">{generatedTemplate.title}</h2>
+                        <p className="text-muted-foreground text-lg">{`A ${templateForm.getValues('templateType')} template for "${templateForm.getValues('topic')}"`}</p>
+                    </div>
+                    <pre className="p-4 bg-muted rounded-md text-sm whitespace-pre-wrap font-mono h-64 overflow-auto">
+                      {generatedTemplate.content}
+                    </pre>
+                    <div className="flex gap-4 pt-4">
+                        <Button onClick={handleDownloadTemplate} size="lg" className="h-12 text-lg">
+                            <Download />
+                            <span className="ml-2">Download .txt</span>
+                        </Button>
+                        <Button onClick={handleResetTemplate} size="lg" variant="outline" className="h-12 text-lg">
+                            <RefreshCw />
+                            <span className="ml-2">Generate Another</span>
+                        </Button>
+                    </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="glass-card">
+                <CardHeader>
+                    <CardTitle>Generate a New Template</CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <Form {...templateForm}>
+                    <form onSubmit={templateForm.handleSubmit(onTemplateSubmit)} className="space-y-6">
+                        <FormField
+                            control={templateForm.control}
+                            name="templateType"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="text-lg">Template Type</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
+                                    <FormControl>
+                                        <SelectTrigger className="h-12 text-base">
+                                            <SelectValue placeholder="Select a template type" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="Checklist">Checklist</SelectItem>
+                                        <SelectItem value="Planner">Planner</SelectItem>
+                                        <SelectItem value="Worksheet">Worksheet</SelectItem>
+                                        <SelectItem value="Guide">Guide</SelectItem>
+                                        <SelectItem value="Outline">Outline</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={templateForm.control}
+                            name="topic"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="text-lg">Topic</FormLabel>
+                                <FormControl>
+                                    <Input
+                                        {...field}
+                                        placeholder="e.g., 'Weekly meal planning' or 'Social media content strategy'"
+                                        className="h-12 text-base"
+                                        disabled={isLoading}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                        <Button type="submit" size="lg" className="w-full h-12 text-lg" disabled={isLoading}>
+                            {isLoading ? <Loader2 className="animate-spin" /> : <FileText />}
+                            <span className="ml-2">Generate Template</span>
+                        </Button>
+                    </form>
+                  </Form>
+                </CardContent>
+              </Card>
+            )}
+           </TabsContent>
         </Tabs>
-      )}
+      
 
       {error && <ErrorDisplay message={error} />}
     </div>
