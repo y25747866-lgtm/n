@@ -1,9 +1,10 @@
+
 'use server';
 
 import { EbookContent, EbookContentSchema } from '@/lib/types';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
-export async function generateEbookAction(topic: string) {
+export async function generateEbookAction(topic: string): Promise<{ success: boolean; ebook?: EbookContent; error?: string; }> {
   try {
     // Mock data to simulate AI generation
     const mockBlueprint = {

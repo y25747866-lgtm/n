@@ -1,3 +1,4 @@
+
 import { z } from 'zod';
 
 export const GenerationConfigSchema = z.object({
@@ -22,17 +23,16 @@ export const EbookChapterSchema = z.object({
 });
 
 export const EbookContentSchema = z.object({
-  id: z.string().optional(),
-  productType: z.literal('Ebook').optional(),
   title: z.string().describe('The main title of the e-book.'),
   subtitle: z.string().optional().describe('A brief, catchy subtitle.'),
   chapters: z
     .array(EbookChapterSchema)
     .describe('An array of chapter objects, each containing a title and content.'),
   conclusion: z.string().describe("Final summary and action steps"),
-  cover_image_prompt: z.string().describe("A short image prompt for a premium ebook cover."),
+  cover_image_prompt: z.string().optional().describe("A short image prompt for a premium ebook cover."),
   coverImageUrl: z.string().optional().describe("URL for the generated cover image"),
-  generationDate: z.string().optional(),
+  // Fields from the new prompt that are not directly part of the final object, but needed for schema validation
+  estimated_pages: z.number().optional(),
 });
 
 export type EbookContent = z.infer<typeof EbookContentSchema>;
