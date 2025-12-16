@@ -27,6 +27,7 @@ import { downloadFile } from '@/lib/download';
 import { useFirebase } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 export default function GeneratePage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -202,41 +203,62 @@ export default function GeneratePage() {
           
           <TabsContent value="ebook">
              {generatedEbook ? (
-                <Card className="glass-card text-center animate-fade-in">
-                    <CardHeader>
+                <Card className="glass-card animate-fade-in">
+                    <CardHeader className="text-center">
                         <CardTitle className="text-3xl font-bold">Your E-book is Ready!</CardTitle>
-                        <CardDescription>Review your generated product below and download it as a PDF.</CardDescription>
+                        <CardDescription>Review your generated product below. Read the chapters, then download it as a PDF.</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-6 flex flex-col items-center">
-                        <div className="relative w-full max-w-sm aspect-[3/4] rounded-lg overflow-hidden shadow-2xl transition-transform hover:scale-105">
-                            <Image
-                              src={generatedEbook.coverImageUrl || ''}
-                              alt={generatedEbook.title}
-                              fill
-                              className="object-cover"
-                              data-ai-hint="ebook cover"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <h2 className="text-2xl font-bold">{generatedEbook.title}</h2>
-                            <p className="text-muted-foreground text-lg">{generatedEbook.subtitle}</p>
-                            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground pt-2">
-                              <BookOpen className="h-4 w-4" />
-                              <span>{generatedEbook.chapters.length} Chapters</span>
-                              <span className="text-xs">•</span>
-                              <span>Multi-Page PDF</span>
-                            </div>
-                        </div>
-                        <div className="flex gap-4 pt-4">
-                            <Button onClick={handleDownloadEbook} size="lg" className="h-12 text-lg">
-                                <Download />
-                                <span className="ml-2">Download PDF</span>
-                            </Button>
-                            <Button onClick={handleResetEbook} size="lg" variant="outline" className="h-12 text-lg">
-                                <RefreshCw />
-                                <span className="ml-2">Generate Another</span>
-                            </Button>
-                        </div>
+                    <CardContent className="space-y-6">
+                      <div className="grid md:grid-cols-2 gap-8 items-start">
+                          {/* Left Column: Cover */}
+                          <div className="space-y-4">
+                              <div className="relative w-full aspect-[3/4] rounded-lg overflow-hidden shadow-2xl transition-transform hover:scale-105">
+                                  <Image
+                                    src={generatedEbook.coverImageUrl || ''}
+                                    alt={generatedEbook.title}
+                                    fill
+                                    className="object-cover"
+                                    data-ai-hint="ebook cover"
+                                  />
+                              </div>
+                              <div className="text-center">
+                                  <h2 className="text-xl font-bold">{generatedEbook.title}</h2>
+                                  <p className="text-muted-foreground text-md">{generatedEbook.subtitle}</p>
+                              </div>
+                          </div>
+
+                          {/* Right Column: Content Preview */}
+                          <div className="space-y-4">
+                              <h3 className="text-xl font-semibold">Content Preview</h3>
+                              <Accordion type="single" collapsible className="w-full max-h-[500px] overflow-y-auto pr-2">
+                                {generatedEbook.chapters.map((chapter, index) => (
+                                  <AccordionItem key={index} value={`chapter-${index}`}>
+                                    <AccordionTrigger>{`Chapter ${index + 1}: ${chapter.title}`}</AccordionTrigger>
+                                    <AccordionContent className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground whitespace-pre-wrap">
+                                      {chapter.content}
+                                    </AccordionContent>
+                                  </AccordionItem>
+                                ))}
+                                <AccordionItem value="conclusion">
+                                  <AccordionTrigger>Conclusion</AccordionTrigger>
+                                  <AccordionContent className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground whitespace-pre-wrap">
+                                    {generatedEbook.conclusion}
+                                  </AccordionContent>
+                                </AccordionItem>
+                              </Accordion>
+                          </div>
+                      </div>
+
+                      <div className="flex justify-center gap-4 pt-4">
+                          <Button onClick={handleDownloadEbook} size="lg" className="h-12 text-lg">
+                              <Download />
+                              <span className="ml-2">Download PDF</span>
+                          </Button>
+                          <Button onClick={handleResetEbook} size="lg" variant="outline" className="h-12 text-lg">
+                              <RefreshCw />
+                              <span className="ml-2">Generate Another</span>
+                          </Button>
+                      </div>
                     </CardContent>
                 </Card>
               ) : (
@@ -405,3 +427,5 @@ export default function GeneratePage() {
     </div>
   );
 }
+
+    
