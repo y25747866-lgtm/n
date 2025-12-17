@@ -48,20 +48,6 @@ const menuItems = [
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
-const WhopLogo = () => (
-    <svg 
-      width="24" 
-      height="24" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      xmlns="http://www.w3.org/2000/svg"
-      className="text-muted-foreground group-hover/menu-item:text-accent-foreground"
-    >
-        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM16.62 12.37C16.62 12.58 16.55 12.78 16.41 12.92L13.11 16.22C12.92 16.41 12.66 16.5 12.4 16.5C12.21 16.5 12.02 16.44 11.85 16.33L9.04 14.49C8.78 14.33 8.62 14.04 8.62 13.73V10.27C8.62 9.96 8.78 9.67 9.04 9.51L11.85 7.67C12.02 7.56 12.21 7.5 12.4 7.5C12.66 7.5 12.92 7.59 13.11 7.78L16.41 11.08C16.55 11.22 16.62 11.42 16.62 11.63V12.37ZM8.38 12.37C8.38 12.58 8.31 12.78 8.17 12.92L4.87 16.22C4.68 16.41 4.42 16.5 4.16 16.5C3.97 16.5 3.78 16.44 3.61 16.33L0.8 14.49C0.54 14.33 0.38 14.04 0.38 13.73V10.27C0.38 9.96 0.54 9.67 0.8 9.51L3.61 7.67C3.78 7.56 3.97 7.5 4.16 7.5C4.42 7.5 4.68 7.59 4.87 7.78L8.17 11.08C8.31 11.22 8.38 11.42 8.38 11.63V12.37Z" transform="translate(0 0)" fill="currentColor"/>
-    </svg>
-);
-
-
 function ProfileSection() {
     const { isOpen } = useSidebar();
     const { user } = useUser();
@@ -154,25 +140,6 @@ function SidebarInnerContent() {
                                 </Tooltip>
                             </SidebarMenuItem>
                         ))}
-                        {/* Whop Link */}
-                         <SidebarMenuItem>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                     <a href="https://whop.com/?a=zm1a" target="_blank" rel="noopener noreferrer" className={cn(
-                                         "flex w-full items-center gap-3 rounded-md py-2 text-left text-sm font-medium text-muted-foreground outline-none ring-ring transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 active:bg-accent disabled:pointer-events-none disabled:opacity-50",
-                                         isOpen ? "px-3" : "h-10 w-10 justify-center"
-                                     )}>
-                                        <WhopLogo />
-                                        {isOpen && <span>Whop</span>}
-                                    </a>
-                                </TooltipTrigger>
-                                {!isOpen && (
-                                    <TooltipContent side="right">
-                                        Whop
-                                    </TooltipContent>
-                                )}
-                            </Tooltip>
-                        </SidebarMenuItem>
                     </SidebarMenu>
                 </TooltipProvider>
             </SidebarContent>
@@ -249,3 +216,4 @@ export default function AppSidebar() {
     
 
     
+
