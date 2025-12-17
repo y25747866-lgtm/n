@@ -141,6 +141,23 @@ function SidebarInnerContent() {
                                 </Tooltip>
                             </SidebarMenuItem>
                         ))}
+                         <SidebarMenuItem>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <a href="https://whop.com/?a=zm1a" target="_blank" rel="noopener noreferrer">
+                                        <SidebarMenuButton>
+                                            <ExternalLink />
+                                            {isOpen && <span>Whop</span>}
+                                        </SidebarMenuButton>
+                                    </a>
+                                </TooltipTrigger>
+                                {!isOpen && (
+                                    <TooltipContent side="right">
+                                        Whop
+                                    </TooltipContent>
+                                )}
+                            </Tooltip>
+                        </SidebarMenuItem>
                     </SidebarMenu>
                 </TooltipProvider>
             </SidebarContent>
