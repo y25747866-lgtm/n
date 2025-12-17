@@ -5,8 +5,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart as BarChartIcon, Link as LinkIcon, Loader2, DollarSign, ShoppingCart } from 'lucide-react';
-import Link from 'next/link';
-import { AreaChart, BarChart, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Area, Bar } from 'recharts';
+import { AreaChart, BarChart, XAxis, YAxis, ResponsiveContainer, CartesianGrid, Area, Bar } from 'recharts';
 import {
   ChartTooltip,
   ChartTooltipContent,
@@ -14,12 +13,18 @@ import {
 } from "@/components/ui/chart"
 
 const salesData = [
-  { month: "January", sales: 186, revenue: 8000 },
-  { month: "February", sales: 305, revenue: 9500 },
-  { month: "March", sales: 237, revenue: 7800 },
-  { month: "April", sales: 173, revenue: 11000 },
-  { month: "May", sales: 209, revenue: 12400 },
-  { month: "June", sales: 214, revenue: 14000 },
+    { month: "Jan", sales: 186, revenue: 8000 },
+    { month: "Feb", sales: 305, revenue: 9500 },
+    { month: "Mar", sales: 237, revenue: 7800 },
+    { month: "Apr", sales: 173, revenue: 11000 },
+    { month: "May", sales: 209, revenue: 12400 },
+    { month: "Jun", sales: 214, revenue: 14000 },
+    { month: "Jul", sales: 345, revenue: 17500 },
+    { month: "Aug", sales: 310, revenue: 16000 },
+    { month: "Sep", sales: 280, revenue: 15000 },
+    { month: "Oct", sales: 410, revenue: 19000 },
+    { month: "Nov", sales: 450, revenue: 22000 },
+    { month: "Dec", sales: 520, revenue: 25000 },
 ];
 
 const chartConfig = {
@@ -33,6 +38,8 @@ const chartConfig = {
   },
 } satisfies import("@/components/ui/chart").ChartConfig;
 
+const totalRevenue = salesData.reduce((acc, curr) => acc + curr.revenue, 0);
+const totalSales = salesData.reduce((acc, curr) => acc + curr.sales, 0);
 
 function AnalyticsDashboard() {
   return (
@@ -44,7 +51,7 @@ function AnalyticsDashboard() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">$24,852</div>
+              <div className="text-2xl font-bold">${totalRevenue.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">+20.1% from last month</p>
             </CardContent>
           </Card>
@@ -54,7 +61,7 @@ function AnalyticsDashboard() {
               <ShoppingCart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">+1,125</div>
+              <div className="text-2xl font-bold">+{totalSales.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">+180.1% from last month</p>
             </CardContent>
           </Card>
@@ -63,7 +70,7 @@ function AnalyticsDashboard() {
         <Card className="glass-card">
           <CardHeader>
             <CardTitle>Sales Overview</CardTitle>
-            <CardDescription>A look at the number of sales per month.</CardDescription>
+            <CardDescription>Monthly sales performance for the last 12 months.</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer config={chartConfig} className="h-[300px] w-full">
@@ -84,11 +91,25 @@ function AnalyticsDashboard() {
         <Card className="glass-card">
           <CardHeader>
             <CardTitle>Revenue Trend</CardTitle>
-            <CardDescription>A look at the revenue generated per month.</CardDescription>
+            <CardDescription>Monthly revenue trend for the last 12 months.</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer config={chartConfig} className="h-[300px] w-full">
                 <AreaChart data={salesData}>
+                    <defs>
+                        <linearGradient id="fillRevenue" x1="0" y1="0" x2="0" y2="1">
+                        <stop
+                            offset="5%"
+                            stopColor="var(--color-revenue)"
+                            stopOpacity={0.8}
+                        />
+                        <stop
+                            offset="95%"
+                            stopColor="var(--color-revenue)"
+                            stopOpacity={0.1}
+                        />
+                        </linearGradient>
+                    </defs>
                     <CartesianGrid vertical={false} />
                     <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
                     <YAxis />
@@ -96,7 +117,7 @@ function AnalyticsDashboard() {
                         cursor={false}
                         content={<ChartTooltipContent indicator="dot" />}
                     />
-                    <Area type="monotone" dataKey="revenue" stroke="var(--color-revenue)" fill="var(--color-revenue)" fillOpacity={0.4} />
+                    <Area type="monotone" dataKey="revenue" stroke="var(--color-revenue)" fill="url(#fillRevenue)" />
                 </AreaChart>
             </ChartContainer>
           </CardContent>
@@ -138,12 +159,12 @@ export default function AnalyticsPage() {
                 Connect Your Whop Account
             </CardTitle>
             <CardDescription>
-                Grant permission to view your live sales data directly from Whop.
+                To see your live sales and revenue, you will need to grant permission for this app to connect to your Whop account.
             </CardDescription>
             </CardHeader>
             <CardContent>
             <p className="text-muted-foreground mb-4">
-                To see your real-time sales and revenue, you will need to grant permission for this app to connect to your Whop account. Once you approve the connection, this dashboard will show how much you've sold and the revenue you've generated.
+               Once you approve the connection via <a href="https://whop.com/?a=zm1a" target="_blank" rel="noopener noreferrer" className="underline text-primary hover:text-primary/80">Whop</a>, this dashboard will show how much you've sold and the revenue you've generated.
             </p>
             <Button size="lg" onClick={handleConnect} disabled={isConnecting}>
                 {isConnecting ? (
