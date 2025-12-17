@@ -11,33 +11,29 @@ const client = new OpenAI({
 });
 
 export async function generateEbook(topic: string) {
-  const chapters = [];
+  const prompt = `
+You are a professional ebook writer.
 
-  // Generate 5 chapters for the ebook
-  for (let i = 1; i <= 5; i++) {
-    console.time(`Chapter ${i}`);
-    try {
-        const res = await client.chat.completions.create({
-            model: "google/gemini-flash-1.5",
-            messages: [
-                {
-                    role: "user",
-                    content: `Write Chapter ${i} of a professional ebook about "${topic}". 
-                    Minimum 400 words. No placeholders. Real content only.`,
-                },
-            ],
-        });
-        const content = res.choices[0].message.content;
-        if (content) {
-            chapters.push(content);
-        }
-    } catch(e: any) {
-        console.error(`Error generating chapter ${i}:`, e.message);
-        // Decide if you want to stop or continue on chapter error
-        throw new functions.https.HttpsError('internal', `Failed to generate chapter ${i}.`);
-    }
-    console.timeEnd(`Chapter ${i}`);
-  }
+Generate a FULL non-fiction ebook:
+- Topic: ${topic}
+- Pages: 20–30
+- Chapters: 10–12
+- Each chapter: 700–900 words
+- Include examples, bullet points, summaries
+- Generate a book title automatically
+- Generate a subtitle automatically
+- Output clean structured text (no placeholders, no mock text)
+`;
+
+  console.time("EbookContentGeneration");
+  const contentResponse = await client.chat.completions.create({
+    model: "google/gemini-flash-1.5",
+    messages: [{ role: "user", content: prompt }],
+    temperature: 0.7,
+  });
+  console.timeEnd("EbookContentGeneration");
+  
+  const ebookText = contentResponse.choices[0].message.content;
 
   const coverPrompt = `
     Professional ebook cover.
@@ -49,6 +45,7 @@ export async function generateEbook(topic: string) {
 
   let coverImageUrl = null;
   try {
+      console.time("CoverImageGeneration");
       const imageResponse = await client.images.generate({
         model: "openai/dall-e-3",
         prompt: coverPrompt,
@@ -56,10 +53,11 @@ export async function generateEbook(topic: string) {
         size: "1024x1792",
       });
       coverImageUrl = imageResponse.data[0]?.url;
+      console.timeEnd("CoverImageGeneration");
   } catch(e: any) {
       console.error("Error generating cover image:", e.message);
       // Don't fail the whole process if only cover generation fails
   }
   
-  return { chapters, coverImageUrl };
+  return { ebookText, coverImageUrl };
 }

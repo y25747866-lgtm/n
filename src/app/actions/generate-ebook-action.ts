@@ -32,23 +32,29 @@ export async function generateEbookAction(
     const result = await generateEbook({ topic });
     console.log("Firebase Function returned a result.");
 
-    const data = result.data as { success: boolean; ebook?: any; error?: string };
+    const data = result.data as { ebookText?: string; coverImageUrl?: string; };
 
-    if (!data.ebook || !data.ebook.chapters || data.ebook.chapters.length === 0) {
-        throw new Error('The callable function did not return valid ebook content.');
+    if (!data.ebookText) {
+        throw new Error('The callable function did not return valid ebook text.');
     }
     
-    // The callable function returns an object with `chapters` and `coverImageUrl`
-    // We shape this into the EbookContent schema, creating placeholders for now.
+    // The callable function returns a single string of ebook content.
+    // We will parse this to fit our schema. For now, a simple approach.
+    // TODO: A more sophisticated parsing logic will be needed here.
+    const sections = data.ebookText.split(/\n\s*Chapter\s+\d+/i);
+    const titleMatch = data.ebookText.match(/Title:\s*(.*)/);
+    const subtitleMatch = data.ebookText.match(/Subtitle:\s*(.*)/);
+
     const ebookData: EbookContent = {
-        title: `Comprehensive Guide to ${topic}`, // Placeholder title
-        subtitle: `Mastering the art of ${topic}`, // Placeholder subtitle
-        chapters: data.ebook.chapters.map((content: string, index: number) => ({
-            title: `Chapter ${index + 1}: Getting Started`, // Placeholder chapter title
-            content: content
-        })),
-        conclusion: "This is a placeholder conclusion. The AI will write this in a future step.",
-        coverImageUrl: data.ebook.coverImageUrl,
+        title: titleMatch ? titleMatch[1] : `Guide to ${topic}`,
+        subtitle: subtitleMatch ? subtitleMatch[1] : `A comprehensive overview`,
+        // Treat the whole content as the first chapter for now.
+        chapters: [{
+            title: "Full Manuscript",
+            content: data.ebookText,
+        }],
+        conclusion: "This book provides a comprehensive overview of the topic. We hope you found it useful.",
+        coverImageUrl: data.coverImageUrl,
     };
 
     const validatedEbook = EbookContentSchema.parse(ebookData);
