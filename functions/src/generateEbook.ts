@@ -2,7 +2,7 @@ import OpenAI from "openai";
 import fs from "fs";
 
 const client = new OpenAI({
-  apiKey: process.env.OPENROUTER_API_KEY,
+  apiKey: process.env.OPENROUTER_API_KEY || require("firebase-functions").config().openrouter.key,
   baseURL: "https://openrouter.ai/api/v1",
 });
 
