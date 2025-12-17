@@ -21,6 +21,6 @@ exports.generateEbook = functions.https.onCall(async (data, context) => {
     return { success: true, ebook: ebookContent };
   } catch (error) {
     console.error("Error in generateEbook callable function:", error);
-    throw new functions.https.HttpsError('internal', 'Failed to generate ebook', error.message);
+    throw new functions.https.HttpsError('unknown', 'Failed to generate ebook', error.message);
   }
 });
