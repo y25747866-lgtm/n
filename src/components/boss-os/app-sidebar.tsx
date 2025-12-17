@@ -12,7 +12,6 @@ import {
   Search,
   History,
   ExternalLink,
-  LineChart,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -45,7 +44,6 @@ import { cn } from '@/lib/utils';
 const menuItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/generate', label: 'Generator', icon: Wand2 },
-  { href: '/analytics', label: 'Analytics', icon: LineChart },
   { href: '/history', label: 'History', icon: History },
   { href: '/subscription', label: 'Subscription', icon: CreditCard },
   { href: '/settings', label: 'Settings', icon: Settings },
@@ -126,7 +124,7 @@ function SidebarInnerContent() {
                             <SidebarMenuItem key={item.href}>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <Link href={item.href} target={item.target}>
+                                        <Link href={item.href}>
                                             <SidebarMenuButton
                                                 isActive={pathname === item.href}
                                             >
