@@ -5,7 +5,7 @@ import { EbookContent, EbookContentSchema } from '@/lib/types';
 import * as admin from 'firebase-admin';
 import { getFunctions } from 'firebase-admin/functions';
 
-// Initialize Firebase Admin SDK
+// Initialize Firebase Admin SDK, ensuring it only runs once
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.applicationDefault(),
@@ -62,3 +62,4 @@ export async function generateEbookAction(
     return { success: false, error: `AI Generation Failed: ${errorMessage}` };
   }
 }
+
