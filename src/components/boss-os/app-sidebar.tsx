@@ -164,12 +164,12 @@ function SidebarInnerContent() {
                                          isOpen ? "px-3" : "h-10 w-10 justify-center"
                                      )}>
                                         <WhopLogo />
-                                        {isOpen && <span>Powered by Whop</span>}
+                                        {isOpen && <span>Whop</span>}
                                     </a>
                                 </TooltipTrigger>
                                 {!isOpen && (
                                     <TooltipContent side="right">
-                                        Powered by Whop
+                                        Whop
                                     </TooltipContent>
                                 )}
                             </Tooltip>
