@@ -11,6 +11,7 @@ import {
   X,
   Search,
   History,
+  ExternalLink,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -46,6 +47,7 @@ const menuItems = [
   { href: '/history', label: 'History', icon: History },
   { href: '/subscription', label: 'Subscription', icon: CreditCard },
   { href: '/settings', label: 'Settings', icon: Settings },
+  { href: 'https://whop.com/?a=zm1a', label: 'Whop', icon: ExternalLink, target: '_blank' },
 ];
 
 function ProfileSection() {
@@ -123,7 +125,7 @@ function SidebarInnerContent() {
                             <SidebarMenuItem key={item.href}>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <Link href={item.href}>
+                                        <Link href={item.href} target={item.target}>
                                             <SidebarMenuButton
                                                 isActive={pathname === item.href}
                                             >
@@ -216,4 +218,3 @@ export default function AppSidebar() {
     
 
     
-
