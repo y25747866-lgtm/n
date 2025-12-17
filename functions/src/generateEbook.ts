@@ -17,7 +17,7 @@ export async function generateEbook(topic: string) {
   for (let i = 1; i <= 12; i++) {
     console.time(`Chapter ${i}`);
     const res = await client.chat.completions.create({
-      model: "google/gemini-pro-1.5",
+      model: "google/gemini-2.0-flash-exp:free",
       messages: [
         {
           role: "user",
