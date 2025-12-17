@@ -26,5 +26,26 @@ export async function generateEbook(topic: string) {
   }
 
   fs.writeFileSync("ebook.txt", chapters.join("\n\n"));
-  return chapters;
+  
+  console.log("🎨 Designing cover...");
+
+  const coverPrompt = `
+    Professional ebook cover for a book about "${topic}".
+    The title "${topic}" should be centered and clearly visible.
+    The typography should be clean, modern, and professional.
+    Do not include any random or unrelated images. The design should be abstract or thematic, matching the topic.
+    High resolution, print quality.
+  `;
+
+  const imageResponse = await client.images.generate({
+    model: "openai/dall-e-3",
+    prompt: coverPrompt,
+    n: 1,
+    size: "1024x1792",
+  });
+  
+  const coverImageUrl = imageResponse.data[0]?.url;
+  console.log("✅ Cover generated:", coverImageUrl);
+
+  return { chapters, coverImageUrl };
 }
