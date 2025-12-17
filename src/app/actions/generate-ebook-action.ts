@@ -7,10 +7,14 @@ import { getFunctions } from 'firebase-admin/functions';
 
 // Initialize Firebase Admin SDK, ensuring it only runs once
 if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.applicationDefault(),
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'studio-727493507-eef1e',
-  });
+  try {
+    admin.initializeApp({
+      credential: admin.credential.applicationDefault(),
+      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'studio-727493507-eef1e',
+    });
+  } catch (e) {
+    console.error("Firebase Admin initialization error:", e);
+  }
 }
 
 
@@ -20,6 +24,10 @@ export async function generateEbookAction(
   
   console.log("🔥 EBOOK GENERATION ACTION STARTED for topic:", topic);
 
+  // --- TEMPORARILY DISABLED FOR DEBUGGING ---
+  return { success: false, error: "Generation is temporarily disabled for debugging." };
+  
+  /*
   try {
     const functions = getFunctions();
     const generateEbook = functions.httpsCallable('generateEbook');
@@ -34,8 +42,6 @@ export async function generateEbookAction(
         throw new Error('The callable function did not return valid ebook text.');
     }
     
-    // The callable function returns a single string of ebook content.
-    // We will parse this to fit our schema.
     const titleMatch = data.ebookText.match(/Title:\s*(.*)/);
     const subtitleMatch = data.ebookText.match(/Subtitle:\s*(.*)/);
 
@@ -61,5 +67,5 @@ export async function generateEbookAction(
     const errorMessage = error?.message || "An unknown error occurred during generation.";
     return { success: false, error: `AI Generation Failed: ${errorMessage}` };
   }
+  */
 }
-
