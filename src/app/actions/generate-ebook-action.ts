@@ -57,8 +57,8 @@ export async function generateEbookAction(
 
   } catch (error: any) {
     console.error("Ebook generation action failed:", error);
-    // Provide a more robust error message, checking if 'details' exists.
-    const errorMessage = error?.details || error.message || "An unknown error occurred.";
-    return { success: false, error: "AI GENERATION ACTION FAILED — " + errorMessage };
+    // More robust error handling for any kind of error object
+    const errorMessage = error?.message || "An unknown error occurred during generation.";
+    return { success: false, error: `AI Generation Failed: ${errorMessage}` };
   }
 }
