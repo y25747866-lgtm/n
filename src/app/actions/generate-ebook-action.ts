@@ -36,7 +36,6 @@ export async function generateEbookAction(
     
     // The callable function returns a single string of ebook content.
     // We will parse this to fit our schema.
-    const sections = data.ebookText.split(/\n\s*Chapter\s+\d+/i);
     const titleMatch = data.ebookText.match(/Title:\s*(.*)/);
     const subtitleMatch = data.ebookText.match(/Subtitle:\s*(.*)/);
 
@@ -58,7 +57,8 @@ export async function generateEbookAction(
 
   } catch (error: any) {
     console.error("Ebook generation action failed:", error);
-    const errorMessage = error.details || error.message || "An unknown error occurred.";
+    // Provide a more robust error message, checking if 'details' exists.
+    const errorMessage = error?.details || error.message || "An unknown error occurred.";
     return { success: false, error: "AI GENERATION ACTION FAILED — " + errorMessage };
   }
 }
