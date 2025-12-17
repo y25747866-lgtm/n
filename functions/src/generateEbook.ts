@@ -14,15 +14,16 @@ const client = new OpenAI({
 export async function generateEbook(topic: string) {
   const chapters = [];
 
-  for (let i = 1; i <= 12; i++) {
+  // Reduced to 2 for faster testing
+  for (let i = 1; i <= 2; i++) {
     console.time(`Chapter ${i}`);
     const res = await client.chat.completions.create({
-      model: "google/gemini-2.0-flash-exp:free",
+      model: "google/gemini-flash-1.5",
       messages: [
         {
           role: "user",
           content: `Write Chapter ${i} of a professional ebook about "${topic}". 
-          Minimum 1200 words. No placeholders. Real content only.`,
+          Minimum 400 words. No placeholders. Real content only.`,
         },
       ],
     });
@@ -50,9 +51,6 @@ export async function generateEbook(topic: string) {
   });
 
   const coverImageUrl = imageResponse.data[0]?.url;
-
-  // In a real scenario, you'd save this to a file or return it.
-  // fs.writeFileSync("ebook.txt", chapters.join("\n\n"));
   
   return { chapters, coverImageUrl };
 }
