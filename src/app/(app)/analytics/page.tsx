@@ -24,16 +24,16 @@ export default function AnalyticsPage() {
             Connect Your Whop Account
           </CardTitle>
           <CardDescription>
-            To see your real-time sales and revenue, connect your Whop account.
+            Grant permission to view your live sales data directly from Whop.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground mb-4">
-            Once connected, this dashboard will display your total revenue, sales volume, and performance trends directly from your Whop storefront.
+            To see your real-time sales and revenue, you will need to grant permission for this app to connect to your Whop account. Once you approve the connection, this dashboard will show how much you've sold and the revenue you've generated.
           </p>
           <Button size="lg" asChild>
             <Link href="https://whop.com/?a=zm1a" target="_blank">
-              Connect to Whop
+              Connect to Whop & Grant Permission
             </Link>
           </Button>
         </CardContent>
