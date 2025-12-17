@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -24,6 +24,7 @@ import { useFirebase } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { generateEbookAction } from '@/app/actions/generate-ebook-action';
+import { useToast } from '@/hooks/use-toast';
 
 // A mock UUIDv4 function to replace a dedicated package
 function uuidv4() {
@@ -37,6 +38,7 @@ export default function GeneratePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [generatedEbook, setGeneratedEbook] = useState<EbookContent | null>(null);
+  const { toast } = useToast();
 
   const { firestore, user } = useFirebase();
 
@@ -47,34 +49,8 @@ export default function GeneratePage() {
       productType: 'Ebook',
     },
   });
-
-  const onEbookSubmit = async (values: GenerationConfig) => {
-    setError(null);
-    setIsLoading(true);
-    setGeneratedEbook(null);
-
-    try {
-      // The entire generation process is awaited here. The frontend does not
-      // guess the result. It waits for the backend to confirm completion.
-      const result = await generateEbookAction(values.topic);
-
-      if (!result.success || !result.ebook) {
-        // If the backend indicates failure, throw an error.
-        throw new Error(result.error || 'Failed to generate ebook content.');
-      }
-      
-      // Only upon definitive success from the backend, update the UI.
-      setGeneratedEbook(result.ebook);
-
-    } catch (e: any) {
-      setError(`Generation failed: ${e.message}`);
-    } finally {
-      // This runs only after the backend has fully resolved (success or failure).
-      setIsLoading(false);
-    }
-  };
-
-  const saveToHistory = async (productData: EbookContent, productType: 'Ebook') => {
+  
+  const saveToHistory = async (productData: EbookContent, topic: string) => {
     if (!firestore || !user) {
         setError("You must be logged in to save to history.");
         return;
@@ -87,17 +63,52 @@ export default function GeneratePage() {
       ...productData,
       id,
       userId: user.uid,
-      productType,
+      topic: topic,
+      productType: 'Ebook',
       generationDate: new Date().toISOString(),
     };
 
     try {
         await setDoc(historyRef, dataToSave);
+        toast({
+          title: "Saved to History",
+          description: "Your new e-book has been saved to your generation history."
+        })
     } catch (e: any) {
         console.error("Error saving to history:", e);
         setError("Could not save product to your history. You can still download it.");
     }
   }
+
+  // Effect to save the product once generation is complete
+  useEffect(() => {
+    if (generatedEbook && ebookForm.getValues("topic")) {
+        saveToHistory(generatedEbook, ebookForm.getValues("topic"));
+    }
+  }, [generatedEbook, firestore, user]); // Dependencies trigger the save
+
+
+  const onEbookSubmit = async (values: GenerationConfig) => {
+    setError(null);
+    setIsLoading(true);
+    setGeneratedEbook(null);
+
+    try {
+      const result = await generateEbookAction(values.topic);
+
+      if (!result.success || !result.ebook) {
+        throw new Error(result.error || 'Failed to generate ebook content.');
+      }
+      
+      setGeneratedEbook(result.ebook);
+
+    } catch (e: any) {
+      setError(`Generation failed: ${e.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   
   const handleResetEbook = () => {
     setGeneratedEbook(null);
@@ -137,13 +148,13 @@ export default function GeneratePage() {
                           {/* Left Column: Cover */}
                           <div className="space-y-4">
                               <div className="relative w-full aspect-[3/4] rounded-lg overflow-hidden shadow-2xl transition-transform hover:scale-105">
-                                  <Image
-                                    src={generatedEbook.coverImageUrl || ''}
+                                  {generatedEbook.coverImageUrl && <Image
+                                    src={generatedEbook.coverImageUrl}
                                     alt={generatedEbook.title}
                                     fill
                                     className="object-cover"
                                     data-ai-hint="ebook cover"
-                                  />
+                                  />}
                               </div>
                               <div className="text-center">
                                   <h2 className="text-xl font-bold">{generatedEbook.title}</h2>

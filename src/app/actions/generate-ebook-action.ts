@@ -4,6 +4,7 @@
 import { EbookContent, EbookContentSchema } from '@/lib/types';
 import * as admin from 'firebase-admin';
 import { getFunctions } from 'firebase-admin/functions';
+import { v4 as uuidv4 } from 'uuid';
 
 // Initialize Firebase Admin SDK
 // This should only happen once per server instance.
@@ -33,20 +34,20 @@ export async function generateEbookAction(
 
     const data = result.data as { success: boolean; ebook?: any; error?: string };
 
-    if (!data.success || !data.ebook) {
-        throw new Error(data.error || 'The callable function returned a failure state.');
+    if (!data.ebook || !data.ebook.chapters || data.ebook.chapters.length === 0) {
+        throw new Error('The callable function did not return valid ebook content.');
     }
     
     // The callable function returns an object with `chapters` and `coverImageUrl`
-    // We need to shape this into the EbookContent schema.
+    // We shape this into the EbookContent schema, creating placeholders for now.
     const ebookData: EbookContent = {
-        title: "Title from AI (Not Implemented)", // This needs to be returned from the function
-        subtitle: "Subtitle from AI (Not Implemented)",
+        title: `Comprehensive Guide to ${topic}`, // Placeholder title
+        subtitle: `Mastering the art of ${topic}`, // Placeholder subtitle
         chapters: data.ebook.chapters.map((content: string, index: number) => ({
-            title: `Chapter ${index + 1}`, // Placeholder title
+            title: `Chapter ${index + 1}: Getting Started`, // Placeholder chapter title
             content: content
         })),
-        conclusion: "Conclusion from AI (Not Implemented)",
+        conclusion: "This is a placeholder conclusion. The AI will write this in a future step.",
         coverImageUrl: data.ebook.coverImageUrl,
     };
 
