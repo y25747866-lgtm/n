@@ -66,7 +66,6 @@ export const generateEbookFlow = ai.defineFlow(
     }
 
     // Generate a placeholder SVG cover image.
-    // In a real application, you might use a more advanced image generation model here.
     const coverImageUrl = generateGradientSVG(ebookContent.title, ebookContent.subtitle || '', input.topic.toLowerCase().split(' ')[0]);
 
     // Return the combined result.

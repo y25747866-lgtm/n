@@ -12,6 +12,8 @@ import { generateEbookFlow } from '@/ai/flows/generate-ebook-flow';
 import { initializeAdminApp } from '@/firebase/server-init';
 import { EbookContent, EbookContentSchema, GenerationConfig, GenerationConfigSchema } from '@/lib/types';
 import { getFirestore } from 'firebase-admin/firestore';
+import { getAuth } from 'firebase-admin/auth';
+
 
 // Initialize the Firebase Admin SDK to allow for server-side Firestore access.
 // This is necessary because server actions run in a Node.js environment.
@@ -22,13 +24,13 @@ try {
 }
 
 // Define the shape of the successful action result.
-type SuccessResult = {
+export type SuccessResult = {
   success: true;
   data: EbookContent;
 };
 
 // Define the shape of the failed action result.
-type ErrorResult = {
+export type ErrorResult = {
   success: false;
   error: string;
 };
@@ -52,6 +54,9 @@ export async function generateEbookAction(data: GenerationConfig): Promise<Actio
       return { success: false, error: errorMessage };
     }
 
+    // This is a temporary measure, in a real app you'd get the user from the session
+    const tempUserId = "user_placeholder_id";
+
     // 2. Call the AI flow to generate the ebook content and cover.
     const generationResult = await generateEbookFlow(validationResult.data);
     
@@ -65,11 +70,14 @@ export async function generateEbookAction(data: GenerationConfig): Promise<Actio
 
     const finalContent = contentValidationResult.data;
 
-    // 4. (Optional) Store the generated content in Firestore.
-    // In a real application, you would associate this with the logged-in user.
+    // 4. Store the generated content in Firestore.
     try {
         const firestore = getFirestore();
-        const docRef = await firestore.collection('generatedProducts').add({
+        const docRef = firestore.collection('users').doc(tempUserId).collection('generatedProducts').doc();
+        
+        await docRef.set({
+            id: docRef.id,
+            userId: tempUserId,
             ...finalContent,
             productType: 'Ebook',
             topic: data.topic,
@@ -77,9 +85,10 @@ export async function generateEbookAction(data: GenerationConfig): Promise<Actio
         });
         console.log('Saved to Firestore with ID:', docRef.id);
     } catch (dbError: any) {
-        // Log the database error but don't fail the entire action.
-        // The user should still receive their content even if saving fails.
         console.error('Firestore save failed:', dbError.message);
+        // We are not returning the error to the user, because the content generation itself was successful.
+        // In a production app, you would want to have more robust error handling here,
+        // perhaps queuing the save operation for a retry.
     }
 
 

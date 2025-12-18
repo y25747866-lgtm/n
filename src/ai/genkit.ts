@@ -10,11 +10,11 @@
  * - ai: The configured Genkit AI instance.
  */
 
-import { genkit } from 'genkit';
+import { genkit, configureGenkit } from 'genkit';
 import { googleAI } from '@genkit-ai/google-genai';
 
 // Initialize Genkit with the Google AI plugin
-export const ai = genkit({
+configureGenkit({
   plugins: [
     googleAI({
       // Specify the API version to ensure stability and access to the latest features.
@@ -27,3 +27,5 @@ export const ai = genkit({
   // Enable OpenTelemetry for production monitoring and tracing.
   enableTracingAndMetrics: true,
 });
+
+export { genkit as ai };
