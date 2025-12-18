@@ -2,23 +2,11 @@
 'use server';
 
 import { EbookContent, EbookContentSchema } from '@/lib/types';
-import * as admin from 'firebase-admin';
 import { getFunctions } from 'firebase-admin/functions';
+import { initializeAdminApp } from '@/firebase/server-init';
 
-// Initialize Firebase Admin SDK, ensuring it only runs once
-if (!admin.apps.length) {
-  try {
-    // Use application default credentials if available
-    admin.initializeApp({
-      credential: admin.credential.applicationDefault(),
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'studio-727493507-eef1e',
-    });
-  } catch (e) {
-    console.error("Firebase Admin initialization error:", e);
-    // This is not a fatal error for the action if it's already initialized.
-  }
-}
-
+// Initialize Firebase Admin SDK using the centralized function
+initializeAdminApp();
 
 export async function generateEbookAction(
   topic: string
@@ -83,4 +71,3 @@ export async function generateEbookAction(
     return { success: false, error: `AI Generation Failed: ${errorMessage}` };
   }
 }
-
