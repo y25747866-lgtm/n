@@ -1,12 +1,8 @@
 
 'use server';
 
+import { generateEbookFlow } from '@/ai/flows/generate-ebook-flow';
 import { EbookContent, EbookContentSchema } from '@/lib/types';
-import { getFunctions } from 'firebase-admin/functions';
-import { initializeAdminApp } from '@/firebase/server-init';
-
-// Initialize Firebase Admin SDK using the centralized function
-initializeAdminApp();
 
 export async function generateEbookAction(
   topic: string
@@ -15,17 +11,10 @@ export async function generateEbookAction(
   console.log("🔥 EBOOK GENERATION ACTION STARTED for topic:", topic);
 
   try {
-    const functions = getFunctions();
-    const generateEbook = functions.httpsCallable('generateEbook');
-
-    console.log("Calling Firebase Function 'generateEbook'...");
-    const result = await generateEbook({ topic });
-    console.log("Firebase Function returned a result.");
-
-    // The function is expected to return an object that matches EbookContent structure
-    const ebookData = result.data as EbookContent;
+    // This is now a direct, server-to-server function call.
+    const ebookData = await generateEbookFlow(topic);
     
-    // Validate the data structure returned from the function
+    // Validate the data structure returned from the flow
     const validatedEbook = EbookContentSchema.parse(ebookData);
 
     console.log("✅ EBOOK ACTION COMPLETE");
@@ -34,7 +23,7 @@ export async function generateEbookAction(
   } catch (error: any) {
     console.error("Ebook generation action failed:", error);
     const errorMessage = error?.message || "An unknown error occurred during generation.";
-    // Check for Zod validation errors
+    // Check for Zod validation errors, which are common with AI responses
     if (error.issues) {
       const validationErrors = error.issues.map((issue: any) => `${issue.path.join('.')} - ${issue.message}`).join(', ');
       return { success: false, error: `AI response validation failed: ${validationErrors}` };
