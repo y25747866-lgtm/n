@@ -25,9 +25,9 @@ export default function GeneratePage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-6 text-center">
-          <p className="text-muted-foreground">
-            Where did the e-book generator button go that lets people create e-books? If you removed it, why bring everything back?Where did the e-book generator button go that lets people create e-books? If you removed it, why bring everything back?
-          </p>
+            <p className="text-muted-foreground">
+              Thank you for your patience. The generation form will be restored here as soon as possible.
+            </p>
         </CardContent>
       </Card>
     </div>
