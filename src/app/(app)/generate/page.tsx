@@ -5,31 +5,31 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Wand2 } from 'lucide-react';
 
 export default function GeneratePage() {
-
   return (
-    <div className="container mx-auto max-w-5xl space-y-8">
+    <div className="container mx-auto max-w-3xl space-y-8">
       <header className="text-center">
         <h1 className="text-4xl md:text-5xl font-black tracking-tighter flex items-center justify-center gap-3">
           <Wand2 className="h-10 w-10 text-primary" />
-          <span className="bg-clip-text text-transparent bg-accent-gradient-1">
-            Digital Product Factory
-          </span>
+          <span className="bg-clip-text text-transparent bg-accent-gradient-1">Digital Product Factory</span>
         </h1>
         <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-          The AI generation feature is temporarily unavailable while we perform some upgrades. Please check back later!
+          Turn your ideas into market-ready digital products in minutes. Describe your topic, and let our AI handle the rest.
         </p>
       </header>
-      
-      
-        <Card className="glass-card">
-            <CardHeader>
-            <CardTitle>Generation Disabled</CardTitle>
-            <CardDescription>We are currently working on improving our AI generation capabilities.</CardDescription>
-            </CardHeader>
-            <CardContent className="p-6 text-center">
-                <p className="text-muted-foreground">Thank you for your patience.</p>
-            </CardContent>
-        </Card>
+
+      <Card className="glass-card">
+        <CardHeader>
+          <CardTitle>Generation Temporarily Disabled</CardTitle>
+          <CardDescription>
+            We are working to resolve a dependency issue with the AI generation feature.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-6 text-center">
+          <p className="text-muted-foreground">
+            Thank you for your patience. The generation form will be restored here as soon as possible.
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
 }
