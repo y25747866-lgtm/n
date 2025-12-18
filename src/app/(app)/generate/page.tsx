@@ -21,18 +21,10 @@ import { GenerationConfigSchema, type GenerationConfig, type EbookContent } from
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Image from 'next/image';
 import { useFirebase } from '@/firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, collection } from 'firebase/firestore';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { generateEbookAction } from '@/app/actions/generate-ebook-action';
 import { useToast } from '@/hooks/use-toast';
-
-// A mock UUIDv4 function to replace a dedicated package
-function uuidv4() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
-}
 
 export default function GeneratePage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -56,12 +48,12 @@ export default function GeneratePage() {
         return;
     };
     
-    const id = uuidv4();
-    const historyRef = doc(firestore, 'users', user.uid, 'generatedProducts', id);
+    // Let Firestore generate the ID
+    const historyRef = doc(collection(firestore, 'users', user.uid, 'generatedProducts'));
 
     const dataToSave = {
       ...productData,
-      id,
+      id: historyRef.id, // Use the generated ID
       userId: user.uid,
       topic: topic,
       productType: 'Ebook',
@@ -85,7 +77,8 @@ export default function GeneratePage() {
     if (generatedEbook && ebookForm.getValues("topic")) {
         saveToHistory(generatedEbook, ebookForm.getValues("topic"));
     }
-  }, [generatedEbook, firestore, user]); // Dependencies trigger the save
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [generatedEbook]);
 
 
   const onEbookSubmit = async (values: GenerationConfig) => {
