@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Wand2 } from 'lucide-react';
 
 export default function GeneratePage() {
+
   return (
     <div className="container mx-auto max-w-3xl space-y-8">
       <header className="text-center">
@@ -25,9 +26,9 @@ export default function GeneratePage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-6 text-center">
-            <p className="text-muted-foreground">
-              Thank you for your patience. The generation form will be restored here as soon as possible.
-            </p>
+          <p className="text-muted-foreground">
+            Thank you for your patience. The generation form will be restored here as soon as possible.
+          </p>
         </CardContent>
       </Card>
     </div>
