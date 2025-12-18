@@ -30,7 +30,6 @@ function HistoryItemCard({ item }: { item: any }) {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDownload = async () => {
-    // Client-side PDF generation is removed.
     // This will be replaced with a link to a server-generated file.
     toast({
       title: "Download Not Implemented",
@@ -76,7 +75,7 @@ function HistoryItemCard({ item }: { item: any }) {
         <Badge variant="secondary">{item.productType}</Badge>
       </CardContent>
       <CardFooter className="flex gap-2">
-        <Button variant="outline" onClick={handleDownload} disabled>
+        <Button variant="outline" onClick={handleDownload}>
           <Download className="mr-2 h-4 w-4" />
           Download
         </Button>

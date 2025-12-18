@@ -3,8 +3,19 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useSidebar } from '@/contexts/sidebar-provider';
 
-export function Logo({ className, ...props }: { className?: string; [key: string]: any }) {
-  const { isOpen } = useSidebar();
+function useSidebarAwareness(showText: boolean | undefined) {
+    // If showText is explicitly provided, we don't need the context.
+    if (showText !== undefined) {
+        return { shouldShowText: showText };
+    }
+    // Only call the hook if we need to be aware of the sidebar state.
+    const { isOpen } = useSidebar();
+    return { shouldShowText: isOpen };
+}
+
+export function Logo({ className, showText, ...props }: { className?: string; showText?: boolean; [key: string]: any }) {
+  const { shouldShowText } = useSidebarAwareness(showText);
+  
   return (
     <Link href="/dashboard">
       <div
@@ -34,7 +45,7 @@ export function Logo({ className, ...props }: { className?: string; [key: string
           <circle cx="312" cy="360" r="16" fill="url(#grad)"/>
           <circle cx="440" cy="400" r="16" fill="url(#grad)"/>
         </svg>
-        {isOpen && <span className="font-headline font-black text-xl bg-clip-text text-transparent bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end">Boss OS</span>}
+        {shouldShowText && <span className="font-headline font-black text-xl bg-clip-text text-transparent bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end">Boss OS</span>}
       </div>
     </Link>
   );
