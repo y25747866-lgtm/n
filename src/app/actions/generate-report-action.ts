@@ -24,6 +24,10 @@ export async function generateReportAction(
   }
 
   try {
+    if (!process.env.OPENROUTER_API_KEY) {
+        return { error: 'AI service is not configured. Missing API key.' };
+    }
+
     const ebookContent = await generateEbook({ topic: validationResult.data.topic });
     
     // Add a generated cover image URL
@@ -37,8 +41,9 @@ export async function generateReportAction(
     }
 
     return { data: contentValidation.data };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error generating report:', error);
-    return { error: 'Failed to generate the report. Please try again later.' };
+    // Pass the specific error message to the client
+    return { error: `Failed to generate the report: ${error.message}` };
   }
 }
