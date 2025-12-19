@@ -1,45 +1,24 @@
+"use server";
 
-'use server';
+import { openrouter } from "@/lib/openrouter";
 
-import { z } from 'zod';
-import { generateEbook } from '@/lib/ai';
-import { EbookContent, EbookContentSchema } from '@/lib/types';
-import { generateGradientSVG } from '@/lib/svg-utils';
-
-const generateReportSchema = z.object({
-  topic: z.string(),
-});
-
-type ActionState = {
-  error?: string;
-  data?: EbookContent;
-};
-
-export async function generateReportAction(
-  input: z.infer<typeof generateReportSchema>
-): Promise<ActionState> {
-  const validationResult = generateReportSchema.safeParse(input);
-  if (!validationResult.success) {
-    return { error: 'Invalid input.' };
-  }
-
+export async function generateReportAction(input: { topic: string }) {
   try {
-    const ebookContent = await generateEbook({ topic: validationResult.data.topic });
-    
-    // Add a generated cover image URL
-    ebookContent.coverImageUrl = generateGradientSVG(ebookContent.title, ebookContent.subtitle || '');
+    const completion = await openrouter.chat.completions.create({
+      model: "google/gemini-flash-1.5:free",
+      messages: [
+        {
+          role: "user",
+          content: `Write a detailed 800-word article about: ${input.topic}`,
+        },
+      ],
+    });
 
-    const contentValidation = EbookContentSchema.safeParse(ebookContent);
-    
-    if (!contentValidation.success) {
-      console.error('AI output validation error:', contentValidation.error.flatten());
-      return { error: 'The AI returned an unexpected data structure. Please try again.' };
-    }
-
-    return { data: contentValidation.data };
-  } catch (error: any) {
-    console.error('Error generating report:', error);
-    // Pass the specific error message to the client
-    return { error: `Failed to generate the report: ${error.message}` };
+    return {
+      content: completion.choices[0].message.content,
+    };
+  } catch (err) {
+    console.error("AI ERROR:", err);
+    throw new Error("Failed to communicate with the AI service");
   }
 }

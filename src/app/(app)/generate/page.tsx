@@ -12,8 +12,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Wand2 } from 'lucide-react';
 import { generateReportAction } from '@/app/actions/generate-report-action';
-import { EbookContent } from '@/lib/types';
-import Image from 'next/image';
 import { ErrorDisplay } from '@/components/boss-os/error-display';
 
 const formSchema = z.object({
@@ -22,10 +20,14 @@ const formSchema = z.object({
   }),
 });
 
+interface GeneratedContent {
+  content?: string | null;
+}
+
 export default function GeneratePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [generatedContent, setGeneratedContent] = useState<EbookContent | null>(null);
+  const [generatedContent, setGeneratedContent] = useState<GeneratedContent | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -41,10 +43,10 @@ export default function GeneratePage() {
 
     try {
       const result = await generateReportAction({ topic: values.topic });
-      if (result.error) {
-        setError(result.error);
-      } else if (result.data) {
-        setGeneratedContent(result.data);
+      if (result.content) {
+        setGeneratedContent(result);
+      } else {
+        setError('The AI returned an empty response.');
       }
     } catch (e: any) {
       setError(e.message || 'An unexpected error occurred.');
@@ -61,7 +63,7 @@ export default function GeneratePage() {
           <span className="bg-clip-text text-transparent bg-accent-gradient-1">Report Creation System</span>
         </h1>
         <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-          Enter a topic and let our AI create a detailed e-book for you, complete with a title, subtitle, and generated cover.
+          Enter a topic and let our AI create a detailed article for you.
         </p>
       </header>
 
@@ -103,38 +105,16 @@ export default function GeneratePage() {
 
       {error && <ErrorDisplay message={error} />}
 
-      {generatedContent && (
+      {generatedContent && generatedContent.content && (
         <Card className="glass-card fade-in">
           <CardHeader>
             <CardTitle>Generated Report</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {generatedContent.coverImageUrl && (
-                <div className="relative aspect-[3/4] w-full max-w-sm mx-auto rounded-lg overflow-hidden border">
-                    <Image
-                        src={generatedContent.coverImageUrl}
-                        alt="Generated Ebook Cover"
-                        fill
-                        className="object-cover"
-                    />
-                </div>
-            )}
-            <div className="prose prose-sm md:prose-base prose-invert max-w-none">
-              <h1>{generatedContent.title}</h1>
-              {generatedContent.subtitle && <h2>{generatedContent.subtitle}</h2>}
-              {generatedContent.chapters.map((chapter, index) => (
-                <div key={index}>
-                  <h3>{chapter.title}</h3>
-                  <div dangerouslySetInnerHTML={{ __html: marked(chapter.content) }} />
-                </div>
-              ))}
-               {generatedContent.conclusion && (
-                <div>
-                    <h3>Conclusion</h3>
-                    <div dangerouslySetInnerHTML={{ __html: marked(generatedContent.conclusion) }} />
-                </div>
-              )}
-            </div>
+            <div 
+              className="prose prose-sm md:prose-base prose-invert max-w-none"
+              dangerouslySetInnerHTML={{ __html: marked(generatedContent.content) }} 
+            />
           </CardContent>
         </Card>
       )}
