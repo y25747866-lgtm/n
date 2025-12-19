@@ -24,10 +24,6 @@ export async function generateReportAction(
   }
 
   try {
-    if (!process.env.OPENROUTER_API_KEY) {
-        return { error: 'AI service is not configured. Missing API key.' };
-    }
-
     const ebookContent = await generateEbook({ topic: validationResult.data.topic });
     
     // Add a generated cover image URL
