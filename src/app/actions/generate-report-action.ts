@@ -7,39 +7,17 @@ export async function generateReportAction(prompt: string) {
   try {
 
     const ebookPrompt = `
-You are a professional e-book author, editor, and publishing system.
+You are a professional e-book author and editor. Your task is to generate a compelling outline for an e-book based on a given topic.
 
-Your task is to generate a COMPLETE, REAL, PROFESSIONAL e-book — not a preview, not a summary, and not placeholder content.
+You must generate:
+1.  A professional and engaging book title.
+2.  A concise and catchy subtitle.
+3.  A short book description (3-4 lines).
+4.  A table of contents with 10-12 meaningful chapter titles.
 
-IMPORTANT RULES (MUST FOLLOW ALL):
-
-1. Automatically create:
-   - A professional book title
-   - A compelling subtitle
-   - A short book description (3–4 lines)
-
-2. The e-book MUST be long enough to produce 40–50 PDF pages.
-   - Minimum total word count: 18,000–25,000 words
-   - Minimum chapters: 10–12
-   - Each chapter must be 1,500–2,200 words
-   - Write in clear, high-quality professional English
-
-3. Chapter rules:
-   - Every chapter must have a meaningful title
-   - NO placeholder text
-   - NO “mock content”
-   - NO repeated lines
-   - NO summaries pretending to be chapters
-   - Write FULL, DETAILED sections with examples, explanations, and actionable insights
-
-4. Writing quality:
-   - Structured headings
-   - Short paragraphs
-   - Bullet points where useful
-   - Real explanations, not filler
-   - Sound like a premium paid e-book
-
-5. Formatting output EXACTLY like this:
+FORMATTING RULES:
+- Output ONLY the structured text as specified below.
+- Do NOT add any explanations, apologies, or introductory text.
 
 ---
 BOOK_TITLE:
@@ -49,48 +27,21 @@ BOOK_SUBTITLE:
 <Generated subtitle>
 
 BOOK_DESCRIPTION:
-<3–4 line description>
+<Generated description>
 
 ---
 TABLE_OF_CONTENTS:
-1. Chapter title
-2. Chapter title
-...
-
+1. <Chapter 1 Title>
+2. <Chapter 2 Title>
+3. <Chapter 3 Title>
+4. <Chapter 4 Title>
+5. <Chapter 5 Title>
+6. <Chapter 6 Title>
+7. <Chapter 7 Title>
+8. <Chapter 8 Title>
+9. <Chapter 9 Title>
+10. <Chapter 10 Title>
 ---
-CHAPTER_1_TITLE:
-<Title>
-
-CHAPTER_1_CONTENT:
-<Full chapter content>
-
----
-CHAPTER_2_TITLE:
-<Title>
-
-CHAPTER_2_CONTENT:
-<Full chapter content>
-
-(repeat for all chapters)
-
----
-CONCLUSION:
-<Full conclusion, not a summary>
-
----
-
-6. DO NOT:
-   - Explain what you are doing
-   - Apologize
-   - Shorten the book
-   - Stop early
-   - Say “this is a preview”
-   - Mention AI, prompts, or generation
-
-7. Assume this content will be:
-   - Converted into a real PDF
-   - Sold as a paid digital product
-   - Used in a professional platform like synthesise.ai
 
 TOPIC:
 ${prompt}
@@ -108,6 +59,6 @@ ${prompt}
     };
   } catch (error) {
     console.error("AI ERROR:", error);
-    throw new Error("Failed to communicate with the AI service");
+    throw new Error("Failed to communicate with the AI service. Please check your API key and try again.");
   }
 }

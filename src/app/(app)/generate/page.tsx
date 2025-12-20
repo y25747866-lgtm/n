@@ -49,9 +49,9 @@ export default function GeneratePage() {
     const body = bodyStartIndex !== -1 ? content.substring(bodyStartIndex) : content;
 
     return {
-      title: titleMatch ? titleMatch[1] : 'Generated Report',
-      subtitle: subtitleMatch ? subtitleMatch[1] : '',
-      description: descriptionMatch ? descriptionMatch[1].trim() : '',
+      title: titleMatch ? titleMatch[1].trim() : 'Generated Outline',
+      subtitle: subtitleMatch ? subtitleMatch[1].trim() : '',
+      description: descriptionMatch ? descriptionMatch[1].trim() : 'Here is the outline for your new digital product.',
       body: body
     }
   }
@@ -84,15 +84,15 @@ export default function GeneratePage() {
           <span className="bg-clip-text text-transparent bg-accent-gradient-1">Product Generator</span>
         </h1>
         <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-          Describe the topic for your next digital product.
+          Describe the topic for your next digital product and get a professional outline in seconds.
         </p>
       </header>
 
       <Card className="glass-card">
         <CardHeader>
-          <CardTitle>New Product</CardTitle>
+          <CardTitle>New Product Outline</CardTitle>
           <CardDescription>
-            Describe the topic you want the product to be about.
+            What topic do you want to create an e-book about?
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -117,7 +117,7 @@ export default function GeneratePage() {
                 )}
               />
               <Button type="submit" disabled={isLoading}>
-                {isLoading ? <Loader2 className="animate-spin" /> : 'Generate Product'}
+                {isLoading ? <Loader2 className="animate-spin" /> : 'Generate Outline'}
               </Button>
             </form>
           </Form>
