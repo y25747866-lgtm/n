@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -20,14 +21,17 @@ const formSchema = z.object({
   }),
 });
 
-interface GeneratedContent {
-  content?: string | null;
+interface ParsedContent {
+  title: string;
+  subtitle: string;
+  description: string;
+  body: string;
 }
 
 export default function GeneratePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [generatedContent, setGeneratedContent] = useState<GeneratedContent | null>(null);
+  const [generatedContent, setGeneratedContent] = useState<ParsedContent | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -35,6 +39,23 @@ export default function GeneratePage() {
       topic: '',
     },
   });
+
+  const parseContent = (content: string): ParsedContent => {
+    const titleMatch = content.match(/BOOK_TITLE:\n(.*?)\n/);
+    const subtitleMatch = content.match(/BOOK_SUBTITLE:\n(.*?)\n/);
+    const descriptionMatch = content.match(/BOOK_DESCRIPTION:\n([\s\S]*?)\n---/);
+    
+    const bodyStartIndex = content.indexOf('TABLE_OF_CONTENTS:');
+    const body = bodyStartIndex !== -1 ? content.substring(bodyStartIndex) : content;
+
+    return {
+      title: titleMatch ? titleMatch[1] : 'Generated Report',
+      subtitle: subtitleMatch ? subtitleMatch[1] : '',
+      description: descriptionMatch ? descriptionMatch[1].trim() : '',
+      body: body
+    }
+  }
+
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
@@ -44,7 +65,7 @@ export default function GeneratePage() {
     try {
       const result = await generateReportAction(values.topic);
       if (result.content) {
-        setGeneratedContent(result);
+        setGeneratedContent(parseContent(result.content));
       } else {
         setError('The AI returned an empty response.');
       }
@@ -56,22 +77,22 @@ export default function GeneratePage() {
   }
 
   return (
-    <div className="container mx-auto max-w-3xl space-y-8">
+    <div className="container mx-auto max-w-4xl space-y-8">
       <header className="text-center">
         <h1 className="text-4xl md:text-5xl font-black tracking-tighter flex items-center justify-center gap-3">
           <Wand2 className="h-10 w-10 text-primary" />
-          <span className="bg-clip-text text-transparent bg-accent-gradient-1">Generate a Report</span>
+          <span className="bg-clip-text text-transparent bg-accent-gradient-1">Product Generator</span>
         </h1>
         <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-          Enter a topic and let our AI create a detailed article for you.
+          Describe the topic for your next digital product.
         </p>
       </header>
 
       <Card className="glass-card">
         <CardHeader>
-          <CardTitle>New Report</CardTitle>
+          <CardTitle>New Product</CardTitle>
           <CardDescription>
-            Describe the topic you want the report to be about.
+            Describe the topic you want the product to be about.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -96,7 +117,7 @@ export default function GeneratePage() {
                 )}
               />
               <Button type="submit" disabled={isLoading}>
-                {isLoading ? <Loader2 className="animate-spin" /> : 'Generate Report'}
+                {isLoading ? <Loader2 className="animate-spin" /> : 'Generate Product'}
               </Button>
             </form>
           </Form>
@@ -105,15 +126,17 @@ export default function GeneratePage() {
 
       {error && <ErrorDisplay message={error} />}
 
-      {generatedContent && generatedContent.content && (
+      {generatedContent && (
         <Card className="glass-card fade-in">
           <CardHeader>
-            <CardTitle>Generated Report</CardTitle>
+            <CardTitle className="text-3xl">{generatedContent.title}</CardTitle>
+            {generatedContent.subtitle && <CardDescription className="text-lg">{generatedContent.subtitle}</CardDescription>}
           </CardHeader>
           <CardContent className="space-y-6">
+            {generatedContent.description && <p className="text-muted-foreground">{generatedContent.description}</p>}
             <div 
               className="prose prose-sm md:prose-base prose-invert max-w-none"
-              dangerouslySetInnerHTML={{ __html: marked(generatedContent.content) }} 
+              dangerouslySetInnerHTML={{ __html: marked(generatedContent.body) }} 
             />
           </CardContent>
         </Card>
