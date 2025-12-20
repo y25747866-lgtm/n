@@ -1,50 +1,37 @@
 
 'use server';
 
-import { openrouter } from '@/lib/openrouter';
-import { generateGradientSVG } from '@/lib/svg-utils';
+import { openrouter } from "@/lib/openrouter";
 
-const USE_REAL_AI_COVER = false; // Set to true to use DALL-E (costs credits)
-
-export async function generateCoverAction(title: string, subtitle: string) {
-  if (!USE_REAL_AI_COVER) {
-     // For development, return a programmatically generated SVG cover to save costs.
-     const svgDataUrl = generateGradientSVG(title, subtitle, 'ai');
-     return { imageUrl: svgDataUrl };
-  }
-
+export async function generateCover(bookTitle: string) {
   try {
-    const coverPrompt = `
-      Create a professional, visually stunning e-book cover for a book titled "${title}".
-      Subtitle: "${subtitle}".
-      Style requirements:
-      - Design aesthetic: Minimalist, modern, and abstract.
-      - Color Palette: Use a sophisticated gradient of deep blues and purples.
-      - Imagery: Avoid literal objects or people. Focus on abstract geometric shapes, subtle textures, or light effects.
-      - Typography: The title should be the main focus, using a clean, bold, sans-serif font. The subtitle should be smaller and less prominent.
-      - Composition: Centered and well-balanced.
-      - DO NOT include any text, titles, or words on the image itself. The text will be added later.
-      - Final output must be a clean image with no text.
-    `;
-
-    const response = await openrouter.images.generate({
-      model: 'openai/dall-e-3',
-      prompt: coverPrompt,
-      n: 1,
-      size: '1024x1792', // Standard e-book cover aspect ratio
+    const response = await openrouter.chat.completions.create({
+        model: "openai/dall-e-3",
+        messages: [
+            {
+                role: "user",
+                content: `Create a professional e-book cover for '${bookTitle}'. Style: gradient, modern, clean, title centered. Return as a high-quality image URL.`
+            }
+        ],
+        extra_body: {
+            "prompt": `Create a professional e-book cover for '${bookTitle}'. Style: gradient, modern, clean, title centered.`,
+            "n": 1,
+            "size": "1024x1792"
+        }
     });
 
-    const imageUrl = response.data[0]?.url;
-
+    // The OpenRouter SDK may wrap image generation differently.
+    // This is a guess based on common patterns.
+    // @ts-ignore
+    const imageUrl = response.choices[0]?.data?.[0]?.url || response.choices[0]?.message?.content;
+    
     if (!imageUrl) {
-      throw new Error('AI did not return an image URL.');
+        throw new Error("No image URL returned from AI.");
     }
 
-    return { imageUrl };
-  } catch (error) {
-    console.error('AI COVER ERROR:', error);
-    throw new Error('Failed to generate the cover image.');
+    return imageUrl;
+  } catch (err) {
+    console.error("Cover generation error:", err);
+    throw new Error("Failed to generate cover image.");
   }
 }
-
-    

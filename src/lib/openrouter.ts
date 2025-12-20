@@ -1,10 +1,7 @@
-import OpenAI from "openai";
 
-if (!process.env.OPENROUTER_API_KEY) {
-  throw new Error("OPENROUTER_API_KEY is missing");
-}
+'use server';
+import { OpenRouter } from "@openrouter/sdk";
 
-export const openrouter = new OpenAI({
+export const openrouter = new OpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY,
-  baseURL: "https://openrouter.ai/api/v1",
 });

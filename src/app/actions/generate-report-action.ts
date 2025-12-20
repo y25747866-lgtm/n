@@ -5,7 +5,6 @@ import { openrouter } from "@/lib/openrouter";
 
 export async function generateReportAction(prompt: string) {
   try {
-
     const ebookPrompt = `
 You are a professional e-book author and editor. Your task is to generate a compelling outline for an e-book based on a given topic.
 
