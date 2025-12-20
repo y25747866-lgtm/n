@@ -13,10 +13,13 @@ export default async function handler(req: NextRequest) {
     try {
         const { topic } = await req.json();
         if (!topic) {
-            return NextResponse.json({ error: "Missing topic" }, { status: 400 });
+            return NextResponse.json({ error: "Topic is required" }, { status: 400 });
         }
+        
         const result = await generateBook(topic);
+        
         return NextResponse.json({ pdfPath: result.pdfPath });
+
     } catch (err: any) {
         console.error("API Route Error:", err);
         return NextResponse.json({ error: err.message || "Failed to generate book due to an internal error." }, { status: 500 });
