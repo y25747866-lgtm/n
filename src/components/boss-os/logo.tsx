@@ -23,7 +23,7 @@ export function Logo({ className, showText, ...props }: { className?: string; sh
         {...props}
       >
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="36" height="36" role="img" aria-labelledby="title desc">
-          <title id="title">Boss OS Neural Circuit Logo</title>
+          <title id="title">NexoraOS Neural Circuit Logo</title>
           <desc id="desc">Stylized brain-shaped circuit logo with adaptable colors for light and dark themes.</desc>
 
           <defs>
@@ -45,7 +45,7 @@ export function Logo({ className, showText, ...props }: { className?: string; sh
           <circle cx="312" cy="360" r="16" fill="url(#grad)"/>
           <circle cx="440" cy="400" r="16" fill="url(#grad)"/>
         </svg>
-        {shouldShowText && <span className="font-headline font-black text-xl bg-clip-text text-transparent bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end">Boss OS</span>}
+        {shouldShowText && <span className="font-headline font-black text-xl bg-clip-text text-transparent bg-gradient-to-r from-accent-1-start via-accent-1-mid to-accent-1-end">NexoraOS</span>}
       </div>
     </Link>
   );

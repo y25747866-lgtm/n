@@ -10,7 +10,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Boss OS - AI Digital Product Factory',
+  title: 'NexoraOS - AI Digital Product Factory',
   description: 'Generate ebooks, courses, covers, and trending digital assets instantly.',
 };
 

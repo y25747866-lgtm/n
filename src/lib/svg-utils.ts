@@ -69,7 +69,7 @@ export function generateGradientSVG(title: string, subtitle: string, category: s
         ${escape(subtitle)}
     </text>
   </g>
-  <text x='80' y='1550' font-size='24' fill='rgba(255,255,255,0.7)' font-family='Inter, sans-serif'>Boss OS • 2025</text>
+  <text x='80' y='1550' font-size='24' fill='rgba(255,255,255,0.7)' font-family='Inter, sans-serif'>NexoraOS • 2025</text>
 </svg>`;
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
