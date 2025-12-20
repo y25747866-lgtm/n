@@ -41,6 +41,8 @@ export default function GeneratePage() {
       setPdfPath(data.pdfPath);
     } catch (err: any) {
       console.error(err);
+      // The error from fetch or the JSON parsing will be caught here.
+      // The error from the API response body is handled in the `if (!response.ok)` block.
       setError(err.message);
     } finally {
       setLoading(false);
