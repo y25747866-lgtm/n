@@ -48,3 +48,5 @@ export const TemplateContentSchema = z.object({
 export type TemplateContent = z.infer<typeof TemplateContentSchema>;
 
 export type JobStatus = 'pending' | 'running' | 'completed' | 'error';
+
+    
