@@ -42,7 +42,7 @@ export default function GeneratePage() {
     setGeneratedContent(null);
 
     try {
-      const result = await generateReportAction({ topic: values.topic });
+      const result = await generateReportAction(values.topic);
       if (result.content) {
         setGeneratedContent(result);
       } else {
