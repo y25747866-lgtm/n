@@ -7,7 +7,7 @@ export const maxDuration = 300; // 5 minutes
 
 export default async function handler(req: NextRequest) {
     if (req.method !== 'POST') {
-        return new Response('Method Not Allowed', { status: 405 });
+        return NextResponse.json({ error: 'Method Not Allowed' }, { status: 405 });
     }
 
     try {
@@ -18,7 +18,7 @@ export default async function handler(req: NextRequest) {
         const result = await generateBook(topic);
         return NextResponse.json({ pdfPath: result.pdfPath });
     } catch (err: any) {
-        console.error(err);
-        return NextResponse.json({ error: "Failed to generate book: " + err.message }, { status: 500 });
+        console.error("API Route Error:", err);
+        return NextResponse.json({ error: err.message || "Failed to generate book due to an internal error." }, { status: 500 });
     }
 }
