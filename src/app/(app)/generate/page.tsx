@@ -2,8 +2,7 @@
 import { useState } from "react";
 
 export default function GeneratePage() {
-  const [bookTitle, setBookTitle] = useState("");
-  const [chapterTitles, setChapterTitles] = useState("");
+  const [topic, setTopic] = useState("");
   const [loading, setLoading] = useState(false);
   const [pdfPath, setPdfPath] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -13,26 +12,18 @@ export default function GeneratePage() {
     setPdfPath(null);
     setError(null);
     try {
-      const chaptersArray = chapterTitles
-        .split("\n")
-        .map(ch => ch.trim())
-        .filter(ch => ch.length > 0);
-        
-      if (!bookTitle || chaptersArray.length === 0) {
-        setError("Please provide a book title and at least one chapter title.");
+      if (!topic) {
+        setError("Please provide a topic.");
         setLoading(false);
         return;
       }
-
+      
       const response = await fetch("/api/generate-book", {
         method: "POST",
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          bookTitle,
-          chapterTitles: chaptersArray,
-        }),
+        body: JSON.stringify({ topic }),
       });
 
       if (!response.ok) {
@@ -41,7 +32,7 @@ export default function GeneratePage() {
       }
 
       const data = await response.json();
-      setPdfPath(data.pdfPath);
+      setPdfPath(data.pdfPath); // Path to generated PDF
     } catch (err: any) {
       console.error(err);
       setError(err.message);
@@ -54,37 +45,21 @@ export default function GeneratePage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Generate Your E-Book</h1>
-        <p className="text-muted-foreground">Enter your book title and chapter titles below to generate a complete PDF.</p>
+        <p className="text-muted-foreground">Enter a topic below and let the AI generate a complete PDF e-book for you.</p>
       </div>
-
-      <div className="space-y-4">
-        <div>
-          <label htmlFor="book-title" className="block text-sm font-medium mb-1">
-            Book Title
-          </label>
-          <input
-            id="book-title"
-            type="text"
-            value={bookTitle}
-            onChange={e => setBookTitle(e.target.value)}
-            className="w-full p-2 border rounded-md bg-input"
-            placeholder="e.g., The Future of Artificial Intelligence"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="chapter-titles" className="block text-sm font-medium mb-1">
-            Chapter Titles (one per line)
-          </label>
-          <textarea
-            id="chapter-titles"
-            value={chapterTitles}
-            onChange={e => setChapterTitles(e.target.value)}
-            rows={8}
-            className="w-full p-2 border rounded-md bg-input"
-            placeholder="Introduction to AI&#10;The History of Neural Networks&#10;AI in Healthcare"
-          />
-        </div>
+      
+      <div className="space-y-2">
+        <label htmlFor="topic" className="block text-sm font-medium mb-1">
+          Topic
+        </label>
+        <input
+          id="topic"
+          type="text"
+          value={topic}
+          onChange={e => setTopic(e.target.value)}
+          className="w-full max-w-lg p-2 border rounded-md bg-input"
+          placeholder="e.g., 'Getting started with sourdough baking'"
+        />
       </div>
 
       <button onClick={handleGenerate} disabled={loading} className="bg-primary text-primary-foreground px-4 py-2 rounded-md disabled:bg-muted">

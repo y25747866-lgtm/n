@@ -11,11 +11,11 @@ export default async function handler(req: NextRequest) {
     }
 
     try {
-        const { bookTitle, chapterTitles } = await req.json();
-        if (!bookTitle || !chapterTitles || !Array.isArray(chapterTitles)) {
-            return NextResponse.json({ error: "Missing bookTitle or chapterTitles" }, { status: 400 });
+        const { topic } = await req.json();
+        if (!topic) {
+            return NextResponse.json({ error: "Missing topic" }, { status: 400 });
         }
-        const result = await generateBook(bookTitle, chapterTitles);
+        const result = await generateBook(topic);
         return NextResponse.json({ pdfPath: result.pdfPath });
     } catch (err: any) {
         console.error(err);
