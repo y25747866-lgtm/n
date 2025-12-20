@@ -60,7 +60,7 @@ export default function GeneratePage() {
       <header className="text-center">
         <h1 className="text-4xl md:text-5xl font-black tracking-tighter flex items-center justify-center gap-3">
           <Wand2 className="h-10 w-10 text-primary" />
-          <span className="bg-clip-text text-transparent bg-accent-gradient-1">Report Creation System</span>
+          <span className="bg-clip-text text-transparent bg-accent-gradient-1">Generate a Report</span>
         </h1>
         <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
           Enter a topic and let our AI create a detailed article for you.
@@ -69,9 +69,9 @@ export default function GeneratePage() {
 
       <Card className="glass-card">
         <CardHeader>
-          <CardTitle>Create a new Report</CardTitle>
+          <CardTitle>New Report</CardTitle>
           <CardDescription>
-            Describe the topic you want to write about. Be as specific as you can.
+            Describe the topic you want the report to be about.
           </CardDescription>
         </CardHeader>
         <CardContent>
