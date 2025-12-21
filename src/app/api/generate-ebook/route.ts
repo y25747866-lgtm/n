@@ -1,3 +1,4 @@
+
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
@@ -15,11 +16,15 @@ export async function POST(req: Request) {
 
     // Call OpenRouter AI
     const aiResponse = await openai.chat.completions.create({
-      model: "openai/gpt-4o-mini",
+      model: "openai/gpt-4o",
       messages: [
         {
+          role: "system",
+          content: `You are a professional eBook writer, editor, and publisher. Your task is to automatically generate a COMPLETE professional eBook from ONLY a topic. Do NOT ask any questions. Do NOT require titles, subtitles, or outlines from the user. Do NOT return JSON. Do NOT return HTML. Do NOT use code blocks. The output must be clean plain text (Markdown is allowed). You must generate EVERYTHING by yourself in this exact order: 1. BOOK TITLE, 2. BOOK SUBTITLE, 3. BOOK DESCRIPTION, 4. TABLE OF CONTENTS (10–15 chapters), 5. FULL CHAPTER CONTENT (long, detailed, professional — enough for a 40–50 page PDF), 6. FINAL CONCLUSION, 7. PROFESSIONAL AI COVER IMAGE PROMPT (print-ready). Write full chapters, NOT placeholders. No mock text. No filler lines. No explanations. No errors. If something fails internally, retry silently and continue. Start immediately.`,
+        },
+        {
           role: "user",
-          content: `Write a full e-book on the topic: "${topic}". It must be long enough to produce 40-50 PDF pages (18,000-25,000 words total). Structure it with a book title, subtitle, description, a table of contents with 10-12 chapters, full content for each chapter (1500-2200 words each), and a final conclusion. Format the entire output as a single block of structured text following these rules: BOOK_TITLE: ..., BOOK_SUBTITLE: ..., etc. Also include a professional prompt that can be used to generate a cover image for this book.`,
+          content: `Topic: ${topic}`,
         },
       ],
     });
