@@ -2,7 +2,14 @@
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      // Use the CJS build of fontkit to avoid SWC build errors
+      fontkit: require.resolve('fontkit/dist/main.cjs'),
+    };
+    return config;
+  },
   typescript: {
     ignoreBuildErrors: true,
   },
