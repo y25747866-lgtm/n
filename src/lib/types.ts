@@ -38,6 +38,7 @@ export const EbookOutlineSchema = z.object({
 });
 export type EbookOutline = z.infer<typeof EbookOutlineSchema>;
 
+
 export const TemplateContentSchema = z.object({
     id: z.string().optional(),
     productType: z.literal('Template').optional(),
@@ -47,6 +48,5 @@ export const TemplateContentSchema = z.object({
 });
 export type TemplateContent = z.infer<typeof TemplateContentSchema>;
 
-export type JobStatus = 'pending' | 'running' | 'completed' | 'error';
 
-    
+export type JobStatus = 'pending' | 'running' | 'completed' | 'error';
