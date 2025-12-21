@@ -11,12 +11,12 @@ import { EbookContent, EbookOutline } from "@/lib/types";
 import { generateOutlineAction } from "@/app/actions/generate-outline-action";
 import { generateChapterAction } from "@/app/actions/generate-chapter-action";
 import { Progress } from "@/components/ui/progress";
-import { generatePdfAction } from "@/app/actions/generate-pdf-action";
 import { useToast } from "@/hooks/use-toast";
 import { addDoc, collection } from "firebase/firestore";
 import { useFirebase } from "@/firebase";
 import { v4 as uuidv4 } from "uuid";
 import { generateCoverAction } from "@/app/actions/generate-cover-action";
+import { marked } from 'marked';
 
 export default function GeneratePage() {
   const { firestore, user } = useFirebase();
@@ -128,9 +128,48 @@ export default function GeneratePage() {
     if (!result) return;
     setIsDownloading(true);
     toast({ title: "Generating PDF...", description: "This might take a moment." });
+
     try {
-        const pdfBase64 = await generatePdfAction(result);
-        const blob = new Blob([Buffer.from(pdfBase64, 'base64')], { type: 'application/pdf' });
+        const coverHtml = result.coverImageUrl ? `<div style="width:100%;height:100vh;display:flex;justify-content:center;align-items:center;background-image:url(${result.coverImageUrl});background-size:cover;background-position:center;"></div>` : '';
+        const titlePageHtml = `<div style="page-break-after:always;display:flex;flex-direction:column;justify-content:center;align-items:center;height:100vh;text-align:center;"><h1>${result.title}</h1><h2>${result.subtitle}</h2></div>`;
+        const tocHtml = `<div style="page-break-after:always;"><h2>Table of Contents</h2><ul>${result.chapters.map(c => `<li>${c.title}</li>`).join('')}<li>Conclusion</li></ul></div>`;
+        const chaptersHtml = result.chapters.map(c => `<div style="page-break-after:always;"><h2>${c.title}</h2><div>${marked(c.content)}</div></div>`).join('');
+        const conclusionHtml = `<div><h2>Conclusion</h2><div>${marked(result.conclusion)}</div></div>`;
+        
+        const fullHtml = `
+            <html>
+                <head>
+                    <style>
+                        body { font-family: sans-serif; margin: 40px; }
+                        h1 { font-size: 50px; }
+                        h2 { font-size: 30px; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-top: 40px; }
+                        ul { list-style-type: none; padding-left: 0; }
+                        li { font-size: 18px; margin-bottom: 10px; }
+                        p { font-size: 16px; line-height: 1.6; }
+                    </style>
+                </head>
+                <body>
+                    ${coverHtml}
+                    ${titlePageHtml}
+                    ${tocHtml}
+                    ${chaptersHtml}
+                    ${conclusionHtml}
+                </body>
+            </html>
+        `;
+
+        const response = await fetch('/api/pdf', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ html: fullHtml })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'PDF generation failed on the server.');
+        }
+
+        const blob = await response.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
