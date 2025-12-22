@@ -29,7 +29,9 @@ Write a comprehensive chapter of at least 800-1000 words. Provide in-depth expla
 
   } catch (err: any) {
     console.error("Chapter generation failed:", err);
-    // Return empty string on failure, the frontend will retry
+    // Return empty string on failure, the frontend will handle retries or errors.
     return "";
   }
 }
+
+    

@@ -102,9 +102,14 @@ export default function GeneratePage() {
       // 6. Save to History
       if (firestore && user) {
         try {
+            const docId = uuidv4();
             await addDoc(collection(firestore, 'users', user.uid, 'generatedProducts'), {
-                id: uuidv4(),
-                ...finalEbook,
+                id: docId,
+                title: finalEbook.title,
+                subtitle: finalEbook.subtitle,
+                chapters: finalEbook.chapters,
+                conclusion: finalEbook.conclusion,
+                coverImageUrl: finalEbook.coverImageUrl,
                 topic: topic,
                 productType: 'Ebook',
                 generationDate: new Date().toISOString(),
@@ -135,7 +140,7 @@ export default function GeneratePage() {
     toast({ title: "Generating PDF...", description: "This might take a moment." });
 
     try {
-      const pdfBlob = buildEbookPdf({
+      const pdfBlob = await buildEbookPdf({
         title: result.title,
         coverUrl: result.coverImageUrl,
         chapters: result.chapters,
@@ -146,7 +151,7 @@ export default function GeneratePage() {
       a.href = url;
       a.download = `${result.title.replace(/ /g, '_')}.pdf`;
       document.body.appendChild(a);
-      a.click();
+a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
@@ -255,3 +260,5 @@ export default function GeneratePage() {
     </main>
   );
 }
+
+    
