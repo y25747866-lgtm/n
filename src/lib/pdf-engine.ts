@@ -39,74 +39,74 @@ export async function buildEbookPdf({
   coverUrl:string;
   chapters: { title: string; content: string }[];
 }) {
-  const pdf = new jsPDF({
-    orientation: "portrait",
-    unit: "mm",
-    format: "a4",
-  });
+    const pdf = new jsPDF({ unit: "mm", format: "a4" });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 20;
+    const lineHeight = 7;
 
-  const pageHeight = 297;
-  const pageWidth = 210;
-  const margin = 20;
-
-  // --- Cover Page ---
-  try {
-      const coverImageBase64 = await loadImageAsBase64(coverUrl);
-      pdf.addImage(coverImageBase64, "JPEG", 0, 0, pageWidth, pageHeight);
-  } catch (e) {
-      console.error("Could not add cover image to PDF", e);
-      pdf.setFillColor(20, 20, 40);
-      pdf.rect(0, 0, pageWidth, pageHeight, 'F');
-  }
-
-  // Add a semi-transparent overlay for text readability
-  pdf.setFillColor(0, 0, 0);
-  pdf.setGState(new pdf.GState({opacity: 0.6}));
-  pdf.rect(0, 120, pageWidth, 80, 'F');
-  pdf.setGState(new pdf.GState({opacity: 1}));
-
-  // Add Title and Subtitle to Cover
-  pdf.setFontSize(32);
-  pdf.setFont("helvetica", "bold");
-  pdf.setTextColor(255, 255, 255);
-  const titleLines = pdf.splitTextToSize(title, pageWidth - (margin * 2));
-  pdf.text(titleLines, pageWidth / 2, 140, { align: "center" });
-  
-  pdf.setFontSize(18);
-  pdf.setFont("helvetica", "normal");
-  const subtitleY = 140 + (titleLines.length * 12);
-  pdf.text(subtitle, pageWidth / 2, subtitleY, { align: "center" });
-
-  // --- Chapters ---
-  chapters.forEach((chapter, index) => {
-    pdf.addPage();
-    pdf.setTextColor(0, 0, 0); // Reset text color
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(22);
-    
-    // Chapter Title
-    const chapterTitleLines = pdf.splitTextToSize(chapter.title, pageWidth - (margin * 2));
-    pdf.text(chapterTitleLines, margin, 30);
-    
-    // Chapter Content
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(12);
-    const contentLines = pdf.splitTextToSize(chapter.content, pageWidth - (margin * 2));
-    let cursorY = 30 + (chapterTitleLines.length * 10) + 10;
-    
-    for(const line of contentLines) {
-        if (cursorY > pageHeight - margin) {
-            pdf.addPage();
-            cursorY = margin;
+    // Helper function to add wrapped text with page breaks
+    function addTextWithPageBreak(text: string, startY: number, options: { isTitle: boolean }) {
+        if (options.isTitle) {
+            pdf.setFontSize(18);
+            pdf.setFont("helvetica", "bold");
+        } else {
+            pdf.setFontSize(12);
+            pdf.setFont("helvetica", "normal");
         }
-        pdf.text(line, margin, cursorY);
-        // Approximate line height. jsPDF doesn't have great automatic line height handling.
-        cursorY += 5; 
-    }
-  });
 
-  // Return the generated PDF as a Blob.
+        const lines = pdf.splitTextToSize(text, pageWidth - 2 * margin);
+        let y = startY;
+
+        for (const line of lines) {
+            if (y + lineHeight > pageHeight - margin) {
+                pdf.addPage();
+                y = margin;
+            }
+            pdf.text(line, margin, y);
+            y += options.isTitle ? lineHeight * 1.5 : lineHeight;
+        }
+        return y;
+    }
+
+    // --- Cover Page ---
+    try {
+        const coverImageBase64 = await loadImageAsBase64(coverUrl);
+        pdf.addImage(coverImageBase64, "JPEG", 0, 0, pageWidth, pageHeight);
+    } catch (e) {
+        console.error("Could not add cover image to PDF", e);
+        pdf.setFillColor(20, 20, 40);
+        pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+    }
+
+    pdf.setFillColor(0, 0, 0);
+    pdf.setGState(new pdf.GState({opacity: 0.6}));
+    pdf.rect(0, pageHeight / 2 - 30, pageWidth, 80, 'F');
+    pdf.setGState(new pdf.GState({opacity: 1}));
+
+    pdf.setFontSize(32);
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor(255, 255, 255);
+    const titleLines = pdf.splitTextToSize(title, pageWidth - (margin * 2));
+    pdf.text(titleLines, pageWidth / 2, pageHeight / 2 - 10, { align: "center" });
+
+    pdf.setFontSize(18);
+    pdf.setFont("helvetica", "normal");
+    const subtitleY = pageHeight / 2 - 10 + (titleLines.length * 12);
+    pdf.text(subtitle, pageWidth / 2, subtitleY, { align: "center" });
+
+    // --- Chapters ---
+    chapters.forEach((chapter, idx) => {
+        pdf.addPage();
+        pdf.setTextColor(0, 0, 0);
+        
+        let y = margin;
+        
+        y = addTextWithPageBreak(chapter.title, y, { isTitle: true });
+        y += lineHeight; 
+        
+        addTextWithPageBreak(chapter.content, y, { isTitle: false });
+    });
+
   return pdf.output("blob");
 }
-
-    
