@@ -14,12 +14,12 @@ const OutlineResponseSchema = z.object({
 export async function generateOutlineAction(topic: string) {
   try {
     const response = await openrouter.chat.completions.create({
-      model: "openai/gpt-4o",
+      model: "openai/gpt-4o-mini",
       response_format: { type: "json_object" },
       messages: [
         {
           role: "system",
-          content: `You are an expert book editor and publisher. Your task is to create a compelling and logical book outline from a single topic. The outline must be in JSON format. The JSON object should have three keys: "title" (a catchy, professional book title), "subtitle" (a concise, descriptive subtitle), and "chapters" (an array of 10-15 descriptive chapter titles).`
+          content: `You are an expert book editor and publisher. Your task is to create a compelling and logical book outline from a single topic. The outline must be in JSON format. The JSON object should have three keys: "title" (a catchy, professional book title), "subtitle" (a concise, descriptive subtitle), and "chapters" (an array of 10-12 descriptive chapter titles that flow logically).`
         },
         {
           role: "user",
@@ -52,5 +52,3 @@ export async function generateOutlineAction(topic: string) {
     };
   }
 }
-
-    

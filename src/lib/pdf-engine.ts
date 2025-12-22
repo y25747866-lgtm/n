@@ -32,10 +32,12 @@ async function loadImageAsBase64(url: string): Promise<string> {
 
 export async function buildEbookPdf({
   title,
+  subtitle,
   coverUrl,
   chapters,
 }: {
   title: string;
+  subtitle: string;
   coverUrl: string;
   chapters: { title: string; content: string }[];
 }) {
@@ -50,10 +52,24 @@ export async function buildEbookPdf({
   // Add the cover image, making it fill the entire A4 page.
   pdf.addImage(coverImageBase64, "JPEG", 0, 0, 210, 297); 
 
+  // Add a semi-transparent overlay for text readability
+  pdf.setFillColor(0, 0, 0);
+  pdf.rect(0, 0, 210, 297, "F");
+
+  pdf.addImage(coverImageBase64, "JPEG", 0, 0, 210, 297);
+  
+  pdf.setFillColor(0,0,0);
+  pdf.rect(0, 120, 210, 80, 'F');
+
+
   // Overlay the book title on the cover image.
   pdf.setFontSize(28);
   pdf.setTextColor(255, 255, 255); // Set text color to white for contrast.
   pdf.text(title, 105, 150, { align: "center", maxWidth: 180 });
+  
+  pdf.setFontSize(16);
+  pdf.text(subtitle, 105, 165, { align: "center", maxWidth: 180 });
+
 
   // --- Chapters ---
   chapters.forEach((chapter) => {
@@ -62,19 +78,15 @@ export async function buildEbookPdf({
     // Chapter Title
     pdf.setFontSize(22);
     pdf.setTextColor(0, 0, 0); // Reset text color to black.
-    pdf.text(chapter.title, 20, 30, { maxWidth: 170 });
+    const titleLines = pdf.splitTextToSize(chapter.title, 170);
+    pdf.text(titleLines, 20, 30);
     
-    pdf.moveDown(2);
-
     // Chapter Content
     pdf.setFontSize(12);
-    // Use splitTextToSize for automatic text wrapping within a specified width.
-    const lines = pdf.splitTextToSize(chapter.content, 170);
-    pdf.text(lines, 20, 45);
+    const contentLines = pdf.splitTextToSize(chapter.content, 170);
+    pdf.text(contentLines, 20, 30 + (titleLines.length * 10) + 10);
   });
 
   // Return the generated PDF as a Blob.
   return pdf.output("blob");
 }
-
-    

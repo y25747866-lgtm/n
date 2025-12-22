@@ -12,7 +12,7 @@ import { generateOutlineAction } from "@/app/actions/generate-outline-action";
 import { generateChapter } from "@/app/actions/generate-chapter-action";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { addDoc, collection } from "firebase/firestore";
+import { doc, setDoc, collection } from "firebase/firestore";
 import { useFirebase } from "@/firebase";
 import { v4 as uuidv4 } from "uuid";
 import { getCoverImage } from "@/lib/cover-engine";
@@ -68,6 +68,7 @@ export default function GeneratePage() {
         const chapterContent = await generateChapter(topic, chapterTitle);
         if (!chapterContent) {
             // Simple retry logic
+            await new Promise(resolve => setTimeout(resolve, 1000));
             const retryContent = await generateChapter(topic, chapterTitle);
             if(!retryContent){
                  throw new Error(`Failed to generate content for chapter: ${chapterTitle}`);
@@ -103,8 +104,11 @@ export default function GeneratePage() {
       if (firestore && user) {
         try {
             const docId = uuidv4();
-            await addDoc(collection(firestore, 'users', user.uid, 'generatedProducts'), {
+            const docRef = doc(firestore, 'users', user.uid, 'generatedProducts', docId);
+
+            await setDoc(docRef, {
                 id: docId,
+                userId: user.uid,
                 title: finalEbook.title,
                 subtitle: finalEbook.subtitle,
                 chapters: finalEbook.chapters,
@@ -118,9 +122,9 @@ export default function GeneratePage() {
                 title: "Saved to History",
                 description: "Your new e-book has been saved to your generation history."
             })
-        } catch (dbError) {
+        } catch (dbError: any) {
             console.error("Failed to save to history:", dbError);
-            setError("E-book generated, but failed to save to your history.");
+            setError("E-book generated, but failed to save to your history. " + dbError.message);
         }
       }
 
@@ -142,6 +146,7 @@ export default function GeneratePage() {
     try {
       const pdfBlob = await buildEbookPdf({
         title: result.title,
+        subtitle: result.subtitle,
         coverUrl: result.coverImageUrl,
         chapters: result.chapters,
       });
@@ -151,7 +156,7 @@ export default function GeneratePage() {
       a.href = url;
       a.download = `${result.title.replace(/ /g, '_')}.pdf`;
       document.body.appendChild(a);
-a.click();
+      a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
@@ -260,5 +265,3 @@ a.click();
     </main>
   );
 }
-
-    
