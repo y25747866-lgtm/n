@@ -9,10 +9,10 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2, Sparkles, Download, BookCheck, FileText, Bot } from "lucide-react";
 import { EbookContent, EbookOutline } from "@/lib/types";
 import { generateOutlineAction } from "@/app/actions/generate-outline-action";
-import { generateChapter } from "@/app/actions/generate-chapter-action";
+import { generateChapterAction } from "@/app/actions/generate-chapter-action";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { doc, setDoc, collection } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { useFirebase } from "@/firebase";
 import { v4 as uuidv4 } from "uuid";
 import { getCoverImage } from "@/lib/cover-engine";
@@ -38,10 +38,11 @@ export default function GeneratePage() {
     setResult(null);
     setOutline(null);
     setProgress(0);
+    setProgressMessage("Warming up the engines...");
 
     try {
       // 1. Generate Outline
-      setProgressMessage("Generating outline...");
+      setProgressMessage("Drafting the blueprint...");
       setProgress(10);
       const outlineResult = await generateOutlineAction(topic);
       if (!outlineResult.ok || !outlineResult.outline) {
@@ -51,42 +52,34 @@ export default function GeneratePage() {
       setProgress(20);
 
       // 2. Generate Cover (concurrently)
-      setProgressMessage("Designing cover...");
+      setProgressMessage("Designing a stunning cover...");
       const coverPromise = getCoverImage({
         topic,
         creditsAvailable: subscription.credits,
       });
       
-      // 3. Generate Chapters
-      const chaptersContent: { title: string; content: string }[] = [];
+      // 3. Generate Chapters sequentially
       const totalChapters = outlineResult.outline.chapters.length;
-
+      const chaptersContent: { title: string; content: string }[] = [];
       for (let i = 0; i < totalChapters; i++) {
         const chapterTitle = outlineResult.outline.chapters[i];
-        setProgressMessage(`Writing Chapter ${i + 1}/${totalChapters}: ${chapterTitle}`);
+        setProgressMessage(`Writing Chapter ${i + 1}/${totalChapters}: "${chapterTitle}"`);
         
-        const chapterContent = await generateChapter(topic, chapterTitle);
-        if (!chapterContent) {
-            // Simple retry logic
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            const retryContent = await generateChapter(topic, chapterTitle);
-            if(!retryContent){
-                 throw new Error(`Failed to generate content for chapter: ${chapterTitle}`);
-            }
-            chaptersContent.push({ title: chapterTitle, content: retryContent });
+        const chapterResult = await generateChapterAction(topic, chapterTitle);
+        if (!chapterResult.ok || !chapterResult.content) {
+            // This allows the process to continue even if one chapter fails, filling it with a note.
+            console.error(`Failed to generate content for chapter: ${chapterTitle}. Error: ${chapterResult.error}`);
+            chaptersContent.push({ title: chapterTitle, content: `[Content generation failed for this chapter. Please try again or regenerate the book.]` });
         } else {
-            chaptersContent.push({ title: chapterTitle, content: chapterContent });
+            chaptersContent.push({ title: chapterTitle, content: chapterResult.content });
         }
         
-        setProgress(20 + Math.round(((i + 1) / totalChapters) * 60));
+        // Update progress after each chapter
+        setProgress(20 + Math.round(((i + 1) / totalChapters) * 70));
       }
       
-      // 4. Generate Conclusion (as a chapter)
-      setProgressMessage("Writing conclusion...");
-      const conclusionContent = await generateChapter(topic, "Conclusion and Final Thoughts") || "An error occurred while generating the conclusion.";
-      setProgress(90);
-
-      // 5. Await cover
+      // 4. Await cover image
+      setProgressMessage("Adding the final touches to the cover...");
       const coverResult = await coverPromise;
       const coverImageUrl = coverResult.url;
       setProgress(95);
@@ -95,13 +88,16 @@ export default function GeneratePage() {
         title: outlineResult.outline.title,
         subtitle: outlineResult.outline.subtitle,
         chapters: chaptersContent,
-        conclusion: conclusionContent,
         coverImageUrl: coverImageUrl,
+        // The conclusion is often part of the last chapter in this new flow.
+        // If you need a separate conclusion, you can add another generation step.
+        conclusion: "Thank you for reading. We hope this book has provided you with valuable insights.",
       };
       setResult(finalEbook);
 
-      // 6. Save to History
+      // 5. Save to History
       if (firestore && user) {
+        setProgressMessage("Saving your new masterpiece...");
         try {
             const docId = uuidv4();
             const docRef = doc(firestore, 'users', user.uid, 'generatedProducts', docId);
@@ -131,22 +127,23 @@ export default function GeneratePage() {
     } catch (err: any) {
       console.error(err);
       setError(err.message || "An unknown error occurred during generation.");
+      setProgress(0);
     } finally {
       setIsLoading(false);
       setProgress(100);
-      setProgressMessage("Done!");
+      setProgressMessage("All done!");
     }
   };
 
   const handleDownload = async () => {
     if (!result || !result.coverImageUrl) return;
     setIsDownloading(true);
-    toast({ title: "Generating PDF...", description: "This might take a moment." });
+    toast({ title: "Generating PDF...", description: "This might take a moment. Please wait." });
 
     try {
       const pdfBlob = await buildEbookPdf({
         title: result.title,
-        subtitle: result.subtitle,
+        subtitle: result.subtitle || '',
         coverUrl: result.coverImageUrl,
         chapters: result.chapters,
       });
@@ -156,16 +153,21 @@ export default function GeneratePage() {
       a.href = url;
       a.download = `${result.title.replace(/ /g, '_')}.pdf`;
       document.body.appendChild(a);
-      a.click();
+a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      toast({
+        title: "Download Started",
+        description: "Your PDF e-book is now downloading."
+      });
 
     } catch(err: any) {
+        console.error("PDF Generation Error:", err);
         setError(err.message || "Failed to generate PDF.");
         toast({
             variant: "destructive",
             title: "PDF Generation Failed",
-            description: "An error occurred while creating the PDF file."
+            description: err.message || "An error occurred while creating the PDF file."
         });
     } finally {
         setIsDownloading(false);
@@ -180,7 +182,7 @@ export default function GeneratePage() {
           AI E-Book Generator
         </h1>
         <p className="text-muted-foreground">
-          Enter a topic and let our AI craft a complete e-book for you, ready to download.
+          Enter a topic and let our AI craft a complete e-book for you, chapter by chapter.
         </p>
       </div>
 
@@ -196,6 +198,7 @@ export default function GeneratePage() {
             onChange={(e) => setTopic(e.target.value)}
             className="w-full p-4 text-base h-12"
             placeholder="e.g., 'The Ultimate Guide to Digital Marketing in 2025'"
+            disabled={isLoading}
           />
         </div>
 
@@ -215,11 +218,11 @@ export default function GeneratePage() {
       </div>
       
       {isLoading && (
-         <div className="space-y-4 text-center">
+         <div className="space-y-4 text-center p-8 border rounded-lg">
             <div className="flex justify-center items-center">
                  <Bot className="h-8 w-8 text-primary animate-pulse" />
             </div>
-            <p className="text-sm text-muted-foreground">{progressMessage}</p>
+            <p className="text-muted-foreground animate-pulse">{progressMessage}</p>
             <Progress value={progress} className="w-full" />
         </div>
       )}
@@ -265,3 +268,5 @@ export default function GeneratePage() {
     </main>
   );
 }
+
+    
