@@ -3,10 +3,10 @@
 
 import { openrouter } from "@/lib/openrouter";
 
-export async function generateChapterAction(topic: string, chapterTitle: string) {
+export async function generateChapter(topic: string, chapterTitle: string) {
   try {
     const response = await openrouter.chat.completions.create({
-      model: "openai/gpt-4o",
+      model: "meta-llama/llama-3.1-8b-instruct",
       messages: [
         {
           role: "system",
@@ -18,25 +18,18 @@ export async function generateChapterAction(topic: string, chapterTitle: string)
 
 Chapter Title: "${chapterTitle}"
 
-Write a comprehensive chapter of at least 1500-2000 words. Provide in-depth explanations, practical examples, and actionable advice. The tone should be professional and authoritative.`
+Write a comprehensive chapter of at least 800-1000 words. Provide in-depth explanations, practical examples, and actionable advice. The tone should be professional and authoritative.`
         }
       ],
+      max_tokens: 1200,
+      temperature: 0.7,
     });
 
-    const content = response.choices[0].message.content;
-    if (!content) {
-        return { ok: false, error: "AI returned empty content for the chapter." };
-    }
+    return response.choices[0].message.content || "";
 
-    return {
-      ok: true,
-      content,
-    };
   } catch (err: any) {
     console.error("Chapter generation failed:", err);
-    return {
-      ok: false,
-      error: err.message || "An unknown error occurred during chapter generation."
-    };
+    // Return empty string on failure, the frontend will retry
+    return "";
   }
 }

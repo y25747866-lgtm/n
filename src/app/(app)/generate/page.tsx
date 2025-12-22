@@ -9,17 +9,19 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2, Sparkles, Download, BookCheck, FileText, Bot } from "lucide-react";
 import { EbookContent, EbookOutline } from "@/lib/types";
 import { generateOutlineAction } from "@/app/actions/generate-outline-action";
-import { generateChapterAction } from "@/app/actions/generate-chapter-action";
+import { generateChapter } from "@/app/actions/generate-chapter-action";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { addDoc, collection } from "firebase/firestore";
 import { useFirebase } from "@/firebase";
 import { v4 as uuidv4 } from "uuid";
-import { generateCoverAction } from "@/app/actions/generate-cover-action";
-import { marked } from 'marked';
+import { getCoverImage } from "@/lib/cover-engine";
+import { useSubscription } from "@/contexts/subscription-provider";
+import { buildEbookPdf } from "@/lib/pdf-engine";
 
 export default function GeneratePage() {
   const { firestore, user } = useFirebase();
+  const { subscription } = useSubscription();
   const { toast } = useToast();
   const [topic, setTopic] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -46,9 +48,16 @@ export default function GeneratePage() {
         throw new Error(outlineResult.error || "Failed to generate outline.");
       }
       setOutline(outlineResult.outline);
-      setProgress(25);
+      setProgress(20);
 
-      // 2. Generate Chapters
+      // 2. Generate Cover (concurrently)
+      setProgressMessage("Designing cover...");
+      const coverPromise = getCoverImage({
+        topic,
+        creditsAvailable: subscription.credits,
+      });
+      
+      // 3. Generate Chapters
       const chaptersContent: { title: string; content: string }[] = [];
       const totalChapters = outlineResult.outline.chapters.length;
 
@@ -56,33 +65,30 @@ export default function GeneratePage() {
         const chapterTitle = outlineResult.outline.chapters[i];
         setProgressMessage(`Writing Chapter ${i + 1}/${totalChapters}: ${chapterTitle}`);
         
-        const chapterResult = await generateChapterAction(topic, chapterTitle);
-        if (!chapterResult.ok || !chapterResult.content) {
+        const chapterContent = await generateChapter(topic, chapterTitle);
+        if (!chapterContent) {
             // Simple retry logic
-            const retryResult = await generateChapterAction(topic, chapterTitle);
-            if(!retryResult.ok || !retryResult.content){
-                 throw new Error(chapterResult.error || `Failed to generate content for chapter: ${chapterTitle}`);
+            const retryContent = await generateChapter(topic, chapterTitle);
+            if(!retryContent){
+                 throw new Error(`Failed to generate content for chapter: ${chapterTitle}`);
             }
-            chaptersContent.push({ title: chapterTitle, content: retryResult.content });
+            chaptersContent.push({ title: chapterTitle, content: retryContent });
         } else {
-            chaptersContent.push({ title: chapterTitle, content: chapterResult.content });
+            chaptersContent.push({ title: chapterTitle, content: chapterContent });
         }
         
-        setProgress(25 + Math.round(((i + 1) / totalChapters) * 65));
+        setProgress(20 + Math.round(((i + 1) / totalChapters) * 60));
       }
       
-      // 3. Generate Conclusion (as a chapter)
+      // 4. Generate Conclusion (as a chapter)
       setProgressMessage("Writing conclusion...");
-      const conclusionResult = await generateChapterAction(topic, "Conclusion and Final Thoughts");
-      const conclusionContent = conclusionResult.content || "An error occurred while generating the conclusion.";
+      const conclusionContent = await generateChapter(topic, "Conclusion and Final Thoughts") || "An error occurred while generating the conclusion.";
+      setProgress(90);
 
-
-      // 4. Generate Cover
-      setProgressMessage("Designing cover...");
-      const coverResult = await generateCoverAction(outlineResult.outline.title, outlineResult.outline.subtitle);
-      const coverImageUrl = coverResult.imageUrl;
+      // 5. Await cover
+      const coverResult = await coverPromise;
+      const coverImageUrl = coverResult.url;
       setProgress(95);
-
 
       const finalEbook: EbookContent = {
         title: outlineResult.outline.title,
@@ -93,7 +99,7 @@ export default function GeneratePage() {
       };
       setResult(finalEbook);
 
-      // 5. Save to History
+      // 6. Save to History
       if (firestore && user) {
         try {
             await addDoc(collection(firestore, 'users', user.uid, 'generatedProducts'), {
@@ -109,7 +115,6 @@ export default function GeneratePage() {
             })
         } catch (dbError) {
             console.error("Failed to save to history:", dbError);
-            // Don't throw, just notify
             setError("E-book generated, but failed to save to your history.");
         }
       }
@@ -125,59 +130,25 @@ export default function GeneratePage() {
   };
 
   const handleDownload = async () => {
-    if (!result) return;
+    if (!result || !result.coverImageUrl) return;
     setIsDownloading(true);
     toast({ title: "Generating PDF...", description: "This might take a moment." });
 
     try {
-        const coverHtml = result.coverImageUrl ? `<div style="width:100%;height:100vh;display:flex;justify-content:center;align-items:center;background-image:url(${result.coverImageUrl});background-size:cover;background-position:center;"></div>` : '';
-        const titlePageHtml = `<div style="page-break-after:always;display:flex;flex-direction:column;justify-content:center;align-items:center;height:100vh;text-align:center;"><h1>${result.title}</h1><h2>${result.subtitle}</h2></div>`;
-        const tocHtml = `<div style="page-break-after:always;"><h2>Table of Contents</h2><ul>${result.chapters.map(c => `<li>${c.title}</li>`).join('')}<li>Conclusion</li></ul></div>`;
-        const chaptersHtml = result.chapters.map(c => `<div style="page-break-after:always;"><h2>${c.title}</h2><div>${marked(c.content)}</div></div>`).join('');
-        const conclusionHtml = `<div><h2>Conclusion</h2><div>${marked(result.conclusion)}</div></div>`;
-        
-        const fullHtml = `
-            <html>
-                <head>
-                    <style>
-                        body { font-family: sans-serif; margin: 40px; }
-                        h1 { font-size: 50px; }
-                        h2 { font-size: 30px; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-top: 40px; }
-                        ul { list-style-type: none; padding-left: 0; }
-                        li { font-size: 18px; margin-bottom: 10px; }
-                        p { font-size: 16px; line-height: 1.6; }
-                    </style>
-                </head>
-                <body>
-                    ${coverHtml}
-                    ${titlePageHtml}
-                    ${tocHtml}
-                    ${chaptersHtml}
-                    ${conclusionHtml}
-                </body>
-            </html>
-        `;
-
-        const response = await fetch('/api/pdf', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ html: fullHtml })
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'PDF generation failed on the server.');
-        }
-
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${result.title.replace(/ /g, '_')}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+      const pdfBlob = buildEbookPdf({
+        title: result.title,
+        coverUrl: result.coverImageUrl,
+        chapters: result.chapters,
+      });
+      
+      const url = URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${result.title.replace(/ /g, '_')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
 
     } catch(err: any) {
         setError(err.message || "Failed to generate PDF.");
