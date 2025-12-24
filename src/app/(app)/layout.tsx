@@ -6,11 +6,11 @@ import Header from '@/components/boss-os/header';
 import { SidebarProvider, useSidebar } from '@/contexts/sidebar-provider';
 import { SubscriptionProvider } from '@/contexts/subscription-provider';
 import { cn } from '@/lib/utils';
-import React, { useEffect } from 'react';
-import { FirebaseClientProvider, useAuth, useUser } from '@/firebase';
+import React, { useEffect, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { usePathname } from 'next/navigation';
-import { signInAnonymously } from 'firebase/auth';
+import { usePathname, useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
+import { Session } from '@supabase/supabase-js';
 
 function AppSkeleton() {
   const { isOpen, isDesktop, isNavVisible } = useSidebar();
@@ -66,30 +66,56 @@ function AppSkeleton() {
 
 function AppContent({ children }: { children: React.ReactNode }) {
   const { isOpen, isDesktop, isNavVisible } = useSidebar();
-  const { user, isUserLoading } = useUser();
-  const auth = useAuth();
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!isUserLoading && !user && auth) {
-      signInAnonymously(auth).catch((error) => {
-        console.error("Anonymous sign-in failed:", error);
-      });
-    }
-  }, [isUserLoading, user, auth]);
+    const getSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+      setLoading(false);
+    };
+
+    getSession();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+        if (!session && pathname !== '/') {
+            router.push('/');
+        }
+        setLoading(false);
+      }
+    );
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [pathname, router]);
 
   // The landing page should not show the main app layout
-  if (pathname === '/landing') {
+  if (pathname === '/') {
     return <>{children}</>;
   }
-
-  if (isUserLoading || !user) {
+  
+  if (loading) {
     return <AppSkeleton />;
   }
+  
+  if (!session) {
+      // This should be handled by the onAuthStateChange listener redirect, but as a fallback
+      if (typeof window !== 'undefined') {
+        router.push('/');
+      }
+      return <AppSkeleton />;
+  }
+
 
   return (
     <div className="flex min-h-screen bg-background">
-      {isNavVisible && <AppSidebar />}
+      {isNavVisible && <AppSidebar session={session} />}
       <div
         className={cn(
           "flex flex-1 flex-col transition-all duration-300 ease-in-out",
@@ -107,12 +133,10 @@ function AppContent({ children }: { children: React.ReactNode }) {
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <FirebaseClientProvider>
       <SubscriptionProvider>
         <SidebarProvider>
           <AppContent>{children}</AppContent>
         </SidebarProvider>
       </SubscriptionProvider>
-    </FirebaseClientProvider>
   );
 }

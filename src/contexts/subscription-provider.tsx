@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { createContext, useContext, useState, useMemo, useCallback } from "react";
@@ -9,7 +10,7 @@ type SubscriptionState = {
   status: PlanStatus;
   credits: number;
   planId: "monthly" | "annual" | null;
-  renewalDate: Date | null;
+  renewalDate: string | null;
 };
 
 type SubscriptionContextType = {
@@ -43,7 +44,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         status: "active",
         credits: planId === 'monthly' ? 50 : 600,
         planId,
-        renewalDate,
+        renewalDate: renewalDate.toISOString(),
       });
       setIsLoading(false);
       toast({

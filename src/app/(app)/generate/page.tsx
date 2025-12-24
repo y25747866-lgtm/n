@@ -12,15 +12,13 @@ import { generateOutlineAction } from "@/app/actions/generate-outline-action";
 import { generateChapterAction } from "@/app/actions/generate-chapter-action";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { doc, setDoc } from "firebase/firestore";
-import { useFirebase } from "@/firebase";
 import { v4 as uuidv4 } from "uuid";
 import { getCoverImage } from "@/lib/cover-engine";
 import { useSubscription } from "@/contexts/subscription-provider";
 import { buildEbookPdf } from "@/lib/pdf-engine";
+import { supabase } from "@/lib/supabase";
 
 export default function GeneratePage() {
-  const { firestore, user } = useFirebase();
   const { subscription } = useSubscription();
   const { toast } = useToast();
   const [topic, setTopic] = useState("");
@@ -96,31 +94,31 @@ export default function GeneratePage() {
       setResult(finalEbook);
 
       // 5. Save to History
-      if (firestore && user) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
         setProgressMessage("Saving your new masterpiece...");
-        try {
-            const docId = uuidv4();
-            const docRef = doc(firestore, 'users', user.uid, 'generatedProducts', docId);
-
-            await setDoc(docRef, {
-                id: docId,
-                userId: user.uid,
-                title: finalEbook.title,
-                subtitle: finalEbook.subtitle,
-                chapters: finalEbook.chapters,
-                conclusion: finalEbook.conclusion,
-                coverImageUrl: finalEbook.coverImageUrl,
-                topic: topic,
-                productType: 'Ebook',
-                generationDate: new Date().toISOString(),
-            });
+        const docId = uuidv4();
+        const { error: dbError } = await supabase.from('generated_products').insert({
+            id: docId,
+            user_id: user.id,
+            title: finalEbook.title,
+            subtitle: finalEbook.subtitle,
+            chapters: finalEbook.chapters,
+            conclusion: finalEbook.conclusion,
+            coverImageUrl: finalEbook.coverImageUrl,
+            topic: topic,
+            productType: 'Ebook',
+            generationDate: new Date().toISOString(),
+        });
+        
+        if (dbError) {
+             console.error("Failed to save to history:", dbError);
+             setError("E-book generated, but failed to save to your history. " + dbError.message);
+        } else {
             toast({
                 title: "Saved to History",
                 description: "Your new e-book has been saved to your generation history."
-            })
-        } catch (dbError: any) {
-            console.error("Failed to save to history:", dbError);
-            setError("E-book generated, but failed to save to your history. " + dbError.message);
+            });
         }
       }
 
@@ -153,7 +151,7 @@ export default function GeneratePage() {
       a.href = url;
       a.download = `${result.title.replace(/ /g, '_')}.pdf`;
       document.body.appendChild(a);
-a.click();
+      a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       toast({
@@ -268,5 +266,3 @@ a.click();
     </main>
   );
 }
-
-    

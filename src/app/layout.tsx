@@ -1,8 +1,10 @@
+
 import type {Metadata} from 'next';
 import './globals.css';
 import { ThemeProvider } from '@/contexts/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { Inter } from 'next/font/google'
+import { QueryProvider } from '@/contexts/query-provider';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -23,10 +25,12 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className={inter.className}>
       <head/>
       <body className="font-body antialiased">
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-            {children}
-            <Toaster />
-        </ThemeProvider>
+        <QueryProvider>
+            <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+                {children}
+                <Toaster />
+            </ThemeProvider>
+        </QueryProvider>
       </body>
     </html>
   );

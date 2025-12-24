@@ -37,9 +37,10 @@ import { Separator } from '../ui/separator';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { VisuallyHidden } from '@/components/ui/visually-hidden';
 import { Logo } from './logo';
-import { useUser, useAuth } from '@/firebase';
-import { signOut } from 'firebase/auth';
 import { cn } from '@/lib/utils';
+import { Session } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
+import { useRouter } from 'next/navigation';
 
 const menuItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -49,17 +50,16 @@ const menuItems = [
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
-function ProfileSection() {
+function ProfileSection({ session }: { session: Session }) {
     const { isOpen } = useSidebar();
-    const { user } = useUser();
-    const auth = useAuth();
-    const avatarImage = PlaceHolderImages.find(p => p.id === 'avatar-1');
+    const router = useRouter();
+    const { user } = session;
+    const avatarImage = user?.user_metadata?.avatar_url;
     const getInitials = (name: string) => name ? name.split(' ').map(n => n[0]).join('') : 'U';
 
-    const handleSignOut = () => {
-        if (auth) {
-            signOut(auth);
-        }
+    const handleSignOut = async () => {
+        await supabase.auth.signOut();
+        router.push('/');
     }
 
     if (!user) return null;
@@ -72,14 +72,14 @@ function ProfileSection() {
                         <TooltipTrigger asChild>
                              <Link href="/settings">
                                 <Avatar className="h-10 w-10">
-                                    <AvatarImage src={user.photoURL || avatarImage?.imageUrl} alt={user.displayName || "User Avatar"} data-ai-hint={avatarImage?.imageHint} />
-                                    <AvatarFallback>{getInitials(user.displayName || "User")}</AvatarFallback>
+                                    <AvatarImage src={avatarImage} alt={user.user_metadata?.full_name || "User Avatar"} />
+                                    <AvatarFallback>{getInitials(user.user_metadata?.full_name || "User")}</AvatarFallback>
                                 </Avatar>
                             </Link>
                         </TooltipTrigger>
                         <TooltipContent side="right">
-                           <p>{user.displayName || "Anonymous User"}</p>
-                           <p className="text-xs text-muted-foreground">{user.email || `UID: ${user.uid.slice(0,6)}...`}</p>
+                           <p>{user.user_metadata?.full_name || "Anonymous User"}</p>
+                           <p className="text-xs text-muted-foreground">{user.email || `UID: ${user.id.slice(0,6)}...`}</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
@@ -91,12 +91,12 @@ function ProfileSection() {
         <div className="p-4">
             <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10">
-                    <AvatarImage src={user.photoURL || avatarImage?.imageUrl} alt={user.displayName || "User Avatar"} data-ai-hint={avatarImage?.imageHint} />
-                    <AvatarFallback>{getInitials(user.displayName || "User")}</AvatarFallback>
+                    <AvatarImage src={avatarImage} alt={user.user_metadata?.full_name || "User Avatar"} />
+                    <AvatarFallback>{getInitials(user.user_metadata?.full_name || "User")}</AvatarFallback>
                 </Avatar>
                 <div>
-                    <p className="text-sm font-semibold leading-none">{user.displayName || "Anonymous User"}</p>
-                    <p className="text-xs leading-none text-muted-foreground mt-1">{user.email || `UID: ${user.uid.slice(0,12)}...`}</p>
+                    <p className="text-sm font-semibold leading-none">{user.user_metadata?.full_name || "Anonymous User"}</p>
+                    <p className="text-xs leading-none text-muted-foreground mt-1">{user.email || `UID: ${user.id.slice(0,12)}...`}</p>
                 </div>
             </div>
             <Button variant="ghost" className="w-full justify-start mt-2" onClick={handleSignOut}>
@@ -107,7 +107,7 @@ function ProfileSection() {
     )
 }
 
-function SidebarInnerContent() {
+function SidebarInnerContent({ session }: { session: Session }) {
     const pathname = usePathname();
     const { subscription } = useSubscription();
     const { isOpen } = useSidebar();
@@ -193,13 +193,13 @@ function SidebarInnerContent() {
                     </div>
                 )}
                 <Separator />
-                <ProfileSection />
+                <ProfileSection session={session} />
             </SidebarFooter>
         </>
     );
 }
 
-export default function AppSidebar() {
+export default function AppSidebar({ session }: { session: Session }) {
   const { isMobile, isOpen, setIsOpen, isNavVisible, isClient } = useSidebar();
 
   if (!isClient || !isNavVisible) {
@@ -218,7 +218,7 @@ export default function AppSidebar() {
                 </SheetDescription>
               </SheetHeader>
             </VisuallyHidden>
-            <SidebarInnerContent />
+            <SidebarInnerContent session={session} />
         </SheetContent>
       </Sheet>
     );
@@ -226,7 +226,7 @@ export default function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarInnerContent />
+      <SidebarInnerContent session={session} />
     </Sidebar>
   );
 }

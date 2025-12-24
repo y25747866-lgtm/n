@@ -9,11 +9,21 @@ import { Separator } from "@/components/ui/separator";
 import { useSubscription } from "@/contexts/subscription-provider";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { useUser } from "@/firebase";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { User } from "@supabase/supabase-js";
 
 export default function SettingsPage() {
   const { subscription } = useSubscription();
-  const { user } = useUser();
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    fetchUser();
+  }, []);
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
@@ -30,7 +40,7 @@ export default function SettingsPage() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
-            <Input id="name" defaultValue={user?.displayName || "Anonymous User"} disabled />
+            <Input id="name" defaultValue={user?.user_metadata?.full_name || "Anonymous User"} disabled />
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
@@ -38,7 +48,7 @@ export default function SettingsPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="uid">User ID</Label>
-            <Input id="uid" type="text" defaultValue={user?.uid} disabled />
+            <Input id="uid" type="text" defaultValue={user?.id} disabled />
           </div>
           <Button disabled>Save Changes (Coming Soon)</Button>
         </CardContent>
@@ -56,7 +66,7 @@ export default function SettingsPage() {
                 <div>
                     <h4 className="font-semibold">Current Plan</h4>
                     <p className="text-sm text-muted-foreground">
-                        {subscription.renewalDate ? `Renews on ${subscription.renewalDate.toLocaleDateString()}` : "No active plan."}
+                        {subscription.renewalDate ? `Renews on ${new Date(subscription.renewalDate).toLocaleDateString()}` : "No active plan."}
                     </p>
                 </div>
                 <Badge variant={subscription.status === 'unsubscribed' ? 'destructive' : 'default'} className="capitalize text-lg px-4 py-1">

@@ -1,16 +1,13 @@
 
 'use client';
 
-import { useCollection, useFirebase } from '@/firebase';
-import { collection, orderBy, query, doc, deleteDoc, getDocs, where } from 'firebase/firestore';
+import { useCollection } from '@/firebase/firestore/use-collection';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Book, Download, FileText, History, Loader2, Trash2, Image as ImageIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { EbookContent, TemplateContent } from '@/lib/types';
-import { downloadFile } from '@/lib/download';
+import { EbookContent } from '@/lib/types';
 import { useState } from 'react';
-import { useMemoFirebase } from '@/firebase/provider';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,26 +20,72 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
-import { generatePdfAction } from '@/app/actions/generate-pdf-action';
 import { generateCoverAction } from '@/app/actions/generate-cover-action';
 import Image from 'next/image';
 import { Skeleton } from '@/components/ui/skeleton';
+import { supabase } from '@/lib/supabase';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { buildEbookPdf } from '@/lib/pdf-engine';
+
+async function fetchHistory(userId: string) {
+    const { data, error } = await supabase
+        .from('generated_products')
+        .select('*')
+        .eq('user_id', userId)
+        .order('generationDate', { ascending: false });
+
+    if (error) throw new Error(error.message);
+    return data;
+}
+
+async function deleteHistoryItem(id: string) {
+    const { error } = await supabase.from('generated_products').delete().eq('id', id);
+    if (error) throw new Error(error.message);
+}
+
 
 function HistoryItemCard({ item }: { item: EbookContent & { id: string, productType: string, generationDate: string, coverImageUrl?: string } }) {
-  const { firestore, user } = useFirebase();
   const { toast } = useToast();
-  const [isDeleting, setIsDeleting] = useState(false);
+  const queryClient = useQueryClient();
   const [isDownloading, setIsDownloading] = useState(false);
   const [isGeneratingCover, setIsGeneratingCover] = useState(false);
   const [coverUrl, setCoverUrl] = useState(item.coverImageUrl);
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteHistoryItem,
+    onSuccess: () => {
+        toast({
+            title: "Item Deleted",
+            description: `"${item.title}" has been removed from your history.`,
+        });
+        queryClient.invalidateQueries({ queryKey: ['history'] });
+    },
+    onError: (error) => {
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Could not delete the item. Please try again.",
+        });
+        console.error("Error deleting document: ", error);
+    }
+  });
+
 
   const handleDownload = async () => {
     setIsDownloading(true);
     toast({ title: "Generating PDF...", description: "This might take a moment." });
     try {
-      const pdfBase64 = await generatePdfAction(item);
-      const blob = new Blob([Buffer.from(pdfBase64, 'base64')], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
+      if (!item.coverImageUrl) {
+          throw new Error("Cannot generate PDF without a cover image.");
+      }
+      const pdfBlob = await buildEbookPdf({
+        title: item.title,
+        subtitle: item.subtitle || '',
+        coverUrl: item.coverImageUrl,
+        chapters: item.chapters,
+      });
+
+      const url = URL.createObjectURL(pdfBlob);
       const a = document.createElement('a');
       a.href = url;
       a.download = `${item.title.replace(/ /g, '_')}.pdf`;
@@ -50,6 +93,7 @@ function HistoryItemCard({ item }: { item: EbookContent & { id: string, productT
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+
     } catch (error) {
       console.error("Error generating or downloading PDF:", error);
       toast({ variant: "destructive", title: "PDF Generation Failed", description: "Could not generate the PDF." });
@@ -58,31 +102,6 @@ function HistoryItemCard({ item }: { item: EbookContent & { id: string, productT
     }
   };
 
-  const handleDelete = async () => {
-    if (!firestore || !user) return;
-    setIsDeleting(true);
-    try {
-        const q = query(collection(firestore, 'users', user.uid, 'generatedProducts'), where("id", "==", item.id));
-        const querySnapshot = await getDocs(q);
-        if (!querySnapshot.empty) {
-            const docToDelete = querySnapshot.docs[0];
-            await deleteDoc(docToDelete.ref);
-            toast({
-                title: "Item Deleted",
-                description: `"${item.title}" has been removed from your history.`,
-            });
-        }
-    } catch (error) {
-        console.error("Error deleting document: ", error);
-        toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Could not delete the item. Please try again.",
-        });
-    } finally {
-        setIsDeleting(false);
-    }
-  };
 
   const handleGenerateCover = async () => {
     setIsGeneratingCover(true);
@@ -90,7 +109,16 @@ function HistoryItemCard({ item }: { item: EbookContent & { id: string, productT
     try {
       const { imageUrl } = await generateCoverAction(item.title, item.subtitle || '');
       setCoverUrl(imageUrl);
-      // Here you would also update the document in Firestore with the new coverUrl
+      
+      const { error: updateError } = await supabase
+        .from('generated_products')
+        .update({ coverImageUrl: imageUrl })
+        .eq('id', item.id);
+
+      if (updateError) throw updateError;
+      
+      queryClient.invalidateQueries({ queryKey: ['history'] });
+
     } catch (error) {
       console.error("Error generating cover:", error);
       toast({ variant: "destructive", title: "Cover Generation Failed", description: "Could not generate the cover image." });
@@ -128,14 +156,14 @@ function HistoryItemCard({ item }: { item: EbookContent & { id: string, productT
       </CardContent>
       <CardFooter className="flex flex-col items-start gap-2">
          <div className="flex w-full gap-2">
-            <Button className="flex-1" variant="outline" onClick={handleDownload} disabled={isDownloading}>
+            <Button className="flex-1" variant="outline" onClick={handleDownload} disabled={isDownloading || !item.coverImageUrl}>
                 {isDownloading ? <Loader2 className="animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
                 PDF
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="icon">
-                  {isDeleting ? <Loader2 className="animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                <Button variant="destructive" size="icon" disabled={deleteMutation.isPending}>
+                  {deleteMutation.isPending ? <Loader2 className="animate-spin" /> : <Trash2 className="h-4 w-4" />}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
@@ -148,8 +176,8 @@ function HistoryItemCard({ item }: { item: EbookContent & { id: string, productT
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
-                    {isDeleting ? <Loader2 className="animate-spin" /> : "Delete"}
+                  <AlertDialogAction onClick={() => deleteMutation.mutate(item.id)} disabled={deleteMutation.isPending}>
+                    {deleteMutation.isPending ? <Loader2 className="animate-spin" /> : "Delete"}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -165,19 +193,23 @@ function HistoryItemCard({ item }: { item: EbookContent & { id: string, productT
 }
 
 export default function HistoryPage() {
-  const { firestore, user } = useFirebase();
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+      const getUser = async () => {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+              setUserId(user.id);
+          }
+      };
+      getUser();
+  }, []);
   
-  const historyCollectionRef = useMemoFirebase(() => {
-    if (!firestore || !user) return null;
-    return collection(firestore, 'users', user.uid, 'generatedProducts');
-  }, [firestore, user]);
-
-  const historyQuery = useMemoFirebase(() => {
-    if (!historyCollectionRef) return null;
-    return query(historyCollectionRef, orderBy('generationDate', 'desc'));
-  }, [historyCollectionRef]);
-
-  const { data: history, isLoading } = useCollection(historyQuery);
+  const { data: history, isLoading } = useQuery({
+      queryKey: ['history', userId],
+      queryFn: () => fetchHistory(userId!),
+      enabled: !!userId,
+  });
 
   return (
     <div className="space-y-8">
@@ -231,5 +263,3 @@ export default function HistoryPage() {
     </div>
   );
 }
-
-    
