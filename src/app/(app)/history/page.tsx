@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useCollection } from '@/firebase/firestore/use-collection';
@@ -7,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Book, Download, FileText, History, Loader2, Trash2, Image as ImageIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { EbookContent } from '@/lib/types';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -87,8 +86,8 @@ function HistoryItemCard({ item }: { item: EbookContent & { id: string, productT
 
       const url = URL.createObjectURL(pdfBlob);
       const a = document.createElement('a');
-      a.href = url;
-      a.download = `${item.title.replace(/ /g, '_')}.pdf`;
+a.href = url;
+a.download = `${item.title.replace(/ /g, '_')}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

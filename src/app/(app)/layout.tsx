@@ -1,4 +1,3 @@
-
 'use client';
 
 import AppSidebar from '@/components/boss-os/app-sidebar';
