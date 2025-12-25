@@ -1,3 +1,4 @@
+
 'use client';
 
 import AppSidebar from '@/components/boss-os/app-sidebar';
@@ -10,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Session } from '@supabase/supabase-js';
+import { Loader2 } from 'lucide-react';
 
 function AppSkeleton() {
   const { isOpen, isDesktop, isNavVisible } = useSidebar();
@@ -71,21 +73,25 @@ function AppContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+    // 1. Fetch the current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
-    };
+      // 2. Redirect if not logged in and not on the landing page
+      if (!session && pathname !== '/') {
+        router.push('/');
+      }
+    });
 
-    getSession();
-
+    // 3. Listen for auth state changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
-        if (!session && pathname !== '/') {
+      (_event, currentSession) => {
+        setSession(currentSession);
+        setLoading(false);
+        // 4. Redirect on sign out or if the session becomes null
+        if (!currentSession && pathname !== '/') {
             router.push('/');
         }
-        setLoading(false);
       }
     );
 
@@ -94,24 +100,27 @@ function AppContent({ children }: { children: React.ReactNode }) {
     };
   }, [pathname, router]);
 
-  // The landing page should not show the main app layout
+  // The landing page should not show the main app layout and can be shown while loading
   if (pathname === '/') {
     return <>{children}</>;
   }
   
+  // Show a full-page loader while the session is being checked
   if (loading) {
-    return <AppSkeleton />;
+    return (
+        <div className="flex min-h-screen w-full items-center justify-center bg-background">
+            <Loader2 className="h-16 w-16 animate-spin text-primary" />
+        </div>
+    );
   }
   
+  // If still no session after loading, it means the redirect is in progress.
+  // Rendering null avoids a flash of the old layout.
   if (!session) {
-      // This should be handled by the onAuthStateChange listener redirect, but as a fallback
-      if (typeof window !== 'undefined') {
-        router.push('/');
-      }
-      return <AppSkeleton />;
+      return null;
   }
 
-
+  // Once authenticated and loading is complete, render the main app layout.
   return (
     <div className="flex min-h-screen bg-background">
       {isNavVisible && <AppSidebar session={session} />}
