@@ -16,16 +16,16 @@ export default function DashboardPage() {
   useEffect(() => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
+      // The layout handles redirection now, so we just set the user.
       if (user) {
         setUser(user);
-      } else {
-        router.push('/');
       }
       setLoading(false);
     };
 
     getUser();
 
+    // Listen for changes, for example, if the user signs out on this page.
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT') {
         router.push('/');
