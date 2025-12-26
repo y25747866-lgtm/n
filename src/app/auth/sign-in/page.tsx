@@ -6,7 +6,6 @@ import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 import { AuthCard } from '@/components/boss-os/auth-card';
 import {
@@ -23,7 +22,6 @@ import * as z from "zod";
 
 const SignInSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email." }),
-  password: z.string().min(1, { message: "Please enter your password." }),
 });
 
 export default function SignInPage() {
@@ -35,17 +33,19 @@ export default function SignInPage() {
     resolver: zodResolver(SignInSchema),
     defaultValues: {
       email: "",
-      password: "",
     },
   });
 
-  const handleSignIn = async (values: z.infer<typeof SignInSchema>) => {
+  const handleMagicLinkSignIn = async (values: z.infer<typeof SignInSchema>) => {
     setIsLoading(true);
-    const { email, password } = values;
+    const { email } = values;
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithOtp({
       email,
-      password,
+      options: {
+        // This URL must be added to your Supabase Auth settings
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
     });
 
     setIsLoading(false);
@@ -57,30 +57,22 @@ export default function SignInPage() {
         description: error.message,
       });
     } else {
-      router.push('/dashboard');
+      toast({
+        title: 'Check your email',
+        description: 'A magic link has been sent to your email address.',
+      });
+      router.push('/auth/check-email');
     }
   };
 
   return (
     <AuthCard
-      title="Welcome Back"
-      description="Sign in to continue to your dashboard."
-      footerContent={
-        <div className="text-center space-y-2">
-            <p>
-            Don't have an account?{' '}
-            <Link href="/auth/sign-up" className="text-primary hover:underline">
-                Sign Up
-            </Link>
-            </p>
-            <Link href="/auth/forgot-password" className="text-sm text-primary hover:underline">
-                Forgot your password?
-            </Link>
-        </div>
-      }
+      title="Welcome to NexoraOS"
+      description="Enter your email below to receive a magic link to sign in."
+      footerContent={<></>}
     >
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSignIn)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(handleMagicLinkSignIn)} className="space-y-4">
           <FormField
             control={form.control}
             name="email"
@@ -94,22 +86,9 @@ export default function SignInPage() {
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <Input type="password" placeholder="••••••••" {...field} disabled={isLoading} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Sign In
+            Send Magic Link
           </Button>
         </form>
       </Form>

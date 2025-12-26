@@ -1,10 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// Use the specific credentials provided by the user.
+const supabaseUrl = "https://zprgfzoxlgaxbnnjvvir.supabase.co";
+const supabaseAnonKey = "sb_publishable_2UfSEKfj3hudWMErSusdsA_1pc7pxpi";
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error("Supabase URL and/or anon key are not defined in .env.local");
+  throw new Error("Supabase URL and/or anon key are not defined.");
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);

@@ -9,8 +9,6 @@ import { ArrowRight, Instagram, Linkedin, Palette, Rocket, Sparkles, Twitter, Wa
 import Image from "next/image";
 import Link from "next/link";
 import { Logo } from "@/components/boss-os/logo";
-import { supabase } from "@/lib/supabase";
-import { useRouter } from "next/navigation";
 
 const features = [
   {
@@ -69,7 +67,7 @@ export default function LandingPage() {
                 <Link href="/auth/sign-in">Sign In</Link>
             </Button>
             <Button asChild>
-                <Link href="/auth/sign-up">Get Started <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                <Link href="/auth/sign-in">Get Started <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
           </div>
         </div>
@@ -86,7 +84,7 @@ export default function LandingPage() {
           </p>
           <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
             <Button size="lg" asChild className="h-14 px-10 text-xl">
-                <Link href="/auth/sign-up">
+                <Link href="/auth/sign-in">
                     <Sparkles className="mr-2 h-5 w-5" />
                     Start Creating Now
                 </Link>
@@ -179,7 +177,7 @@ export default function LandingPage() {
           </p>
           <div className="mt-8">
             <Button size="lg" asChild className="h-12 px-8 text-lg">
-                 <Link href="/auth/sign-up">
+                 <Link href="/auth/sign-in">
                     Get Started for Free
                     <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>

@@ -19,13 +19,13 @@ function AppContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const authRoutes = ['/auth/sign-in', '/auth/sign-up', '/auth/forgot-password', '/auth/reset-password', '/auth/check-email'];
+  const isAuthPage = pathname.startsWith('/auth');
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
-      if (!session && !authRoutes.includes(pathname) && pathname !== '/') {
+      if (!session && !isAuthPage && pathname !== '/') {
         router.push('/auth/sign-in');
       }
     });
@@ -33,10 +33,10 @@ function AppContent({ children }: { children: React.ReactNode }) {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (_event, currentSession) => {
         setSession(currentSession);
-        if (currentSession && authRoutes.includes(pathname)) {
+        if (currentSession && isAuthPage) {
             router.push('/dashboard');
         }
-        if (!currentSession && !authRoutes.includes(pathname) && pathname !== '/') {
+        if (!currentSession && !isAuthPage && pathname !== '/') {
             router.push('/auth/sign-in');
         }
       }
@@ -45,9 +45,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, [pathname, router]);
-
-  const isAuthPage = authRoutes.includes(pathname);
+  }, [pathname, router, isAuthPage]);
 
   // Show landing page and auth pages without the main app layout
   if (pathname === '/' || isAuthPage) {
@@ -63,6 +61,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
   }
   
   if (!session) {
+      // This will be handled by the useEffect redirect, but as a fallback
       return null;
   }
 
