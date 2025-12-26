@@ -8,8 +8,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Supabase URL and/or anon key are not defined.");
 }
 
-// Initialize the Supabase client.
-// The auth options are set to their defaults but are explicit here for clarity.
+// Initialize the Supabase client with session persistence options.
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
         persistSession: true,

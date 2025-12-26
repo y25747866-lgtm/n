@@ -22,17 +22,21 @@ function AppContent({ children }: { children: React.ReactNode }) {
   const isAuthPage = pathname.startsWith('/auth');
 
   useEffect(() => {
+    // 1. Check for an existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
+      // 2. Redirect if no session and not on an auth page
       if (!session && !isAuthPage && pathname !== '/') {
         router.push('/auth/sign-in');
       }
     });
 
+    // 3. Listen for auth state changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (_event, currentSession) => {
         setSession(currentSession);
+        // Redirect on sign-in (if on an auth page) or sign-out
         if (currentSession && isAuthPage) {
             router.push('/dashboard');
         }
@@ -42,6 +46,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
       }
     );
 
+    // 4. Cleanup listener on unmount
     return () => {
       authListener.subscription.unsubscribe();
     };
@@ -52,6 +57,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
   
+  // Show a loading screen while session is being checked
   if (loading) {
     return (
         <div className="flex min-h-screen w-full items-center justify-center bg-background">
@@ -60,11 +66,13 @@ function AppContent({ children }: { children: React.ReactNode }) {
     );
   }
   
+  // If loading is finished and still no session, the redirect is in flight.
+  // Render nothing to avoid a flash of the dashboard.
   if (!session) {
-      // This will be handled by the useEffect redirect, but as a fallback
       return null;
   }
 
+  // Render the main app layout for authenticated users
   return (
     <div className="flex min-h-screen bg-background">
       {isNavVisible && <AppSidebar session={session} />}
