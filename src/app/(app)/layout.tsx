@@ -7,7 +7,6 @@ import { SidebarProvider, useSidebar } from '@/contexts/sidebar-provider';
 import { SubscriptionProvider } from '@/contexts/subscription-provider';
 import { cn } from '@/lib/utils';
 import React, { useEffect, useState } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
 import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Session } from '@supabase/supabase-js';
@@ -20,25 +19,25 @@ function AppContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
+  const authRoutes = ['/auth/sign-in', '/auth/sign-up', '/auth/forgot-password', '/auth/reset-password', '/auth/check-email'];
+
   useEffect(() => {
-    // 1. Fetch the current session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
-      // 2. Redirect if not logged in and not on the landing page
-      if (!session && pathname !== '/') {
-        router.push('/');
+      if (!session && !authRoutes.includes(pathname) && pathname !== '/') {
+        router.push('/auth/sign-in');
       }
     });
 
-    // 3. Listen for auth state changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (_event, currentSession) => {
         setSession(currentSession);
-        setLoading(false);
-        // 4. Redirect on sign out or if the session becomes null
-        if (!currentSession && pathname !== '/') {
-            router.push('/');
+        if (currentSession && authRoutes.includes(pathname)) {
+            router.push('/dashboard');
+        }
+        if (!currentSession && !authRoutes.includes(pathname) && pathname !== '/') {
+            router.push('/auth/sign-in');
         }
       }
     );
@@ -48,12 +47,13 @@ function AppContent({ children }: { children: React.ReactNode }) {
     };
   }, [pathname, router]);
 
-  // The landing page should not show the main app layout and can be shown while loading
-  if (pathname === '/') {
+  const isAuthPage = authRoutes.includes(pathname);
+
+  // Show landing page and auth pages without the main app layout
+  if (pathname === '/' || isAuthPage) {
     return <>{children}</>;
   }
   
-  // Show a full-page loader while the session is being checked
   if (loading) {
     return (
         <div className="flex min-h-screen w-full items-center justify-center bg-background">
@@ -62,13 +62,10 @@ function AppContent({ children }: { children: React.ReactNode }) {
     );
   }
   
-  // If still no session after loading, it means the redirect is in progress.
-  // Rendering null avoids a flash of the old layout.
   if (!session) {
       return null;
   }
 
-  // Once authenticated and loading is complete, render the main app layout.
   return (
     <div className="flex min-h-screen bg-background">
       {isNavVisible && <AppSidebar session={session} />}

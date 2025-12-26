@@ -57,19 +57,6 @@ const faqs = [
 
 export default function LandingPage() {
     const founderImage = PlaceHolderImages.find(p => p.id === 'founder-yesh');
-    const router = useRouter();
-
-    const handleGoogleSignIn = async () => {
-        const { error } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-                redirectTo: `${window.location.origin}/dashboard`
-            }
-        });
-        if (error) {
-            console.error('Error signing in with Google:', error.message);
-        }
-    };
     
   return (
     <div className="bg-background text-foreground">
@@ -78,11 +65,11 @@ export default function LandingPage() {
         <div className="container mx-auto flex h-14 max-w-screen-2xl items-center justify-between">
           <Logo showText={true} />
           <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={handleGoogleSignIn}>
-                Sign In
+            <Button variant="ghost" asChild>
+                <Link href="/auth/sign-in">Sign In</Link>
             </Button>
-            <Button onClick={handleGoogleSignIn}>
-                Get Started <ArrowRight className="ml-2 h-4 w-4" />
+            <Button asChild>
+                <Link href="/auth/sign-up">Get Started <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
           </div>
         </div>
@@ -98,8 +85,8 @@ export default function LandingPage() {
             Stop juggling tools. NexoraOS is your AI-powered command center to discover, create, and launch digital products in record time.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
-            <Button size="lg" asChild className="h-14 px-10 text-xl" onClick={handleGoogleSignIn}>
-                <Link href="#">
+            <Button size="lg" asChild className="h-14 px-10 text-xl">
+                <Link href="/auth/sign-up">
                     <Sparkles className="mr-2 h-5 w-5" />
                     Start Creating Now
                 </Link>
@@ -191,8 +178,8 @@ export default function LandingPage() {
             Stop waiting and start creating. Your first digital product is just minutes away.
           </p>
           <div className="mt-8">
-            <Button size="lg" asChild className="h-12 px-8 text-lg" onClick={handleGoogleSignIn}>
-                 <Link href="#">
+            <Button size="lg" asChild className="h-12 px-8 text-lg">
+                 <Link href="/auth/sign-up">
                     Get Started for Free
                     <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
