@@ -4,7 +4,7 @@
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Book, Download, FileText, History, Loader2, Trash2, Image as ImageIcon } from 'lucide-react';
+import { Book, Download, FileText, History, Loader2, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { EbookContent } from '@/lib/types';
 import { useState, useEffect } from 'react';
@@ -20,8 +20,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
-import { generateCoverAction } from '@/app/actions/generate-cover-action';
-import Image from 'next/image';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/lib/supabase';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -48,9 +46,7 @@ function HistoryItemCard({ item }: { item: EbookContent & { id: string, productT
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isDownloading, setIsDownloading] = useState(false);
-  const [isGeneratingCover, setIsGeneratingCover] = useState(false);
-  const [coverUrl, setCoverUrl] = useState(item.coverImageUrl);
-
+  
   const deleteMutation = useMutation({
     mutationFn: deleteHistoryItem,
     onSuccess: () => {
@@ -87,8 +83,8 @@ function HistoryItemCard({ item }: { item: EbookContent & { id: string, productT
 
       const url = URL.createObjectURL(pdfBlob);
       const a = document.createElement('a');
-a.href = url;
-a.download = `${item.title.replace(/ /g, '_')}.pdf`;
+      a.href = url;
+      a.download = `${item.title.replace(/ /g, '_')}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -101,32 +97,6 @@ a.download = `${item.title.replace(/ /g, '_')}.pdf`;
       setIsDownloading(false);
     }
   };
-
-
-  const handleGenerateCover = async () => {
-    setIsGeneratingCover(true);
-    toast({ title: "Generating Cover...", description: "The AI is designing your cover." });
-    try {
-      const { imageUrl } = await generateCoverAction(item.title, item.subtitle || '');
-      setCoverUrl(imageUrl);
-      
-      const { error: updateError } = await supabase
-        .from('generated_products')
-        .update({ coverImageUrl: imageUrl })
-        .eq('id', item.id);
-
-      if (updateError) throw updateError;
-      
-      queryClient.invalidateQueries({ queryKey: ['history'] });
-
-    } catch (error) {
-      console.error("Error generating cover:", error);
-      toast({ variant: "destructive", title: "Cover Generation Failed", description: "Could not generate the cover image." });
-    } finally {
-      setIsGeneratingCover(false);
-    }
-  };
-
 
   return (
     <Card className="glass-card flex flex-col">
@@ -179,10 +149,6 @@ a.download = `${item.title.replace(/ /g, '_')}.pdf`;
               </AlertDialogContent>
             </AlertDialog>
         </div>
-        <Button className="w-full" variant="secondary" onClick={handleGenerateCover} disabled={isGeneratingCover}>
-            {isGeneratingCover ? <Loader2 className="animate-spin" /> : <ImageIcon className="mr-2 h-4 w-4" />}
-            {coverUrl ? 'Regenerate Cover' : 'Generate Cover'}
-        </Button>
       </CardFooter>
     </Card>
   );
