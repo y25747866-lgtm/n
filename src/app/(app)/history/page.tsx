@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useCollection } from '@/firebase/firestore/use-collection';
@@ -129,29 +130,25 @@ a.download = `${item.title.replace(/ /g, '_')}.pdf`;
 
   return (
     <Card className="glass-card flex flex-col">
-      <CardHeader className="pb-2">
-        <div className="relative aspect-[3/4] w-full overflow-hidden rounded-md mb-4 border">
-            {isGeneratingCover ? (
-                <Skeleton className="h-full w-full" />
-            ) : coverUrl ? (
-                <Image src={coverUrl} alt={`Cover for ${item.title}`} fill className="object-cover" />
-            ) : (
-                 <div className="h-full w-full bg-secondary flex flex-col items-center justify-center text-center p-4">
-                    <ImageIcon className="h-10 w-10 text-muted-foreground mb-2" />
-                    <p className="text-sm text-muted-foreground">No cover generated</p>
-                 </div>
-            )}
-        </div>
-        <CardTitle className="flex items-center gap-2 text-lg leading-tight">
-            {item.productType === 'Ebook' ? <Book className="h-5 w-5 text-primary shrink-0" /> : <FileText className="h-5 w-5 text-primary shrink-0" />}
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-start gap-2 text-lg leading-tight">
+            {item.productType === 'Ebook' ? <Book className="h-5 w-5 text-primary shrink-0 mt-1" /> : <FileText className="h-5 w-5 text-primary shrink-0 mt-1" />}
             <span className="flex-1 truncate">{item.title}</span>
         </CardTitle>
         <CardDescription>
             {new Date(item.generationDate).toLocaleString()}
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex-1">
+      <CardContent className="flex-1 space-y-4">
         <Badge variant="secondary">{item.productType}</Badge>
+        <div className="space-y-2">
+            <p className="text-sm font-medium text-muted-foreground">Chapters:</p>
+            <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1 max-h-32 overflow-y-auto">
+                {item.chapters?.map(chapter => (
+                    <li key={chapter.title} className="truncate">{chapter.title}</li>
+                ))}
+            </ul>
+        </div>
       </CardContent>
       <CardFooter className="flex flex-col items-start gap-2">
          <div className="flex w-full gap-2">
@@ -226,13 +223,18 @@ export default function HistoryPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
                  <Card key={i} className="glass-card flex flex-col">
-                    <CardHeader className="pb-2">
-                        <Skeleton className="aspect-[3/4] w-full rounded-md mb-4" />
-                        <Skeleton className="h-5 w-3/4" />
+                    <CardHeader className="pb-4">
+                        <Skeleton className="h-5 w-3/4 mb-2" />
                         <Skeleton className="h-4 w-1/2" />
                     </CardHeader>
-                    <CardContent className="flex-1">
+                    <CardContent className="flex-1 space-y-4">
                         <Skeleton className="h-6 w-1/4" />
+                        <div className="space-y-2">
+                           <Skeleton className="h-4 w-1/3" />
+                           <Skeleton className="h-4 w-full" />
+                           <Skeleton className="h-4 w-full" />
+                           <Skeleton className="h-4 w-3/4" />
+                        </div>
                     </CardContent>
                     <CardFooter className="flex flex-col items-start gap-2">
                         <Skeleton className="h-10 w-full" />
