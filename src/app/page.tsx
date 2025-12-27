@@ -5,7 +5,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { ArrowRight, Instagram, Linkedin, Palette, Rocket, Sparkles, Twitter, Wand2, Zap } from "lucide-react";
+import { ArrowRight, Instagram, Linkedin, Palette, Rocket, Sparkles, Twitter, Wand2, Zap, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Logo } from "@/components/boss-os/logo";
@@ -207,8 +207,8 @@ export default function LandingPage() {
             <Link href="https://www.instagram.com/nexoraos?igsh=MTRwbGw4aDhwMjE2aw==" aria-label="Instagram">
               <Instagram className="h-6 w-6 text-muted-foreground transition-colors hover:text-foreground" />
             </Link>
-            <Link href="https://x.com/NexoraOS" aria-label="Twitter">
-              <Twitter className="h-6 w-6 text-muted-foreground transition-colors hover:text-foreground" />
+            <Link href="https://x.com/NexoraOS" aria-label="X">
+              <X className="h-6 w-6 text-muted-foreground transition-colors hover:text-foreground" />
             </Link>
           </div>
         </div>
@@ -216,3 +216,5 @@ export default function LandingPage() {
     </div>
   );
 }
+
+    
