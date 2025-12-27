@@ -158,6 +158,23 @@ function SidebarInnerContent({ session }: { session: Session }) {
                                 )}
                             </Tooltip>
                         </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <a href="https://payhip.com?fp_ref=yesh-malik48" target="_blank" rel="noopener noreferrer">
+                                        <SidebarMenuButton>
+                                            <ExternalLink />
+                                            {isOpen && <span>Payhip</span>}
+                                        </SidebarMenuButton>
+                                    </a>
+                                </TooltipTrigger>
+                                {!isOpen && (
+                                    <TooltipContent side="right">
+                                        Payhip
+                                    </TooltipContent>
+                                )}
+                            </Tooltip>
+                        </SidebarMenuItem>
                     </SidebarMenu>
                 </TooltipProvider>
             </SidebarContent>
