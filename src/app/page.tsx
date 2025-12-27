@@ -142,27 +142,10 @@ export default function LandingPage() {
         {/* Founder Section */}
         <section className="py-16 sm:py-24">
             <Card className="glass-card">
-                <CardContent className="p-8 md:p-12">
-                    <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-3">
-                         <div className="relative mx-auto h-40 w-40 overflow-hidden rounded-full border-4 border-primary/50">
-                            {founderImage && <Image 
-                                src={founderImage.imageUrl} 
-                                alt="Yesh Malik"
-                                fill
-                                className="object-cover"
-                                data-ai-hint={founderImage.imageHint}
-                            />}
-                        </div>
-                        <div className="space-y-4 md:col-span-2">
-                             <p className="text-lg text-muted-foreground">
-                                "I built NexoraOS to scratch my own itch. I was tired of spending weeks on tasks that AI could do in minutes. My goal is to empower 10,000 creators to launch their own digital product empires. This is the tool I wish I had when I started."
-                            </p>
-                            <div>
-                                <p className="font-semibold">Yesh Malik</p>
-                                <p className="text-sm text-muted-foreground">Founder of NexoraOS</p>
-                            </div>
-                        </div>
-                    </div>
+                <CardContent className="p-8 md:p-12 text-center">
+                    <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                        "I created NexoraOS because I wanted a smarter, faster way to bring ideas to life. Too often, I saw creators spending weeks on tasks that AI could handle in minutes. My mission is to empower 10,000 creators to build and scale their own digital product empires efficiently. NexoraOS is the tool I wish I had when I started." — Yesh Malik, Founder of NexoraOS
+                    </p>
                 </CardContent>
             </Card>
         </section>
