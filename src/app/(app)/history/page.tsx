@@ -55,6 +55,7 @@ function HistoryItemCard({ item }: { item: EbookContent & { id: string, productT
             description: `"${item.title}" has been removed from your history.`,
         });
         queryClient.invalidateQueries({ queryKey: ['history'] });
+        queryClient.invalidateQueries({ queryKey: ['covers'] });
     },
     onError: (error) => {
         toast({
@@ -72,7 +73,7 @@ function HistoryItemCard({ item }: { item: EbookContent & { id: string, productT
     toast({ title: "Generating PDF...", description: "This might take a moment." });
     try {
       if (!item.coverImageUrl) {
-          throw new Error("Cannot generate PDF without a cover image.");
+          throw new Error("Cannot generate PDF without a cover image. Please regenerate one from the Studio.");
       }
       const pdfBlob = await buildEbookPdf({
         title: item.title,
@@ -86,13 +87,13 @@ function HistoryItemCard({ item }: { item: EbookContent & { id: string, productT
       a.href = url;
       a.download = `${item.title.replace(/ /g, '_')}.pdf`;
       document.body.appendChild(a);
-      a.click();
+a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error generating or downloading PDF:", error);
-      toast({ variant: "destructive", title: "PDF Generation Failed", description: "Could not generate the PDF." });
+      toast({ variant: "destructive", title: "PDF Generation Failed", description: error.message || "Could not generate the PDF." });
     } finally {
       setIsDownloading(false);
     }
@@ -205,7 +206,6 @@ export default function HistoryPage() {
                         </div>
                     </CardContent>
                     <CardFooter className="flex flex-col items-start gap-2">
-                        <Skeleton className="h-10 w-full" />
                         <Skeleton className="h-10 w-full" />
                     </CardFooter>
                 </Card>

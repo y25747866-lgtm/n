@@ -12,6 +12,7 @@ import {
   Search,
   History,
   ExternalLink,
+  Library,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -46,6 +47,7 @@ const menuItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/generate', label: 'Generator', icon: Wand2 },
   { href: '/history', label: 'History', icon: History },
+  { href: '/studio', label: 'Cover Studio', icon: Library },
   { href: '/subscription', label: 'Subscription', icon: CreditCard },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
