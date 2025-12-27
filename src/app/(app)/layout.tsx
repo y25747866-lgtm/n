@@ -4,7 +4,7 @@
 import AppSidebar from '@/components/boss-os/app-sidebar';
 import Header from '@/components/boss-os/header';
 import { SidebarProvider, useSidebar } from '@/contexts/sidebar-provider';
-import { SubscriptionProvider } from '@/contexts/subscription-provider';
+import { SubscriptionProvider, useSubscription } from '@/contexts/subscription-provider';
 import { cn } from '@/lib/utils';
 import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
@@ -14,21 +14,26 @@ import { Loader2 } from 'lucide-react';
 
 function AppContent({ children }: { children: React.ReactNode }) {
   const { isOpen, isDesktop, isNavVisible } = useSidebar();
+  const { subscription } = useSubscription();
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
 
   const isAuthPage = pathname.startsWith('/auth');
+  const isSubscriptionPage = pathname.startsWith('/subscription');
 
   useEffect(() => {
     // 1. Check for an existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
-      // 2. Redirect if no session and not on an auth page
+      
       if (!session && !isAuthPage && pathname !== '/') {
         router.push('/auth/sign-in');
+      } else if (session && subscription.status !== 'active' && !isSubscriptionPage) {
+        // If logged in but not subscribed, force to subscription page
+        router.push('/subscription');
       }
     });
 
@@ -36,28 +41,30 @@ function AppContent({ children }: { children: React.ReactNode }) {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (_event, currentSession) => {
         setSession(currentSession);
-        // Redirect on sign-in (if on an auth page) or sign-out
-        if (currentSession && isAuthPage) {
-            router.push('/dashboard');
-        }
-        if (!currentSession && !isAuthPage && pathname !== '/') {
+        
+        if (currentSession && (isAuthPage || pathname === '/')) {
+            // User just logged in.
+            if (subscription.status !== 'active') {
+                router.push('/subscription');
+            } else {
+                router.push('/dashboard');
+            }
+        } else if (!currentSession && !isAuthPage && pathname !== '/') {
             router.push('/auth/sign-in');
         }
       }
     );
 
-    // 4. Cleanup listener on unmount
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, [pathname, router, isAuthPage]);
+  }, [pathname, router, isAuthPage, subscription.status, isSubscriptionPage]);
 
   // Show landing page and auth pages without the main app layout
   if (pathname === '/' || isAuthPage) {
     return <>{children}</>;
   }
   
-  // Show a loading screen while session is being checked
   if (loading) {
     return (
         <div className="flex min-h-screen w-full items-center justify-center bg-background">
@@ -67,12 +74,18 @@ function AppContent({ children }: { children: React.ReactNode }) {
   }
   
   // If loading is finished and still no session, the redirect is in flight.
-  // Render nothing to avoid a flash of the dashboard.
   if (!session) {
       return null;
   }
+  
+  // If user is logged in but not subscribed, and not on the subscription page,
+  // the redirect is in flight.
+  if (session && subscription.status !== 'active' && !isSubscriptionPage) {
+      return null;
+  }
 
-  // Render the main app layout for authenticated users
+
+  // Render the main app layout for authenticated, subscribed users
   return (
     <div className="flex min-h-screen bg-background">
       {isNavVisible && <AppSidebar session={session} />}
