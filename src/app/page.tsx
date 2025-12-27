@@ -143,6 +143,11 @@ export default function LandingPage() {
         <section className="py-16 sm:py-24">
             <Card className="glass-card">
                 <CardContent className="p-8 md:p-12 text-center">
+                    <div className="mb-6">
+                        <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                            <span className="text-4xl font-bold text-primary">Y</span>
+                        </div>
+                    </div>
                     <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
                         "I created NexoraOS because I wanted a smarter, faster way to bring ideas to life. Too often, I saw creators spending weeks on tasks that AI could handle in minutes. My mission is to empower 10,000 creators to build and scale their own digital product empires efficiently. NexoraOS is the tool I wish I had when I started." — Yesh Malik, Founder of NexoraOS
                     </p>
