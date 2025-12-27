@@ -101,9 +101,11 @@ function HistoryItemCard({ item }: { item: EbookContent & { id: string, productT
   return (
     <Card className="glass-card flex flex-col">
       <CardHeader className="pb-4">
-        <CardTitle className="flex items-start gap-2 text-lg leading-tight">
-            {item.productType === 'Ebook' ? <Book className="h-5 w-5 text-primary shrink-0 mt-1" /> : <FileText className="h-5 w-5 text-primary shrink-0 mt-1" />}
-            <span className="flex-1 truncate">{item.title}</span>
+        <CardTitle className="flex items-start gap-3 text-lg leading-tight">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-lg shrink-0 mt-0">
+                Y
+            </div>
+            <span className="flex-1 truncate pt-1">{item.title}</span>
         </CardTitle>
         <CardDescription>
             {new Date(item.generationDate).toLocaleString()}
