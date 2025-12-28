@@ -9,9 +9,11 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { AuthCard } from '@/components/boss-os/auth-card';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function SignInPage() {
   const { toast } = useToast();
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -40,7 +42,8 @@ export default function SignInPage() {
         title: 'Check your email',
         description: 'A magic link has been sent to your email address.',
       });
-      // Don't redirect here, just show the message
+      // Redirect to a page that tells them to check their email
+      router.push('/auth/check-email');
     }
   };
 
