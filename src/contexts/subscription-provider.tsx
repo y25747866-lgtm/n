@@ -18,9 +18,16 @@ type SubscriptionContextType = {
   subscription: SubscriptionState;
   startSubscription: (planId: "monthly" | "annual") => void;
   isLoading: boolean;
+  isSubscriptionLoading: boolean; // Renamed for clarity
 };
 
 const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
+
+// This is a placeholder for where you'd store your subscription data in a real app.
+// For this simulation, we'll use a local object. In a real app, this would be a Supabase table.
+const FAKE_DB = {
+    subscription: null as SubscriptionState | null
+};
 
 export function SubscriptionProvider({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
@@ -30,19 +37,13 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     planId: null,
     renewalDate: null,
   });
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // For checkout process
+  const [isSubscriptionLoading, setIsSubscriptionLoading] = useState(true); // For initial fetch
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-        if(session?.user?.id) {
-            setUserId(session.user.id);
-            // In a real app, you would fetch subscription status from your DB here
-            // For now, we'll keep it as a local state simulation
-        }
-    });
-
-     const { data: authListener } = supabase.auth.onAuthStateChange(
+    // This effect runs once on mount to get the initial auth state
+    const { data: authListener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         const newUserId = session?.user?.id ?? null;
         setUserId(newUserId);
@@ -54,19 +55,46 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
                 planId: null,
                 renewalDate: null,
              });
+             FAKE_DB.subscription = null; // Clear fake DB on logout
+             setIsSubscriptionLoading(false);
         }
       }
     );
 
     return () => authListener.subscription.unsubscribe();
-  }, [])
+  }, []);
+
+  useEffect(() => {
+    // This effect fetches the subscription status when the user ID is known
+    if (userId) {
+        setIsSubscriptionLoading(true);
+        // In a real app, you would fetch subscription status from your DB
+        // const { data } = await supabase.from('subscriptions').select('*').eq('user_id', userId).single();
+        // For now, we use our fake in-memory DB
+        setTimeout(() => { // Simulate network delay
+            if (FAKE_DB.subscription) {
+                setSubscription(FAKE_DB.subscription);
+            } else {
+                setSubscription({
+                    status: "unsubscribed",
+                    credits: 0,
+                    planId: null,
+                    renewalDate: null,
+                });
+            }
+            setIsSubscriptionLoading(false);
+        }, 500);
+    } else {
+        // No user, so loading is done and they are unsubscribed.
+        setIsSubscriptionLoading(false);
+    }
+  }, [userId]);
 
 
   const startSubscription = useCallback((planId: "monthly" | "annual") => {
     setIsLoading(true);
-    // This is a simulation. In a real app, a webhook from Whop would trigger
-    // an update in your database, and this client would refetch the state.
-    // For now, we simulate the successful "purchase" after a delay.
+    // This is a simulation. In a real app, a webhook from Whop would update
+    // your database. This function simulates the user returning from a successful checkout.
     setTimeout(() => {
       const renewalDate = new Date();
       if (planId === 'monthly') {
@@ -74,32 +102,34 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       } else {
         renewalDate.setFullYear(renewalDate.getFullYear() + 1);
       }
-      const newSubscriptionState = {
-        status: "active" as PlanStatus,
+      
+      const newSubscriptionState: SubscriptionState = {
+        status: "active",
         credits: planId === 'monthly' ? 50 : 600,
         planId,
         renewalDate: renewalDate.toISOString(),
       };
-      setSubscription(newSubscriptionState);
 
-      // Here you would also save this to your database
-      // e.g. await supabase.from('user_subscriptions').upsert({ user_id: userId, ... })
+      // Save to our fake DB and update the state
+      FAKE_DB.subscription = newSubscriptionState;
+      setSubscription(newSubscriptionState);
       
       setIsLoading(false);
       toast({
         title: "Welcome aboard!",
         description: `Your ${planId} plan is now active. Click 'Gat' to continue.`,
       });
-    }, 500); // Short delay to simulate the user being redirected to Whop and back
-  }, [toast, userId]);
+    }, 1000); // Simulate user being redirected to Whop and back
+  }, [toast]);
 
   const value = useMemo(
     () => ({
       subscription,
       startSubscription,
       isLoading,
+      isSubscriptionLoading,
     }),
-    [subscription, isLoading, startSubscription]
+    [subscription, isLoading, startSubscription, isSubscriptionLoading]
   );
 
   return (

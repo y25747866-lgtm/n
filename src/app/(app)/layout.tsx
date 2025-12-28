@@ -14,7 +14,7 @@ import { Loader2 } from 'lucide-react';
 
 function AppContent({ children }: { children: React.ReactNode }) {
   const { isOpen, isDesktop, isNavVisible } = useSidebar();
-  const { subscription } = useSubscription();
+  const { subscription, isSubscriptionLoading } = useSubscription();
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -24,33 +24,23 @@ function AppContent({ children }: { children: React.ReactNode }) {
   const isSubscriptionPage = pathname.startsWith('/subscription');
 
   useEffect(() => {
-    // 1. Check for an existing session
+    // 1. Check for an existing session on initial load
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      setLoading(false);
-      
-      if (!session && !isAuthPage && pathname !== '/') {
-        router.push('/auth/sign-in');
-      } else if (session && subscription.status !== 'active' && !isSubscriptionPage) {
-        // If logged in but not subscribed, force to subscription page
-        router.push('/subscription');
-      }
+      setLoading(false); // Initial auth check is done
     });
 
-    // 3. Listen for auth state changes
+    // 2. Listen for auth state changes (sign-in, sign-out)
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (_event, currentSession) => {
         setSession(currentSession);
-        
-        if (currentSession && (isAuthPage || pathname === '/')) {
-            // User just logged in.
-            if (subscription.status !== 'active') {
-                router.push('/subscription');
-            } else {
-                router.push('/dashboard');
-            }
-        } else if (!currentSession && !isAuthPage && pathname !== '/') {
-            router.push('/auth/sign-in');
+        // If user signs in and is on an auth page, redirect them
+        if (currentSession && isAuthPage) {
+          router.push('/subscription');
+        }
+        // If user signs out, redirect them
+        if (!currentSession && !isAuthPage && pathname !== '/') {
+          router.push('/auth/sign-in');
         }
       }
     );
@@ -58,14 +48,33 @@ function AppContent({ children }: { children: React.ReactNode }) {
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, [pathname, router, isAuthPage, subscription.status, isSubscriptionPage]);
+  }, [router, isAuthPage, pathname]);
+
+  useEffect(() => {
+    if (loading) return; // Don't run redirects until initial auth check is complete
+
+    // 3. Handle routing based on auth and subscription state
+    if (!session && !isAuthPage && pathname !== '/') {
+      router.push('/auth/sign-in');
+    } else if (session && !isSubscriptionLoading) {
+      if (subscription.status !== 'active' && !isSubscriptionPage) {
+        // If logged in but not subscribed, force to subscription page
+        router.push('/subscription');
+      } else if (subscription.status === 'active' && (isSubscriptionPage || isAuthPage || pathname === '/')) {
+        // If logged in AND subscribed, move them to the dashboard
+        router.push('/dashboard');
+      }
+    }
+  }, [session, subscription.status, isSubscriptionLoading, loading, router, isSubscriptionPage, isAuthPage, pathname]);
+
 
   // Show landing page and auth pages without the main app layout
   if (pathname === '/' || isAuthPage) {
     return <>{children}</>;
   }
   
-  if (loading) {
+  // While checking auth or subscription, show a global loader
+  if (loading || isSubscriptionLoading) {
     return (
         <div className="flex min-h-screen w-full items-center justify-center bg-background">
             <Loader2 className="h-16 w-16 animate-spin text-primary" />
@@ -73,14 +82,14 @@ function AppContent({ children }: { children: React.ReactNode }) {
     );
   }
   
-  // If loading is finished and still no session, the redirect is in flight.
+  // If still no session after loading, the redirect is in flight. Render nothing.
   if (!session) {
       return null;
   }
   
   // If user is logged in but not subscribed, and not on the subscription page,
-  // the redirect is in flight.
-  if (session && subscription.status !== 'active' && !isSubscriptionPage) {
+  // the redirect is in flight. Render nothing to avoid layout flash.
+  if (subscription.status !== 'active' && !isSubscriptionPage) {
       return null;
   }
 

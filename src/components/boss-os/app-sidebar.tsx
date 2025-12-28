@@ -61,7 +61,7 @@ function ProfileSection({ session }: { session: Session }) {
 
     const handleSignOut = async () => {
         await supabase.auth.signOut();
-        router.push('/');
+        router.push('/'); // Redirect to landing after sign out
     }
 
     if (!user) return null;
@@ -75,7 +75,7 @@ function ProfileSection({ session }: { session: Session }) {
                              <Link href="/settings">
                                 <Avatar className="h-10 w-10">
                                     <AvatarImage src={avatarImage} alt={user.user_metadata?.full_name || "User Avatar"} />
-                                    <AvatarFallback>{getInitials(user.user_metadata?.full_name || "User")}</AvatarFallback>
+                                    <AvatarFallback>{getInitials(user.user_metadata?.full_name || user.email || "U")}</AvatarFallback>
                                 </Avatar>
                             </Link>
                         </TooltipTrigger>
@@ -94,11 +94,11 @@ function ProfileSection({ session }: { session: Session }) {
             <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10">
                     <AvatarImage src={avatarImage} alt={user.user_metadata?.full_name || "User Avatar"} />
-                    <AvatarFallback>{getInitials(user.user_metadata?.full_name || "User")}</AvatarFallback>
+                    <AvatarFallback>{getInitials(user.user_metadata?.full_name || user.email || "U")}</AvatarFallback>
                 </Avatar>
                 <div>
-                    <p className="text-sm font-semibold leading-none">{user.user_metadata?.full_name || "Anonymous User"}</p>
-                    <p className="text-xs leading-none text-muted-foreground mt-1">{user.email || `UID: ${user.id.slice(0,12)}...`}</p>
+                    <p className="text-sm font-semibold leading-none truncate">{user.user_metadata?.full_name || user.email}</p>
+                    <p className="text-xs leading-none text-muted-foreground mt-1 truncate">{user.email ? `UID: ${user.id.slice(0,12)}...` : user.id}</p>
                 </div>
             </div>
             <Button variant="ghost" className="w-full justify-start mt-2" onClick={handleSignOut}>
@@ -155,7 +155,7 @@ function SidebarInnerContent({ session }: { session: Session }) {
                                 </TooltipTrigger>
                                 {!isOpen && (
                                     <TooltipContent side="right">
-                                        Whop
+                                        Powered by Whop
                                     </TooltipContent>
                                 )}
                             </Tooltip>
@@ -172,7 +172,7 @@ function SidebarInnerContent({ session }: { session: Session }) {
                                 </TooltipTrigger>
                                 {!isOpen && (
                                     <TooltipContent side="right">
-                                        Payhip
+                                        Visit our Payhip
                                     </TooltipContent>
                                 )}
                             </Tooltip>

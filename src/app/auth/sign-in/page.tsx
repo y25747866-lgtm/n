@@ -19,6 +19,7 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import Link from "next/link";
 
 const SignInSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email." }),
@@ -68,8 +69,16 @@ export default function SignInPage() {
   return (
     <AuthCard
       title="Welcome to NexoraOS"
-      description="Enter your email below to receive a magic link to sign in."
-      footerContent={<></>}
+      description="Enter your email below to sign in or create an account."
+      footerContent={
+        <p className="text-muted-foreground text-sm">
+          By signing in, you agree to our{" "}
+          <Link href="#" className="underline hover:text-primary">
+            Terms of Service
+          </Link>
+          .
+        </p>
+      }
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleMagicLinkSignIn)} className="space-y-4">

@@ -34,6 +34,11 @@ const Plan = ({
 }) => {
   const { startSubscription, isLoading } = useSubscription();
 
+  // We wrap the Whop link click with our internal subscription logic
+  const handleSubscribeClick = () => {
+    startSubscription(planId);
+  };
+
   return (
     <Card className={cn("glass-card w-full flex flex-col", isPopular && "border-primary/50")}>
       <CardHeader>
@@ -57,12 +62,13 @@ const Plan = ({
       </CardContent>
       <CardFooter>
         <Button
-          asChild
           className="w-full"
           size="lg"
           disabled={isLoading || isCurrent}
+          onClick={handleSubscribeClick}
+          asChild
         >
-          <Link href={checkoutUrl} target="_blank" onClick={() => startSubscription(planId)}>
+          <Link href={checkoutUrl} target="_blank">
             {isCurrent ? "Current Plan" : "Subscribe with Whop"}
           </Link>
         </Button>
@@ -72,58 +78,71 @@ const Plan = ({
 };
 
 export default function SubscriptionPage() {
-    const { subscription } = useSubscription();
+    const { subscription, isSubscriptionLoading } = useSubscription();
     const { toast } = useToast();
     const router = useRouter();
 
     const handleGatAccess = () => {
+        // This button now primarily acts as a way for the user to proceed
+        // after the app has recognized their subscription. The layout file
+        // will handle the automatic redirect once `subscription.status` is 'active'.
         if (subscription.status === 'active') {
             router.push('/dashboard');
         } else {
             toast({
                 variant: "destructive",
                 title: "Access Denied",
-                description: "Please subscribe to access.",
+                description: "Your subscription is not active. Please complete your purchase on Whop.",
             });
         }
     };
 
+    if (isSubscriptionLoading) {
+        return (
+            <div className="flex items-center justify-center h-full">
+                <p>Loading subscription details...</p>
+            </div>
+        )
+    }
+
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Sylhet Plan</h1>
-        <p className="text-muted-foreground">Choose the plan that's right for your empire.</p>
-      </div>
+    <div className="flex items-center justify-center min-h-full">
+        <div className="space-y-8 max-w-4xl w-full">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-center">Sylhet Plan</h1>
+            <p className="text-muted-foreground text-center">Choose the plan that's right for your empire.</p>
+          </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-        <Plan
-            title="Monthly"
-            description="Perfect for getting started and testing the waters."
-            price="60"
-            pricePeriod="month"
-            features={["50 credits/month", "50 cover regenerations", "Full feature access", "Cancel anytime"]}
-            planId="monthly"
-            isCurrent={subscription.planId === 'monthly'}
-            checkoutUrl="https://whop.com/checkout/plan_cGgxUSfDmR2xF"
-        />
-        <Plan
-            title="Yearly"
-            description="Best value for serious creators and business owners."
-            price="600"
-            pricePeriod="year"
-            features={["600 credits/year", "Unlimited regenerations", "Priority support", "Early access to new features"]}
-            isPopular
-            planId="annual"
-            isCurrent={subscription.planId === 'annual'}
-            checkoutUrl="https://whop.com/checkout/plan_xNlBWUTysLURE"
-        />
-      </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+            <Plan
+                title="Monthly"
+                description="Perfect for getting started and testing the waters."
+                price="60"
+                pricePeriod="month"
+                features={["50 credits/month", "50 cover regenerations", "Full feature access", "Cancel anytime"]}
+                planId="monthly"
+                isCurrent={subscription.planId === 'monthly' && subscription.status === 'active'}
+                checkoutUrl="https://whop.com/checkout/plan_cGgxUSfDmR2xF"
+            />
+            <Plan
+                title="Yearly"
+                description="Best value for serious creators and business owners."
+                price="600"
+                pricePeriod="year"
+                features={["600 credits/year", "Unlimited regenerations", "Priority support", "Early access to new features"]}
+                isPopular
+                planId="annual"
+                isCurrent={subscription.planId === 'annual' && subscription.status === 'active'}
+                checkoutUrl="https://whop.com/checkout/plan_xNlBWUTysLURE"
+            />
+          </div>
 
-      <div className="text-center pt-8">
-          <Button size="lg" onClick={handleGatAccess}>
-              Gat
-          </Button>
-      </div>
+          <div className="text-center pt-8">
+              <Button size="lg" onClick={handleGatAccess} disabled={subscription.status !== 'active'}>
+                  Gat
+              </Button>
+          </div>
+        </div>
     </div>
   );
 }

@@ -5,10 +5,10 @@ export default function CheckEmailPage() {
   return (
     <AuthCard
       title="Check Your Email"
-      description="We've sent a verification link to your email address. Please click the link to continue."
+      description="We've sent a magic link to your email address. Please click the link to sign in."
       footerContent={
         <div className="text-center text-muted-foreground">
-            <p>Didn't receive an email? Check your spam folder.</p>
+            <p>Didn't receive an email? Check your spam folder or try again.</p>
         </div>
       }
     >

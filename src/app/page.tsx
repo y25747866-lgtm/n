@@ -75,7 +75,7 @@ export default function LandingPage() {
 
       <main className="container mx-auto max-w-5xl px-4">
         {/* Hero Section */}
-        <section className="flex min-h-screen flex-col items-center justify-center text-center">
+        <section className="flex min-h-[calc(100vh-56px)] flex-col items-center justify-center text-center">
           <h1 className="text-[clamp(3rem,8vw,5.5rem)] font-black leading-tight tracking-tighter bg-clip-text text-transparent bg-accent-gradient-1">
             The All-In-One Digital Product OS
           </h1>
@@ -166,7 +166,7 @@ export default function LandingPage() {
           <div className="mt-8">
             <Button size="lg" asChild className="h-12 px-8 text-lg">
                  <Link href="/auth/sign-in">
-                    Get Started for Free
+                    Get Started
                     <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
             </Button>
