@@ -1,45 +1,23 @@
+
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { AuthCard } from '@/components/boss-os/auth-card';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import Link from "next/link";
-
-const SignInSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email." }),
-});
+import Link from 'next/link';
 
 export default function SignInPage() {
-  const router = useRouter();
   const { toast } = useToast();
+  const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const form = useForm<z.infer<typeof SignInSchema>>({
-    resolver: zodResolver(SignInSchema),
-    defaultValues: {
-      email: "",
-    },
-  });
-
-  const handleMagicLinkSignIn = async (values: z.infer<typeof SignInSchema>) => {
+  const handleMagicLinkSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsLoading(true);
-    const { email } = values;
 
     const { error } = await supabase.auth.signInWithOtp({
       email,
@@ -62,7 +40,7 @@ export default function SignInPage() {
         title: 'Check your email',
         description: 'A magic link has been sent to your email address.',
       });
-      router.push('/auth/check-email');
+      // Don't redirect here, just show the message
     }
   };
 
@@ -80,27 +58,27 @@ export default function SignInPage() {
         </p>
       }
     >
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleMagicLinkSignIn)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input type="email" placeholder="you@example.com" {...field} disabled={isLoading} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Send Magic Link
-          </Button>
-        </form>
-      </Form>
+      <form onSubmit={handleMagicLinkSignIn} className="space-y-4">
+        <Input
+          type="email"
+          placeholder="you@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          disabled={isLoading}
+          className="w-full p-2 border mb-4 h-12 text-base"
+        />
+        <Button type="submit" className="w-full h-12 text-lg" disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Sending...
+            </>
+          ) : (
+            'Send Magic Link'
+          )}
+        </Button>
+      </form>
     </AuthCard>
   );
 }

@@ -57,7 +57,8 @@ function AppContent({ children }: { children: React.ReactNode }) {
     if (!session && !isAuthPage && pathname !== '/') {
       router.push('/auth/sign-in');
     } else if (session && !isSubscriptionLoading) {
-      if (subscription.status !== 'active' && !isSubscriptionPage) {
+       // If user is logged in, but not on auth or subscription page, check subscription
+      if (subscription.status !== 'active' && !isSubscriptionPage && !isAuthPage && pathname !== '/') {
         // If logged in but not subscribed, force to subscription page
         router.push('/subscription');
       } else if (subscription.status === 'active' && (isSubscriptionPage || isAuthPage || pathname === '/')) {
@@ -69,11 +70,19 @@ function AppContent({ children }: { children: React.ReactNode }) {
 
 
   // Show landing page and auth pages without the main app layout
-  if (pathname === '/' || isAuthPage) {
+  if (pathname === '/' || isAuthPage || isSubscriptionPage) {
+    // Also allow subscription page to be rendered standalone
+    if (loading) {
+         return (
+            <div className="flex min-h-screen w-full items-center justify-center bg-background">
+                <Loader2 className="h-16 w-16 animate-spin text-primary" />
+            </div>
+        );
+    }
     return <>{children}</>;
   }
   
-  // While checking auth or subscription, show a global loader
+  // While checking auth or subscription for main app, show a global loader
   if (loading || isSubscriptionLoading) {
     return (
         <div className="flex min-h-screen w-full items-center justify-center bg-background">
@@ -89,7 +98,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
   
   // If user is logged in but not subscribed, and not on the subscription page,
   // the redirect is in flight. Render nothing to avoid layout flash.
-  if (subscription.status !== 'active' && !isSubscriptionPage) {
+  if (subscription.status !== 'active') {
       return null;
   }
 
