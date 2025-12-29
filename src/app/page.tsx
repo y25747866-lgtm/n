@@ -56,7 +56,6 @@ const faqs = [
 
 
 export default function LandingPage() {
-    const founderImage = PlaceHolderImages.find(p => p.id === 'founder-yesh');
     
     useEffect(() => {
         const trackReferral = async () => {
