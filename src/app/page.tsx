@@ -10,6 +10,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Logo } from "@/components/boss-os/logo";
 import { useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
 const features = [
   {
@@ -58,10 +59,27 @@ export default function LandingPage() {
     const founderImage = PlaceHolderImages.find(p => p.id === 'founder-yesh');
     
     useEffect(() => {
-        const ref = new URLSearchParams(window.location.search).get("ref");
-        if (ref) {
-            localStorage.setItem("referrer", ref);
-        }
+        const trackReferral = async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const ref = urlParams.get("ref");
+            if (ref) {
+                // Save to local storage for checkout
+                localStorage.setItem("referrer", ref);
+                // Also log the visit in the database
+                try {
+                    const { error } = await supabase
+                      .from('ref_visits')
+                      .insert([{ referrer: ref, timestamp: new Date().toISOString() }]);
+                    if (error) {
+                        console.error("Error logging referral visit:", error.message);
+                    }
+                } catch (e) {
+                    console.error("An unexpected error occurred while logging referral:", e);
+                }
+            }
+        };
+
+        trackReferral();
     }, []);
     
   return (
