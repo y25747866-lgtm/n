@@ -12,6 +12,31 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
+const SubscriptionButton = ({ planId, checkoutUrl, title }: { planId: string; checkoutUrl: string; title: string }) => {
+    const handleCheckout = () => {
+        const referrer = localStorage.getItem("referrer") || 'none';
+        const userId = localStorage.getItem("supabase_user_id");
+
+        if (!userId) {
+            alert("Could not identify user. Please sign in again.");
+            return;
+        }
+
+        const url = new URL(checkoutUrl);
+        url.searchParams.set("metadata[supabase_user_id]", userId);
+        url.searchParams.set("metadata[referrer]", referrer);
+
+        window.location.href = url.toString();
+    };
+
+    return (
+        <Button onClick={handleCheckout} className="w-full" size="lg">
+            {title}
+        </Button>
+    );
+};
+
+
 export default function SubscriptionPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -23,6 +48,8 @@ export default function SubscriptionPage() {
         router.push('/auth/sign-in');
       } else {
         setUser(data.session.user);
+        // Store user ID in localStorage for the checkout buttons
+        localStorage.setItem("supabase_user_id", data.session.user.id);
       }
       setLoading(false);
     });
@@ -43,6 +70,7 @@ export default function SubscriptionPage() {
       pricePeriod,
       features,
       isPopular,
+      planId,
       checkoutUrl,
   }: {
       title: string;
@@ -51,6 +79,7 @@ export default function SubscriptionPage() {
       pricePeriod: string;
       features: string[];
       isPopular?: boolean;
+      planId: 'monthly' | 'yearly';
       checkoutUrl: string;
   }) => {
       return (
@@ -75,11 +104,11 @@ export default function SubscriptionPage() {
                 </ul>
             </CardContent>
             <CardFooter>
-                 <Button asChild className="w-full" size="lg">
-                    <Link href={checkoutUrl} target="_blank" rel="noopener noreferrer">
-                        Get Started
-                    </Link>
-                </Button>
+                 <SubscriptionButton 
+                    planId={planId} 
+                    checkoutUrl={checkoutUrl} 
+                    title="Get Started" 
+                 />
             </CardFooter>
         </Card>
       );
@@ -103,6 +132,7 @@ export default function SubscriptionPage() {
                 price="60"
                 pricePeriod="month"
                 features={["50 credits/month", "50 cover regenerations", "Full feature access", "Cancel anytime"]}
+                planId="monthly"
                 checkoutUrl="https://whop.com/checkout/plan_cGgxUSfDmR2xF"
             />
             <Plan
@@ -112,13 +142,14 @@ export default function SubscriptionPage() {
                 pricePeriod="year"
                 features={["600 credits/year", "Unlimited regenerations", "Priority support", "Early access to new features"]}
                 isPopular
+                planId="yearly"
                 checkoutUrl="https://whop.com/checkout/plan_xNlBWUTysLURE"
             />
           </div>
 
           <div className="text-center text-sm text-muted-foreground pt-4">
             <p>
-              After subscribing on Whop, please refresh this page or{" "}
+              After subscribing on Whop, your access will be granted automatically. Please refresh this page or{" "}
               <Link href="/dashboard" className="underline hover:text-primary">
                   proceed to the dashboard
               </Link>.

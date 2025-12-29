@@ -10,7 +10,12 @@ export async function GET(req: NextRequest) {
 
   if (code) {
     const supabase = createRouteHandlerClient({ cookies });
-    await supabase.auth.exchangeCodeForSession(code);
+    const { data: { user } } = await supabase.auth.exchangeCodeForSession(code);
+    if (user) {
+        // Storing the user ID in a cookie or local storage after authentication
+        // can be handled client-side on the page the user is redirected to.
+        // For simplicity, we just redirect.
+    }
   }
 
   // URL to redirect to after sign in process completes

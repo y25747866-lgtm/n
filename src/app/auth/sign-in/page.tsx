@@ -21,11 +21,13 @@ export default function SignInPage() {
     e.preventDefault();
     setIsLoading(true);
 
+    // Use a production-ready redirect URL
+    const emailRedirectTo = `${window.location.origin}/auth/callback`;
+
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        // This URL must be added to your Supabase Auth settings
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo,
       },
     });
 

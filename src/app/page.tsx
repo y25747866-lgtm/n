@@ -9,6 +9,7 @@ import { ArrowRight, Instagram, Linkedin, Palette, Rocket, Sparkles, Twitter, Wa
 import Image from "next/image";
 import Link from "next/link";
 import { Logo } from "@/components/boss-os/logo";
+import { useEffect } from "react";
 
 const features = [
   {
@@ -55,6 +56,13 @@ const faqs = [
 
 export default function LandingPage() {
     const founderImage = PlaceHolderImages.find(p => p.id === 'founder-yesh');
+    
+    useEffect(() => {
+        const ref = new URLSearchParams(window.location.search).get("ref");
+        if (ref) {
+            localStorage.setItem("referrer", ref);
+        }
+    }, []);
     
   return (
     <div className="bg-background text-foreground">
@@ -216,5 +224,3 @@ export default function LandingPage() {
     </div>
   );
 }
-
-    
