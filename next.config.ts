@@ -43,7 +43,7 @@ const nextConfig: NextConfig = {
     ],
   },
   experimental: {
-    // allowedDevOrigins is a top level experimental flag
+    // allowedDevOrigins should be a top level flag, not inside experimental
   },
   allowedDevOrigins: [
     "*.cluster-52r6vzs3ujeoctkkxpjif3x34a.cloudworkstations.dev"
