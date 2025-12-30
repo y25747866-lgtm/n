@@ -1,5 +1,5 @@
 {
-  "name": "app",
+  "name": "nextn",
   "version": "1.0.0",
   "private": true,
 
@@ -8,10 +8,11 @@
   },
 
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "next dev --turbopack",
+    "build": "NODE_ENV=production next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
   },
 
   "dependencies": {
@@ -70,6 +71,16 @@
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^9.0.1",
     "zod": "^3.23.8"
+  },
+
+  "devDependencies": {
+    "@tailwindcss/typography": "^0.5.14",
+    "@types/marked": "^6.0.0",
+    "@types/node": "^20",
+    "@types/uuid": "^9.0.8",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
   },
 
   "overrides": {
