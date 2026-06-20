@@ -14,6 +14,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'NexoraOS - AI Digital Product Factory',
   description: 'Generate ebooks, courses, covers, and trending digital assets instantly.',
+  verification: {
+    google: 'PEpKCfx9erZxkdYk1CGDdB123G9UtgbF0XbjZeEbpaM',
+  },
 };
 
 export default function RootLayout({
