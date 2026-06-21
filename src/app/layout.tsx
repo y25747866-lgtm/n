@@ -23,7 +23,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning className={inter.className}>
-      <head/>
+      <head><script type="application/ld+json">{"@context": "https://schema.org","@type": "WebSite","name": "NexoraOS","url": "https://nexoraos.digital"}</script></head>
       <body className="font-body antialiased">
         <QueryProvider>
             <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
